@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { BackendTest } from "@/components/backend-test";
+import { getAIConfig } from "@/lib/ai/server";
+import { loadVariablesLesson } from "@/lib/lessons/variables";
+
+export const dynamic = "force-dynamic";
 
 const endpoints = [
+  { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via 9Inference Chat Completions" },
   { route: "GET /api/hello", purpose: "Small connection test and JSON response" },
   { route: "GET /api/courses", purpose: "Reads course metadata from Supabase" },
   { route: "GET /api/courses/programming", purpose: "Returns one course with nested modules and lessons" },
@@ -17,13 +22,39 @@ const databaseTables = [
   { name: "sources", relationship: "reusable trustworthy references" },
 ] as const;
 
-export default function DevPage() {
+export default async function DevPage() {
+  const ai = getAIConfig();
+  let sourceCount: number | null = null;
+  try {
+    sourceCount = (await loadVariablesLesson()).sources.length;
+  } catch {
+    // Diagnostics should remain usable when the database is unavailable.
+  }
   return (
     <main className="lab-page">
-      <div className="lab-top"><Link href="/" className="lab-back">← ROBIN</Link><span className="lab-version">build 0.5.0 · trusted lesson content</span></div>
+      <div className="lab-top"><Link href="/" className="lab-back">← ROBIN</Link><span className="lab-version">build 0.6.0 · Robin AI v1</span></div>
       <header className="lab-header"><span className="eyebrow">Internal workspace</span><h1>ROBIN LAB</h1><p>Metadata dan sources tinggal di PostgreSQL. Lesson body yang ditulis manusia tetap tinggal di version-controlled files.</p></header>
 
-      <BackendTest />
+      <BackendTest aiConfigured={ai.configured} />
+
+      <section className="lab-panel lab-wide">
+        <div className="lab-panel-head"><span>AI</span><h2>Robin AI v1</h2></div>
+        <dl className="status-list">
+          <div><dt>Provider</dt><dd>{ai.provider}</dd></div>
+          <div><dt>Identity</dt><dd>Robin</dd></div>
+          <div><dt>Nickname</dt><dd>Bin</dd></div>
+          <div><dt>API compatibility</dt><dd>OpenAI-compatible</dd></div>
+          <div><dt>Provider endpoint</dt><dd>{ai.baseURL}/chat/completions</dd></div>
+          <div><dt>Configuration</dt><dd>{ai.configured ? "CONFIGURED" : "NOT CONFIGURED"}</dd></div>
+          <div><dt>Model</dt><dd>{ai.model}</dd></div>
+          <div><dt>Lesson context</dt><dd>Variables</dd></div>
+          <div><dt>Sources available</dt><dd>{sourceCount ?? "Unavailable — check database"}</dd></div>
+          <div><dt>Conversation persistence</dt><dd>SESSION ONLY</dd></div>
+          <div><dt>Grounding</dt><dd>LESSON CONTEXT V1</dd></div>
+        </dl>
+        <p className="lab-panel-note">Configured means a key is present, not that a live request has succeeded. Browser → POST /api/robin/chat → lesson context + 9Inference → reply + grounding. No source pages are fetched; the model receives lesson content and source metadata.</p>
+        <Link className="button" href="/courses/programming/variables">test Robin in Variables →</Link>
+      </section>
 
       <section className="lab-panel architecture lab-wide"><div className="lab-panel-head"><span>04</span><h2>Request lifecycle</h2></div><div className="architecture-flow"><div><span>01</span><strong>Browser</strong><small>fetch() starts here</small></div><b>→</b><div><span>02</span><strong>Next.js API</strong><small>Server route handles GET</small></div><b>→</b><div><span>03</span><strong>Supabase</strong><small>Client sends the query</small></div><b>→</b><div><span>04</span><strong>PostgreSQL</strong><small>related rows are selected</small></div><b>→</b><div><span>05</span><strong>JSON</strong><small>Nested result returns</small></div></div><p>React tidak pernah menerima credential Supabase. Browser tetap bicara ke Next.js; hanya backend yang bicara ke database.</p></section>
 
@@ -36,7 +67,7 @@ export default function DevPage() {
         <section className="lab-panel file-map"><div className="lab-panel-head"><span>08</span><h2>Quick file map</h2></div><div className="file-tree"><code>app/api/</code><span>backend route handlers</span><code>lib/supabase/</code><span>server-only database client</span><code>database/</code><span>manual schema, seed, and query SQL</span><code>content/lessons/</code><span>version-controlled educational content</span><code>data/</code><span>temporary progress and status presentation</span></div></section>
       </div>
 
-      <footer className="lab-footer"><span>Sources masuk. AI masih sengaja disuruh nunggu di luar.</span><Link href="/courses/programming/variables">inspect trusted lesson delivery →</Link></footer>
+      <footer className="lab-footer"><span>Robin pakai konteks lesson. Source Mode tetap mandiri.</span><Link href="/courses/programming/variables">inspect trusted lesson delivery →</Link></footer>
     </main>
   );
 }

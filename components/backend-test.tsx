@@ -71,7 +71,7 @@ function RequestPanel({ number, title, endpoint, buttonLabel, requestingLabel, o
   );
 }
 
-export function BackendTest() {
+export function BackendTest({ aiConfigured = false }: { aiConfigured?: boolean }) {
   const [databaseStatus, setDatabaseStatus] = useState<DatabaseStatus>("checking");
   const [signalState, setSignalState] = useState<SignalState>("calm");
   const [signalPulse, setSignalPulse] = useState(false);
@@ -111,7 +111,7 @@ export function BackendTest() {
     { label: "Backend", value: "online", kind: "ok" },
     { label: "Local data", value: "partial", kind: "dev" },
     { label: "Database", value: databaseStatus, kind: databaseStatus === "online" ? "ok" : databaseStatus === "checking" ? "dev" : "error" },
-    { label: "AI", value: "not configured", kind: "off" },
+    { label: "AI", value: aiConfigured ? "configured" : "not configured", kind: aiConfigured ? "ok" : "off" },
     { label: "Auth", value: "not configured", kind: "off" },
   ];
 
