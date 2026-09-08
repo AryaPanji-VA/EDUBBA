@@ -59,3 +59,49 @@ join public.courses c on c.id = m.course_id
 where c.slug = 'programming'
 group by m.id, m.title, m.position
 order by m.position;
+
+-- PHASE 5: MANY-TO-MANY SOURCE QUERIES
+
+-- A. Read every source linked to the Variables lesson.
+select
+  s.title,
+  s.publisher,
+  s.url,
+  ls.relevance_note
+from public.lessons l
+join public.lesson_sources ls on ls.lesson_id = l.id
+join public.sources s on s.id = ls.source_id
+join public.modules m on m.id = l.module_id
+join public.courses c on c.id = m.course_id
+where c.slug = 'programming'
+  and l.slug = 'variables'
+order by s.title;
+
+-- B. See both sides of the many-to-many relationship.
+select
+  l.title as lesson,
+  s.title as source,
+  s.publisher
+from public.lesson_sources ls
+join public.lessons l on l.id = ls.lesson_id
+join public.sources s on s.id = ls.source_id
+order by l.title, s.title;
+
+-- C. Count how many sources are attached to each lesson.
+select
+  l.title as lesson,
+  count(ls.source_id) as source_count
+from public.lessons l
+left join public.lesson_sources ls on ls.lesson_id = l.id
+group by l.id, l.title
+order by l.title;
+
+-- D. Travel in reverse: find lessons that use one source.
+select
+  s.title as source,
+  l.title as lesson
+from public.sources s
+join public.lesson_sources ls on ls.source_id = s.id
+join public.lessons l on l.id = ls.lesson_id
+where s.url = 'https://docs.python.org/3/reference/simple_stmts.html#assignment-statements'
+order by l.title;
