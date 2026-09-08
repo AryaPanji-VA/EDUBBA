@@ -11,7 +11,7 @@ export type Course = {
 };
 
 export const courses: Course[] = [
-  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 40, lessons: 10, status: "In progress" },
+  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 36, lessons: 11, status: "In progress" },
   { slug: "design-thinking", code: "DT-101", title: "Design Thinking", description: "Turn fuzzy human problems into ideas you can test and improve.", progress: 22, lessons: 8, status: "In progress" },
   { slug: "discrete-math", code: "MA-105", title: "Discrete Mathematics", description: "Logic, sets, relations, and the mathematical language of computing.", progress: 16, lessons: 12, status: "In progress" },
   { slug: "hci", code: "CS-112", title: "Human-Computer Interaction", description: "Understand how people experience, use, and sometimes fight with software.", progress: 0, lessons: 9, status: "Up next" },
@@ -27,15 +27,19 @@ export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "pro
     courses.map(({ slug, code, progress, status }) => [slug, { code, progress, status }]),
   );
 
-export const programmingModules = [
-  { number: 1, title: "What is Programming?", state: "completed" },
-  { number: 2, title: "Programming Languages", state: "completed" },
-  { number: 3, title: "Syntax vs Semantics", state: "completed" },
-  { number: 4, title: "Compiler vs Interpreter", state: "completed" },
-  { number: 5, title: "Variables", state: "current", slug: "variables" },
-  { number: 6, title: "Data Types", state: "locked" },
-  { number: 7, title: "Operators", state: "locked" },
-  { number: 8, title: "Conditionals", state: "locked" },
-  { number: 9, title: "Loops", state: "locked" },
-  { number: 10, title: "Functions", state: "locked" },
-] as const;
+export type LessonPresentationState = "completed" | "current" | "locked";
+
+// Personal learning state remains local until ROBIN has users and progress storage.
+export const programmingLessonStateBySlug: Record<string, LessonPresentationState> = {
+  "what-is-programming": "completed",
+  "programming-languages": "completed",
+  "syntax-vs-semantics": "completed",
+  "compiler-vs-interpreter": "completed",
+  "source-code-to-program-execution": "locked",
+  variables: "current",
+  "data-types": "locked",
+  operators: "locked",
+  conditionals: "locked",
+  loops: "locked",
+  functions: "locked",
+};
