@@ -22,6 +22,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
   const [draft, setDraft] = useState("");
   const [state, setState] = useState<RobinState>("idle");
   const [error, setError] = useState("");
+  const [memoryNotice, setMemoryNotice] = useState("");
   const controller = useRef<AbortController | null>(null);
   const conversation = useRef<HTMLDivElement>(null);
 
@@ -45,6 +46,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
     setState("thinking");
     onStateChange("thinking");
     setError("");
+    setMemoryNotice("");
     const timeout = window.setTimeout(() => requestController.abort(), 45_000);
     try {
       const response = await fetch("/api/robin/chat", {
@@ -64,6 +66,9 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
         throw new Error("Jawaban Robin belum terbaca. Coba lagi.");
       }
       if (controller.current !== requestController) return;
+      if (["saved", "updated", "deleted"].includes(data.memoryAction?.type)) {
+        setMemoryNotice(`MEMORY ${data.memoryAction.type === "deleted" ? "FORGOTTEN" : data.memoryAction.type.toUpperCase()}`);
+      }
       setMessages((current) => [...current,
         { role: "user" as const, content: message.trim() },
         { role: "assistant" as const, content: data.reply, result: data as RobinReply },
@@ -108,6 +113,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
         {state === "thinking" && <div className="robin-message typing-state"><span className="typing-dots"><i /><i /><i /></span><small>otaknya lagi compile...</small></div>}
       </div>
       {error && <p className="robin-error" role="alert">{error}</p>}
+      {memoryNotice && <p className="panel-footnote" role="status">{memoryNotice}</p>}
       <div className="companion-actions">{Object.entries(shortcuts).map(([label, message]) =>
         <button key={label} disabled={state === "thinking"} onClick={() => void sendMessage(message)}>{label}</button>
       )}</div>
@@ -122,7 +128,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
           }} />
         <button className="button button-primary" disabled={state === "thinking" || !draft.trim()}>Send to Robin</button>
       </form>
-      <p className="panel-footnote">8 pesan terakhir · reset saat reload. Grounding adalah penilaian AI, bukan verifikasi per kalimat. Referensi resmi tetap di lesson.</p>
+      <p className="panel-footnote">8 pesan terakhir · reset saat reload. Memory belajar hanya disimpan lewat perintah eksplisit; kelola di ROBIN LAB. Grounding adalah penilaian AI, bukan verifikasi per kalimat. Referensi resmi tetap di lesson.</p>
     </aside>
   );
 }

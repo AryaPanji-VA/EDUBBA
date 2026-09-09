@@ -105,3 +105,24 @@ join public.lesson_sources ls on ls.source_id = s.id
 join public.lessons l on l.id = ls.lesson_id
 where s.url = 'https://docs.python.org/3/reference/simple_stmts.html#assignment-statements'
 order by l.title;
+
+-- Phase 7: optional learning exercises, AFTER phase7-memory.sql.
+-- Read structured facts rather than chat transcripts.
+select * from public.robin_memories order by category, key;
+select * from public.robin_memories where category = 'preference';
+select * from public.robin_memories where category = 'learning';
+
+-- Practice mutations inside a transaction; ROLLBACK keeps real memory unchanged.
+-- Do not replace ROLLBACK with COMMIT unless you intentionally want these changes.
+begin;
+insert into public.robin_memories (category, key, value, status)
+values ('learning', 'variables', 'shaky', 'shaky')
+on conflict (category, key) do update
+set value = excluded.value, status = excluded.status;
+-- UPSERT: one category/key pair, not another duplicate row.
+update public.robin_memories set value = 'understood', status = 'understood'
+where category = 'learning' and key = 'variables';
+-- Exact pair only; the app uses the stable row UUID for deletion.
+delete from public.robin_memories
+where category = 'learning' and key = 'variables';
+rollback;

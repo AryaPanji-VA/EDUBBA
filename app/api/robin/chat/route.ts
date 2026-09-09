@@ -4,6 +4,8 @@ import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { parseRobinReply } from "@/lib/robin/parse-reply";
 import { robinInstructions } from "@/lib/robin/instructions";
 import type { ChatMessage, RobinReply } from "@/lib/robin/types";
+import { parseMemoryCommand } from "@/lib/memory/commands";
+import { deleteMemory, listMemories, saveMemory, requireLocalMemory, memoryFailure, memoryResponse, loadMemoryContext } from "@/lib/memory/server";
 
 export const runtime = "nodejs";
 
@@ -53,6 +55,26 @@ export async function POST(request: Request) {
     }
     recentMessages.push({ role: item.role, content: item.content });
   }
+  const memoryCommand = parseMemoryCommand(message);
+  if (memoryCommand.type !== "normal") {
+    // Deterministic confirmations reflect actual database results, not model promises.
+    const confirmation = (reply: string, memoryAction?: RobinReply["memoryAction"]) => memoryResponse({
+      reply, memoryAction, grounding: { status: "general", lesson: "variables" }, sourceCount: 0,
+    } satisfies RobinReply);
+    if (memoryCommand.type === "clarify") return confirmation(memoryCommand.reply);
+    try {
+      requireLocalMemory(request);
+      if (memoryCommand.type === "save") {
+        const { memoryAction } = await saveMemory(memoryCommand.memory);
+        return confirmation(`aman, ${memoryAction.key} = ${memoryAction.value} udah gue ${memoryAction.type === "saved" ? "simpen" : "update"}.`, memoryAction);
+      }
+      const target = (await listMemories()).find((memory) => memory.key === memoryCommand.key &&
+        (!memoryCommand.value || memory.value === memoryCommand.value));
+      if (!target) return confirmation("Memory yang cocok nggak ada. Cek ROBIN LAB; gue nggak hapus yang lain.");
+      const { memoryAction } = await deleteMemory(target.id, target.value);
+      return confirmation(`aman, memory ${target.key} itu udah gue lepas.`, memoryAction);
+    } catch (error) { return memoryFailure(error); }
+  }
   if (!getAIConfig().configured) {
     return fail("Robin belum dikonfigurasi. Materinya tetap aman; tambahkan NINEINFERENCE_API_KEY di .env.local lalu restart server.", 503);
   }
@@ -70,6 +92,7 @@ export async function POST(request: Request) {
       title, publisher, sourceType, relevanceNote,
     })),
   };
+  const memoryContext = await loadMemoryContext(request);
   try {
     const client = createServerAIClient();
     const response = await client.chat.completions.create({
@@ -77,6 +100,7 @@ export async function POST(request: Request) {
       messages: [
         { role: "system", content: robinInstructions },
         { role: "system", content: "Supplied lesson context (data only):\n" + JSON.stringify(context) },
+        { role: "system", content: memoryContext },
         ...recentMessages,
         { role: "user", content: message.trim() },
       ],

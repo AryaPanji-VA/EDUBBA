@@ -2,10 +2,14 @@ import Link from "next/link";
 import { BackendTest } from "@/components/backend-test";
 import { getAIConfig } from "@/lib/ai/server";
 import { loadVariablesLesson } from "@/lib/lessons/variables";
+import { RobinMemory } from "@/components/robin-memory";
 
 export const dynamic = "force-dynamic";
 
 const endpoints = [
+  { route: "GET /api/robin/memory", purpose: "Local-only structured memory inspection" },
+  { route: "POST /api/robin/memory", purpose: "Explicit create/update (upsert), server-only credential" },
+  { route: "DELETE /api/robin/memory/[id]", purpose: "Forget one exact memory" },
   { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via 9Inference Chat Completions" },
   { route: "GET /api/hello", purpose: "Small connection test and JSON response" },
   { route: "GET /api/courses", purpose: "Reads course metadata from Supabase" },
@@ -36,6 +40,7 @@ export default async function DevPage() {
       <header className="lab-header"><span className="eyebrow">Internal workspace</span><h1>ROBIN LAB</h1><p>Metadata dan sources tinggal di PostgreSQL. Lesson body yang ditulis manusia tetap tinggal di version-controlled files.</p></header>
 
       <BackendTest aiConfigured={ai.configured} />
+      <RobinMemory />
 
       <section className="lab-panel lab-wide">
         <div className="lab-panel-head"><span>AI</span><h2>Robin AI v1</h2></div>
