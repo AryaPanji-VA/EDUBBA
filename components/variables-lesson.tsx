@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
+import { variablesActivities } from "@/content/lessons/programming/variables-activities";
 import { type FormEvent, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import type { DeliveredLesson } from "@/content/lessons/types";
@@ -20,6 +22,7 @@ export function VariablesLesson() {
   const [robinState, setRobinState] = useState<RobinState>("idle");
   const [binAnswer, setBinAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [checkComplete, setCheckComplete] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [signalPulse, setSignalPulse] = useState(false);
   const [copiedExample, setCopiedExample] = useState<string | null>(null);
@@ -85,15 +88,17 @@ export function VariablesLesson() {
   function submitBinCheck(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFeedback("");
+    setCheckComplete(false);
     setIsChecking(true);
     pulseSignal();
     window.setTimeout(() => {
       setIsChecking(false);
       if (binAnswer.trim().length < 12) {
-        setFeedback("Masih pendek banget. Coba sebutin: variable punya nama, menunjuk ke apa, dan kenapa itu berguna.");
+        setFeedback("Add a little more: what name is used, what does it refer to, and what does assignment do?");
         return;
       }
-      setFeedback("Aman, gue simpen. Jawaban ini belum dinilai AI—coba cek apakah penjelasan lu sudah menyebut nama, value, dan assignment.");
+      setCheckComplete(true);
+      setFeedback("Response kept on this page only, not saved to memory or graded by AI. Check whether you explained the name x, the value 5, and the binding created by assignment.");
     }, 620);
   }
 
@@ -118,10 +123,12 @@ export function VariablesLesson() {
             <div className="lesson-meta"><span>◷ {lesson.estimatedMinutes} min</span><span>beginner</span><span>structured content</span><span>{lesson.sources.length} verified sources</span></div>
           </header>
 
-          {!sourceMode && <aside className="robin-inline"><span className="bin-face">R</span><p>Ini konsep kecil yang bakal nongol di mana-mana. Kita bikin kebayang dulu, habis itu baru pakai bahasa kampusnya.</p></aside>}
-
-          {!sourceMode && <section className="lesson-section"><span className="section-number">01</span><div><h2>Versi yang kebayang dulu</h2>{lesson.content.intuitiveExplanation.map((paragraph, index) => <p className={index === 0 ? "lead" : undefined} key={paragraph}>{paragraph}</p>)}</div></section>}
-
+          <LessonActivityRenderer activities={variablesActivities} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<section className="bin-check">
+            <div className="bin-check-title"><span className="bin-face large">R</span><div><span className="eyebrow">Robin Check</span><h2>Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python menjalankan <code>x = 5</code>?</h2></div></div>
+            <form className={isChecking ? "is-checking" : ""} onSubmit={submitBinCheck}><label htmlFor="bin-answer">Your explanation</label><textarea disabled={isChecking} id="bin-answer" value={binAnswer} onChange={(event) => { setBinAnswer(event.target.value); setCheckComplete(false); setFeedback(""); }} placeholder="variable itu..." rows={5} /><div className="form-footer"><span>{binAnswer.length} characters · kept on this page for now</span><button className="button button-primary" type="submit" disabled={isChecking || !binAnswer.trim()}>{isChecking ? <><span className="typing-dots"><i /><i /><i /></span> checking response</> : "Submit explanation"}</button></div></form>
+            {feedback && <p className="mock-feedback" role="status"><strong>Robin:</strong> {feedback}</p>}
+          </section>}>
+            <details className="activity-supplement"><summary>Academic notes, examples &amp; Quick Checks</summary>
           <section className="lesson-section academic"><span className="section-number">02</span><div><span className="academic-label">Academic explanation</span><h2>Definisi formalnya</h2>{lesson.content.academicExplanation.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
 
           <section className="lesson-section"><span className="section-number">03</span><div className="wide-content"><h2>Lihat assignment bekerja</h2>{lesson.content.codeExamples.map((example) => <div className="lesson-code-example" key={example.title}><div className="code-block"><div className="code-head"><span>{example.language} / {example.title}</span><button type="button" onClick={() => void copyCode(example.title, example.code)}>{copiedExample === example.title ? "COPIED ✓" : "COPY"}</button></div><pre><code>{example.code}</code></pre></div>{example.explanation && <p>{example.explanation}</p>}</div>)}</div></section>
@@ -146,13 +153,11 @@ export function VariablesLesson() {
             })}</div><div className="quick-check-actions"><button className="button" type="button" disabled={!selectedAnswer} onClick={() => submitQuickCheck(checkIndex)}>check answer</button>{isSubmitted && <p className={`answer-note ${isCorrect ? "is-correct" : "is-incorrect"}`}><strong>{isCorrect ? "Correct." : "Belum tepat."}</strong> {check.explanation}</p>}</div></section>;
           })}</div>
 
-          <section className="references"><span className="card-kicker">Sources supporting this lesson</span><p className="source-intro">These references support the lesson’s original synthesis; the lesson is not copied from them.</p><ol>{lesson.sources.map((source, index) => <li className="source-item" key={source.url}><span>{String(index + 1).padStart(2, "0")}</span><div><a href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong> ↗</a><div className="source-meta"><span>{source.publisher ?? "Unknown publisher"}</span><span>{source.sourceType}</span></div>{source.relevanceNote && <p>{source.relevanceNote}</p>}</div></li>)}</ol></section>
+            </details>
+          </LessonActivityRenderer>
 
-          <section className="bin-check">
-            <div className="bin-check-title"><span className="bin-face large">R</span><div><span className="eyebrow">BIN CHECK</span><h2>tanpa baca atas, coba jelasin variable ke gue pake bahasa lu sendiri.</h2></div></div>
-            <form className={isChecking ? "is-checking" : ""} onSubmit={submitBinCheck}><label htmlFor="bin-answer">Your explanation</label><textarea id="bin-answer" value={binAnswer} onChange={(event) => setBinAnswer(event.target.value)} placeholder="variable itu..." rows={5} /><div className="form-footer"><span>{binAnswer.length} characters · kept on this page for now</span><button className="button button-primary" type="submit" disabled={isChecking}>{isChecking ? <><span className="typing-dots"><i /><i /><i /></span> otaknya compile</> : "Send to Robin"}</button></div></form>
-            {feedback && <p className="mock-feedback" role="status"><strong>Robin:</strong> {feedback}</p>}
-          </section>
+          <details className="references" id="lesson-references"><summary>Sources / References — available at every step</summary><span className="card-kicker">Sources supporting this lesson</span><p className="source-intro">These references support the lesson’s original synthesis; the lesson is not copied from them.</p><ol>{lesson.sources.map((source, index) => <li className="source-item" key={source.url}><span>{String(index + 1).padStart(2, "0")}</span><div><a href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong> ↗</a><div className="source-meta"><span>{source.publisher ?? "Unknown publisher"}</span><span>{source.sourceType}</span></div>{source.relevanceNote && <p>{source.relevanceNote}</p>}</div></li>)}</ol></details>
+
         </article>
 
         <RobinCompanion sourceMode={sourceMode} onStateChange={updateRobinState} />

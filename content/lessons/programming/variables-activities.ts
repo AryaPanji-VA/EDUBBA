@@ -1,0 +1,25 @@
+import type { LessonActivity } from "../activities";
+
+export const variablesActivities: LessonActivity[] = [
+  { id: "why", type: "intro", title: "WHY · Why give a value a name?", concept: "named_values",
+    content: ["A program needs to work with things that mean something: a username, a score, a price, or a song’s tempo. Names help us use those values again without repeating them everywhere.", "If a song speeds up, the program can keep using the name tempo while the value it refers to changes."] },
+  { id: "intuition", type: "explain", title: "INTUITION · A name for a value", concept: "name_binding", code: "tempo = 92",
+    content: ["tempo is a name the program can use to refer to the value 92. When the program needs the tempo, it can use that name."] },
+  { id: "predict", type: "predict", title: "PREDICT · What will be printed?", concept: "reading_a_name", code: "tempo = 92\nprint(tempo)",
+    content: ["Choose the output before revealing the explanation."], options: ["92", "tempo", "Error"], correctAnswer: "92",
+    explanation: "print(tempo) reads the value reached through the name tempo: 92. It does not print the spelling of the name. The name has already been assigned, so this code does not raise an error." },
+  { id: "assignment", type: "example", title: "SEE · Assignment connects a name and a value", concept: "assignment", code: "tempo → 92",
+    content: ["tempo is the name. 92 is the value. The statement tempo = 92 performs assignment: it binds the name tempo to the integer object with value 92.", "The arrow is a diagram of that relationship, not Python code. Here, = performs assignment; it does not ask whether two values are equal."] },
+  { id: "reassignment", type: "predict", title: "PREDICT · Follow the second assignment", concept: "reassignment", code: "tempo = 92\ntempo = 110\nprint(tempo)",
+    content: ["Read the lines in order. Which value does the name reach when print runs?"], options: ["92", "110", "92 and 110", "Error"], correctAnswer: "110",
+    explanation: "The second assignment rebinds tempo to 110. One print call then reads that current binding; it does not print the history of values or add a second value to the name." },
+  { id: "try", type: "practice", title: "TRY · Change the listener count", concept: "reassignment", code: "listeners = 120",
+    content: ["Write one Python line that changes listeners to 150. No code is executed here; this exercise checks two supported forms."],
+    explanation: "listeners = 150 binds the name directly to 150. listeners = listeners + 30 reads 120, adds 30, then rebinds listeners to the result." },
+  { id: "formalize", type: "formalize", title: "FORMALIZE · Names bind to objects", concept: "name_binding",
+    content: ["An identifier is a valid name in code. Assignment evaluates the right-hand expression and binds the resulting object to the name on the left. An object has a value and a type; the name lets the program refer to it.", "Reassignment changes that binding. It does not, by itself, mutate the previous object. The box metaphor is only introductory: for Python, name → object binding is the more accurate mental model."] },
+  { id: "robin-check", type: "robin_check", title: "ROBIN CHECK · Explain it back", concept: "assignment",
+    content: ["Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python menjalankan x = 5?"] },
+  { id: "connect", type: "connect", title: "CONNECT · Where this goes next", concept: "connections",
+    content: ["Variables → expressions → conditionals → loops → functions", "Expressions use named values. Conditionals make choices using them, loops update them, and functions organize work around them. Name binding will matter again when you learn function scope.", "Completing this flow is not a mastery score. Your answers and position stay on this page only and reset on reload."] },
+];

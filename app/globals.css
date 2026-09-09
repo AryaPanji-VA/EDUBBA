@@ -198,3 +198,28 @@ button:disabled { cursor: wait; opacity: .72; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }.signal-line { transform: none !important; }.presence-wave i { height: 12px; transform: none !important; }
 }
+
+/* Phase 8B: focused lesson steps, using the existing lesson surfaces. */
+.learning-flow { margin-top: 28px; }
+.learning-flow-meta, .learning-flow-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.learning-flow-meta a { font-size: 14px; text-decoration: underline; text-underline-offset: 4px; }
+.learning-activity { min-height: 310px; padding: 28px 0; }
+.learning-activity h2 { font-size: clamp(22px, 3vw, 30px); line-height: 1.3; margin-bottom: 24px; }
+.learning-activity p { font-size: 16px; line-height: 1.8; margin: 16px 0; }
+.learning-activity .panel-footnote { font-size: 14px; }
+.learning-activity .code-block { margin: 24px 0; }
+.activity-options { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
+.activity-options legend, .activity-practice label { display: block; margin-bottom: 12px; font-size: 14px; }
+.activity-practice { margin: 24px 0; }
+.activity-practice input { display: block; width: 100%; background: #090c10; color: #e4edf2; border: 1px solid #34434a; border-radius: 8px; padding: 14px; font: 16px/1.6 monospace; }
+.activity-supplement { margin-top: 24px; }
+.activity-supplement summary, details.references summary { cursor: pointer; padding: 14px 0; font-size: 16px; }
+.learning-activity .bin-check { margin-top: 0; }
+.learning-flow-nav { padding: 20px 0; border-top: 1px solid #243038; }
+.learning-flow button:disabled { opacity: .45; cursor: not-allowed; }
+.learning-flow :focus-visible, details.references summary:focus-visible { outline: 2px solid #64d9ee; outline-offset: 5px; }
+@media (max-width: 600px) {
+  .learning-flow-nav .button { flex: 1; white-space: normal; text-align: center; }
+  .learning-activity { min-height: 260px; padding: 22px 0; }
+  .learning-activity .answer-options { flex-wrap: wrap; }
+}
