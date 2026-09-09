@@ -6,6 +6,7 @@ export type LessonActivity = {
   content: string[];
   code?: string;
   options?: string[];
+  optionLabels?: Record<string, string>;
   correctAnswer?: string;
   explanation?: string;
 };
