@@ -41,6 +41,8 @@ export const lessonCopy = {
     strong: "Strong · core idea demonstrated", developing: "Developing · reinforce the idea", shaky: "Shaky · revisit the idea",
     followup: "One focused retry", retrySubmit: "Check revised explanation", retryDone: "You can continue now, even if the idea still needs practice. No mastery result is stored.",
     characters: "characters · stays on this page", feedbackNote: "Feedback follows the language of your answer; switching lesson language does not re-run AI.",
+    feedbackLoading: "Robin lagi ngecek bagian yang ketuker…", feedbackReady: "Robin:", feedbackUnavailable: "AI feedback unavailable. The explanation above still applies.",
+    followUpLabel: "Try this:", followUpNote: "Display only — not graded. Continue when ready.",
   },
   id: {
     step: "Langkah", of: "dari", references: "Sumber / Referensi", previous: "Sebelumnya", next: "Lanjut",
@@ -68,6 +70,8 @@ export const lessonCopy = {
     strong: "Strong · inti konsep sudah terlihat", developing: "Developing · perlu penguatan singkat", shaky: "Shaky · konsep perlu ditinjau lagi",
     followup: "Satu percobaan terarah", retrySubmit: "Cek penjelasan revisi", retryDone: "Sekarang boleh lanjut, walaupun konsepnya masih perlu latihan. Tidak ada hasil mastery yang disimpan.",
     characters: "karakter · hanya di halaman ini", feedbackNote: "Bahasa feedback mengikuti jawaban kamu; ganti bahasa lesson tidak menjalankan AI lagi.",
+    feedbackLoading: "Robin lagi ngecek bagian yang ketuker…", feedbackReady: "Robin:", feedbackUnavailable: "Feedback AI belum tersedia. Penjelasan di atas tetap berlaku.",
+    followUpLabel: "Coba ini:", followUpNote: "Hanya tampilan — nggak dinilai. Lanjut aja kalau udah siap.",
   },
 };
 

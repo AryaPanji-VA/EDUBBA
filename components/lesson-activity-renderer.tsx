@@ -3,6 +3,7 @@
 import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
 import { useRef, useState, type ReactNode } from "react";
 import { isListenersAnswerCorrect, type LessonActivity } from "@/content/lessons/activities";
+import { SmartFeedback } from "@/components/smart-feedback";
 
 type Answer = { value: string; submitted: boolean };
 type Props = {
@@ -49,6 +50,7 @@ export function LessonActivityRenderer({ activities, language, sourceMode, robin
         {activity.type === "predict" ? <fieldset className="activity-options"><legend>{copy.prediction}</legend><div className="answer-options">{activity.options?.map((option) => <button type="button" aria-pressed={answer.value === option} className={answer.value === option ? "selected" : ""} key={option} onClick={() => updateAnswer(option)}>{activity.optionLabels?.[option] ?? option}</button>)}</div></fieldset> : <div className="activity-practice"><label htmlFor="practice-answer">{copy.oneLine}</label><input id="practice-answer" autoComplete="off" spellCheck={false} value={answer.value} onChange={(event) => updateAnswer(event.target.value)} /></div>}
         <button className="button" disabled={!answer.value.trim()} type="submit">{activity.type === "predict" ? copy.reveal : copy.check}</button>
         {answer.submitted && <p className={`answer-note ${correct ? "is-correct" : "is-incorrect"}`} role="status"><strong>{correct ? copy.correct : activity.type === "practice" ? copy.unsupported : copy.incorrect}</strong> {activity.explanation}{!correct && ` ${copy.revise}`}</p>}
+        {answer.submitted && activity.learningPurpose && <SmartFeedback activityId={activity.id} language={language} sourceMode={sourceMode} submitted={answer.submitted} learnerAnswer={answer.value} />}
       </form>}
       {activity.type === "formalize" && children}
       {/* Keep the check mounted so Previous and language changes preserve its response. */}

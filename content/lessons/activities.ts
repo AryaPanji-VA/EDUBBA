@@ -9,6 +9,8 @@ export type LessonActivity = {
   optionLabels?: Record<string, string>;
   correctAnswer?: string;
   explanation?: string;
+  learningPurpose?: string;
+  misconceptionsByAnswer?: Record<string, string>;
 };
 
 // A narrow exercise checker, not a Python interpreter. Keep case and token boundaries.

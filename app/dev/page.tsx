@@ -11,6 +11,8 @@ const endpoints = [
   { route: "POST /api/robin/memory", purpose: "Explicit create/update (upsert), server-only credential" },
   { route: "DELETE /api/robin/memory/[id]", purpose: "Forget one exact memory" },
   { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via 9Inference Chat Completions" },
+  { route: "POST /api/robin/check", purpose: "Robin Check explain-back AI evaluation (Phase 8C)" },
+  { route: "POST /api/robin/feedback", purpose: "Smart quiz feedback: server-graded result + AI pedagogical explanation" },
   { route: "GET /api/hello", purpose: "Small connection test and JSON response" },
   { route: "GET /api/courses", purpose: "Reads course metadata from Supabase" },
   { route: "GET /api/courses/programming", purpose: "Returns one course with nested modules and lessons" },
@@ -59,6 +61,20 @@ export default async function DevPage() {
         </dl>
         <p className="lab-panel-note">Configured means a key is present, not that a live request has succeeded. Browser → POST /api/robin/chat → lesson context + 9Inference → reply + grounding. No source pages are fetched; the model receives lesson content and source metadata.</p>
         <Link className="button" href="/courses/programming/variables">test Robin in Variables →</Link>
+      </section>
+
+      <section className="lab-panel lab-wide">
+        <div className="lab-panel-head"><span>AI</span><h2>Smart Quiz Feedback v1</h2></div>
+        <dl className="status-list">
+          <div><dt>Feature</dt><dd>AI PEDAGOGICAL FEEDBACK V1</dd></div>
+          <div><dt>Deterministic grading</dt><dd>ON</dd></div>
+          <div><dt>AI determines correctness</dt><dd>NO</dd></div>
+          <div><dt>Misconception mapping</dt><dd>SERVER-OWNED</dd></div>
+          <div><dt>Follow-up question</dt><dd>OPTIONAL · DISPLAY ONLY</dd></div>
+          <div><dt>Mastery persistence</dt><dd>NOT IMPLEMENTED</dd></div>
+          <div><dt>Memory writes</dt><dd>NONE</dd></div>
+        </dl>
+        <p className="lab-panel-note">Objective activities remain deterministically graded. Robin explains the result using misconception-aware feedback. Source Mode keeps this AI-light: deterministic explanations only.</p>
       </section>
 
       <section className="lab-panel architecture lab-wide"><div className="lab-panel-head"><span>04</span><h2>Request lifecycle</h2></div><div className="architecture-flow"><div><span>01</span><strong>Browser</strong><small>fetch() starts here</small></div><b>→</b><div><span>02</span><strong>Next.js API</strong><small>Server route handles GET</small></div><b>→</b><div><span>03</span><strong>Supabase</strong><small>Client sends the query</small></div><b>→</b><div><span>04</span><strong>PostgreSQL</strong><small>related rows are selected</small></div><b>→</b><div><span>05</span><strong>JSON</strong><small>Nested result returns</small></div></div><p>React tidak pernah menerima credential Supabase. Browser tetap bicara ke Next.js; hanya backend yang bicara ke database.</p></section>
