@@ -1,4 +1,4 @@
-import { isListenersAnswerCorrect, type LessonActivity } from "@/content/lessons/activities";
+import type { LessonActivity } from "@/content/lessons/activities";
 
 export const quizMisconceptions = [
   "first_assignment_persists",
@@ -10,7 +10,7 @@ export const quizMisconceptions = [
 
 export type QuizFeedbackRequest = {
   activityId: string;
-  lessonSlug: "variables";
+  lessonSlug: string;
   language: "id" | "en";
   learnerAnswer: string;
   attemptId: string;
@@ -39,10 +39,11 @@ export function validateQuizFeedbackRequest(value: unknown): QuizFeedbackRequest
   const row = value as Record<string, unknown>;
   if (Object.keys(row).some((key) => !["activityId", "lessonSlug", "language", "learnerAnswer", "attemptId"].includes(key)) ||
       typeof row.activityId !== "string" || !row.activityId.trim() ||
-      row.lessonSlug !== "variables" || (row.language !== "id" && row.language !== "en") ||
+      typeof row.lessonSlug !== "string" || !row.lessonSlug.trim() ||
+      (row.language !== "id" && row.language !== "en") ||
       typeof row.learnerAnswer !== "string" || !row.learnerAnswer.trim() || row.learnerAnswer.length > 2_000 ||
       typeof row.attemptId !== "string" || !row.attemptId.trim() || row.attemptId.length > 100) return null;
-  return { activityId: row.activityId.trim(), lessonSlug: "variables", language: row.language, learnerAnswer: row.learnerAnswer, attemptId: row.attemptId.trim() };
+  return { activityId: row.activityId.trim(), lessonSlug: row.lessonSlug.trim(), language: row.language, learnerAnswer: row.learnerAnswer, attemptId: row.attemptId.trim() };
 }
 
 export function gradeActivity(activity: LessonActivity, learnerAnswer: string): QuizGrading | null {
@@ -59,7 +60,7 @@ export function gradeActivity(activity: LessonActivity, learnerAnswer: string): 
   }
   if (activity.type === "practice") {
     return {
-      isCorrect: isListenersAnswerCorrect(answer), concept: activity.concept,
+      isCorrect: activity.checkAnswer ? activity.checkAnswer(answer) : false, concept: activity.concept,
       learningPurpose: activity.learningPurpose ?? "Quiz feedback.",
       likelyMisconception: null, activityType: activity.type,
     };

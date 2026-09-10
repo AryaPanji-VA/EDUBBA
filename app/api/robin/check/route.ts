@@ -1,12 +1,8 @@
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
-import { variablesLessonContent } from "@/content/lessons/programming/variables";
-import { robinCheckInstructions } from "@/lib/robin/check-instructions";
+import { getLessonDefinition } from "@/lib/lessons/registry";
 import { parseCheckEvaluation, validateCheckRequest } from "@/lib/robin/check";
-import { robinCheckSignalToEvidence } from "@/lib/mastery/types";
 import { recordEvidence } from "@/lib/mastery/server";
 import { loadAdaptation } from "@/lib/adaptation/server";
-import { relevantCheckConcepts } from "@/lib/adaptation/relevance";
-import { adaptCheckFeedback } from "@/lib/adaptation/check-support";
 
 export const runtime = "nodejs";
 
@@ -35,35 +31,40 @@ export async function POST(request: Request) {
   } catch { return fail(400); }
   const input = validateCheckRequest(body);
   if (!input) return fail(400);
+
+  const definition = getLessonDefinition(input.lessonSlug);
+  if (!definition) return fail(400);
+
   if (!getAIConfig().configured) return fail(503);
 
   try {
     // Reviewed lesson prose is server-controlled; no memory reads/writes are needed.
-    const { academicExplanation, codeExamples, keyTerms, commonMistakes } = variablesLessonContent;
+    // Historical mastery is never sent to the evaluator.
     const response = await createServerAIClient().chat.completions.create({
       model: getAIConfig().model,
       messages: [
-        { role: "system", content: robinCheckInstructions },
-        { role: "system", content: "Variables lesson context (data only):\n" + JSON.stringify({ academicExplanation, codeExamples, keyTerms, commonMistakes }) },
-        { role: "user", content: JSON.stringify({ question: "What happens when Python executes x = 5?", learnerAnswer: input.answer, fallbackLanguage: input.language }) },
+        { role: "system", content: definition.check.rubric },
+        { role: "system", content: definition.check.contextLabel + ":\n" + JSON.stringify(definition.check.lessonContext) },
+        { role: "user", content: JSON.stringify({ question: definition.check.question, learnerAnswer: input.answer, fallbackLanguage: input.language }) },
       ],
     }, { signal: request.signal });
     const choice = response.choices?.[0];
     if (choice?.finish_reason !== "stop" || typeof choice.message?.content !== "string") return fail(502);
     const evaluation = parseCheckEvaluation(choice.message.content);
     // Record mastery evidence for the mapped Robin Check concepts. Best-effort, never blocks.
-    const { evidenceType, concepts } = robinCheckSignalToEvidence(evaluation.signal);
+    const { evidenceType, concepts } = definition.mastery.robinCheckSignalToEvidence(evaluation.signal);
     const attemptId = crypto.randomUUID();
     for (const concept of concepts) {
-      try { await recordEvidence("variables", concept, evidenceType, attemptId); } catch { /* best-effort */ }
+      try { await recordEvidence(input.lessonSlug, concept, evidenceType, attemptId); } catch { /* best-effort */ }
     }
-    // Historical mastery is never sent to the evaluator. Adapt only after the
-    // original signal has been validated and used for unchanged evidence weights.
+    // Adapt only after the original signal has been validated and used for unchanged evidence weights.
     let supportedEvaluation = evaluation;
-    try {
-      const policy = await loadAdaptation(request, input.lessonSlug, relevantCheckConcepts(input.lessonSlug));
-      supportedEvaluation = adaptCheckFeedback(evaluation, policy, input.language);
-    } catch { /* Keep the original evaluated feedback if adaptation is unavailable. */ }
+    if (definition.check.adaptFeedback) {
+      try {
+        const policy = await loadAdaptation(request, input.lessonSlug, definition.relevance.checkConcepts());
+        supportedEvaluation = definition.check.adaptFeedback(evaluation, policy, input.language);
+      } catch { /* Keep the original evaluated feedback if adaptation is unavailable. */ }
+    }
     return Response.json({ evaluation: supportedEvaluation }, { headers: { "Cache-Control": "no-store" } });
   } catch { return fail(502); }
 }

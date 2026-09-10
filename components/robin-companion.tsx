@@ -13,11 +13,12 @@ const shortcuts = {
 
 type DisplayMessage = ChatMessage & { result?: RobinReply };
 type Props = {
+  lessonSlug: string;
   sourceMode: boolean;
   onStateChange: (state: RobinState) => void;
 };
 
-export function RobinCompanion({ sourceMode, onStateChange }: Props) {
+export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [state, setState] = useState<RobinState>("idle");
@@ -53,7 +54,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          lessonSlug: "variables", message: message.trim(),
+          lessonSlug, message: message.trim(),
           history: messages.slice(-8).map(({ role, content }) => ({ role, content })),
         }),
         signal: requestController.signal,
@@ -62,7 +63,7 @@ export function RobinCompanion({ sourceMode, onStateChange }: Props) {
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Robin belum bisa menjawab.");
       if (typeof data.reply !== "string" || !data.reply.trim() ||
         !["grounded", "general"].includes(data.grounding?.status) ||
-        data.grounding?.lesson !== "variables" || !Number.isInteger(data.sourceCount)) {
+        data.grounding?.lesson !== lessonSlug || !Number.isInteger(data.sourceCount)) {
         throw new Error("Jawaban Robin belum terbaca. Coba lagi.");
       }
       if (controller.current !== requestController) return;

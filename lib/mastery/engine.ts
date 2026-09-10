@@ -1,14 +1,9 @@
-import { type ConceptMastery, type EvidenceType, type MasteryConcept, type MasteryState, evidenceTypes, masteryConcepts, masteryStates } from "./types";
+import { type ConceptMastery, type EvidenceType, type MasteryState, evidenceTypes } from "./types";
 
 function isValidEvidence(evidenceType: string): evidenceType is EvidenceType {
   return (evidenceTypes as readonly string[]).includes(evidenceType);
 }
 
-function isValidConcept(concept: string): concept is MasteryConcept {
-  return (masteryConcepts as readonly string[]).includes(concept);
-}
-
-// Weight: objective activities count 1; Robin Check carries stronger weight.
 function weight(evidenceType: EvidenceType): { success: number; struggle: number } {
   switch (evidenceType) {
     case "correct_prediction": case "correct_practice": return { success: 1, struggle: 0 };
@@ -26,8 +21,9 @@ function deriveState(evidenceCount: number, successCount: number, struggleCount:
   return "developing";
 }
 
-export function applyEvidence(current: ConceptMastery | null, concept: string, evidenceType: string, attemptId: string): ConceptMastery {
-  if (!isValidConcept(concept)) throw new Error("Invalid concept.");
+export function applyEvidence(current: ConceptMastery | null, lessonSlug: string, concept: string, evidenceType: string, attemptId: string): ConceptMastery {
+  if (!concept || typeof concept !== "string") throw new Error("Invalid concept.");
+  if (!lessonSlug || typeof lessonSlug !== "string") throw new Error("Invalid lesson slug.");
   if (!isValidEvidence(evidenceType)) throw new Error("Invalid evidence type.");
   if (!attemptId || typeof attemptId !== "string") throw new Error("Invalid attempt ID.");
 
@@ -41,19 +37,11 @@ export function applyEvidence(current: ConceptMastery | null, concept: string, e
   const state = deriveState(evidenceCount, successCount, struggleCount);
 
   return {
-    lesson_slug: current?.lesson_slug ?? "variables",
+    lesson_slug: current?.lesson_slug ?? lessonSlug,
     concept_key: concept,
     state, evidence_count: evidenceCount, success_count: successCount, struggle_count: struggleCount,
     last_evidence_type: evidenceType,
     last_evidence_at: new Date().toISOString(),
     last_attempt_id: attemptId,
-  };
-}
-
-export function emptyMasteryRow(concept: MasteryConcept): ConceptMastery {
-  return {
-    lesson_slug: "variables", concept_key: concept, state: "unseen",
-    evidence_count: 0, success_count: 0, struggle_count: 0,
-    last_evidence_type: null, last_evidence_at: null, last_attempt_id: null,
   };
 }

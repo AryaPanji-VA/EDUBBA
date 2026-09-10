@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { loadVariablesLesson } from "@/lib/lessons/variables";
+import { getLessonDefinition } from "@/lib/lessons/registry";
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { parseRobinReply } from "@/lib/robin/parse-reply";
 import { robinInstructions } from "@/lib/robin/instructions";
@@ -7,7 +7,6 @@ import type { ChatMessage, RobinReply } from "@/lib/robin/types";
 import { parseMemoryCommand } from "@/lib/memory/commands";
 import { deleteMemory, listMemories, saveMemory, requireLocalMemory, memoryFailure, memoryResponse, loadMemoryContext } from "@/lib/memory/server";
 import { loadAdaptationContext } from "@/lib/adaptation/server";
-import { relevantChatConcepts } from "@/lib/adaptation/relevance";
 
 export const runtime = "nodejs";
 
@@ -43,7 +42,9 @@ export async function POST(request: Request) {
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Request tidak valid.", 400);
   const { lessonSlug, message, history = [] } = body as Record<string, unknown>;
-  if (lessonSlug !== "variables") return fail("Robin v1 baru mendukung lesson Variables.", 400);
+  if (typeof lessonSlug !== "string" || !lessonSlug.trim()) return fail("Lesson slug diperlukan.", 400);
+  const definition = getLessonDefinition(lessonSlug);
+  if (!definition) return fail("Lesson belum terdaftar.", 400);
   if (typeof message !== "string" || !message.trim() || message.length > 2_000) {
     return fail("Tulis pertanyaan antara 1 dan 2000 karakter.", 400);
   }
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
   if (memoryCommand.type !== "normal") {
     // Deterministic confirmations reflect actual database results, not model promises.
     const confirmation = (reply: string, memoryAction?: RobinReply["memoryAction"]) => memoryResponse({
-      reply, memoryAction, grounding: { status: "general", lesson: "variables" }, sourceCount: 0,
+      reply, memoryAction, grounding: { status: "general", lesson: lessonSlug }, sourceCount: 0,
     } satisfies RobinReply);
     if (memoryCommand.type === "clarify") return confirmation(memoryCommand.reply);
     try {
@@ -82,9 +83,9 @@ export async function POST(request: Request) {
   }
   let lesson;
   try {
-    lesson = await loadVariablesLesson();
+    lesson = await definition.loadLesson();
   } catch {
-    return fail("Konteks Variables belum bisa dimuat. Coba lagi sebentar.", 503);
+    return fail("Konteks lesson belum bisa dimuat. Coba lagi sebentar.", 503);
   }
   const { intuitiveExplanation, academicExplanation, codeExamples, keyTerms, commonMistakes } = lesson.content;
   const context = {
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     })),
   };
   const memoryContext = await loadMemoryContext(request);
-  const teachingContext = await loadAdaptationContext(request, lessonSlug, relevantChatConcepts(lessonSlug, message));
+  const teachingContext = await loadAdaptationContext(request, lessonSlug, definition.relevance.chatConcepts(message));
   try {
     const client = createServerAIClient();
     const response = await client.chat.completions.create({
@@ -121,7 +122,7 @@ export async function POST(request: Request) {
       return fail("Format jawaban Robin belum valid.", 502);
     }
     const result: RobinReply = {
-      reply: parsed.reply, grounding: { status: parsed.grounding, lesson: "variables" },
+      reply: parsed.reply, grounding: { status: parsed.grounding, lesson: lessonSlug },
       sourceCount: lesson.sources.length,
     };
     return Response.json(result, { headers: { "Cache-Control": "no-store" } });

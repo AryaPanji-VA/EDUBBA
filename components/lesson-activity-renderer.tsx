@@ -2,13 +2,14 @@
 
 import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
 import { useRef, useState, type ReactNode } from "react";
-import { isListenersAnswerCorrect, type LessonActivity } from "@/content/lessons/activities";
+import { type LessonActivity } from "@/content/lessons/activities";
 import { SmartFeedback } from "@/components/smart-feedback";
 import { MasterySummary } from "@/components/mastery-summary";
 
 type Answer = { value: string; submitted: boolean; attemptId?: string };
 type Props = {
   activities: LessonActivity[];
+  lessonSlug: string;
   language: LessonLanguage;
   sourceMode: boolean;
   robinCheck: ReactNode;
@@ -16,7 +17,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function LessonActivityRenderer({ activities, language, sourceMode, robinCheck, robinCheckComplete, children }: Props) {
+export function LessonActivityRenderer({ activities, lessonSlug, language, sourceMode, robinCheck, robinCheckComplete, children }: Props) {
   const copy = lessonCopy[language];
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
@@ -26,7 +27,7 @@ export function LessonActivityRenderer({ activities, language, sourceMode, robin
   const activity = activities[step];
   const answer = answers[activity.id] ?? { value: "", submitted: false };
   const interactive = activity.type === "predict" || activity.type === "practice";
-  const correct = activity.type === "practice" ? isListenersAnswerCorrect(answer.value) : answer.value === activity.correctAnswer;
+  const correct = activity.type === "practice" ? (activity.checkAnswer ? activity.checkAnswer(answer.value) : false) : answer.value === activity.correctAnswer;
   // Responding and seeing feedback unlocks progress; this is not a mastery gate.
   const canContinue = interactive ? answer.submitted : activity.type === "robin_check" ? robinCheckComplete : true;
 
@@ -59,7 +60,7 @@ export function LessonActivityRenderer({ activities, language, sourceMode, robin
       </form>}
       {/* Keep each attempt's feedback mounted across Previous/Next navigation. */}
       {activities.filter((item) => (item.type === "predict" || item.type === "practice") && item.learningPurpose).map((item) => <div key={item.id} hidden={activity.id !== item.id}>
-        <SmartFeedback activityId={item.id} language={language} sourceMode={sourceMode} submitted={answers[item.id]?.submitted ?? false} learnerAnswer={answers[item.id]?.value ?? ""} attemptId={answers[item.id]?.attemptId ?? ""} />
+        <SmartFeedback activityId={item.id} lessonSlug={lessonSlug} language={language} sourceMode={sourceMode} submitted={answers[item.id]?.submitted ?? false} learnerAnswer={answers[item.id]?.value ?? ""} attemptId={answers[item.id]?.attemptId ?? ""} />
       </div>)}
       {activity.type === "formalize" && children}
       {/* Keep the check mounted so Previous and language changes preserve its response. */}

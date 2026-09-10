@@ -46,7 +46,7 @@ function mount() {
     if (name.includes("feedback-request")) return helper;
     throw new Error(`Unexpected import ${name}`);
   } });
-  let props = { activityId: "predict", language: "en", sourceMode: false, submitted: true, learnerAnswer: "92", attemptId: "attempt-1" };
+  let props = { activityId: "predict", lessonSlug: "variables", language: "en", sourceMode: false, submitted: true, learnerAnswer: "92", attemptId: "attempt-1" };
   return {
     calls,
     render(changes = {}) { props = { ...props, ...changes }; cursor = 0; const view = component.SmartFeedback(props); effects.splice(0).forEach((effect) => effect()); return view; },

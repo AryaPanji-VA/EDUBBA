@@ -1,11 +1,8 @@
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
-import { variablesActivities } from "@/content/lessons/programming/variables-activities";
-import { quizFeedbackInstructions } from "@/lib/robin/quiz-feedback-instructions";
+import { getLessonDefinition } from "@/lib/lessons/registry";
 import { gradeActivity, parseQuizFeedbackResult, validateQuizFeedbackRequest } from "@/lib/robin/quiz-feedback";
-import { activityConceptToMastery } from "@/lib/mastery/types";
 import { recordEvidence } from "@/lib/mastery/server";
 import { loadAdaptationContext } from "@/lib/adaptation/server";
-import { relevantActivityConcepts } from "@/lib/adaptation/relevance";
 
 export const runtime = "nodejs";
 
@@ -34,19 +31,22 @@ export async function POST(request: Request) {
   const input = validateQuizFeedbackRequest(body);
   if (!input) return fail(400);
 
-  const activity = variablesActivities.find((item) => item.id === input.activityId);
+  const definition = getLessonDefinition(input.lessonSlug);
+  if (!definition) return fail(400);
+
+  const activity = definition.activities.find((item) => item.id === input.activityId);
   if (!activity || (activity.type !== "predict" && activity.type !== "practice")) return fail(400);
 
   const grading = gradeActivity(activity, input.learnerAnswer);
   if (!grading) return fail(400);
 
   // Record mastery evidence before the AI call: if AI fails, deterministic evidence is still preserved.
-  const masteryConcept = activityConceptToMastery(grading.concept);
+  const masteryConcept = definition.mastery.activityConceptToMastery(grading.concept);
   if (masteryConcept) {
     const evidenceType = grading.activityType === "predict"
       ? grading.isCorrect ? "correct_prediction" : "incorrect_prediction"
       : grading.isCorrect ? "correct_practice" : "incorrect_practice";
-    try { await recordEvidence("variables", masteryConcept, evidenceType, input.attemptId); } catch {
+    try { await recordEvidence(input.lessonSlug, masteryConcept, evidenceType, input.attemptId); } catch {
       console.warn("[ROBIN MASTERY] Evidence recording unavailable; continuing feedback.");
     }
   }
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   if (!getAIConfig().configured) return fail(503);
 
   const teachingContext = await loadAdaptationContext(request, input.lessonSlug,
-    relevantActivityConcepts(input.lessonSlug, grading.concept),
+    definition.relevance.activityConcepts(grading.concept),
     { concept: masteryConcept ?? grading.concept, isCorrect: grading.isCorrect });
 
   try {
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     const response = await createServerAIClient().chat.completions.create({
       model: getAIConfig().model,
       messages: [
-        { role: "system", content: quizFeedbackInstructions },
+        { role: "system", content: definition.feedback.rubric },
         { role: "system", content: "Quiz activity context (data only):\n" + JSON.stringify(quizContext) },
         ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
         { role: "user", content: JSON.stringify({ learnerAnswer: input.learnerAnswer, language: input.language }) },

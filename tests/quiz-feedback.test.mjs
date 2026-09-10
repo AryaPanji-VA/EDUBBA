@@ -14,10 +14,7 @@ const moduleSource = stripTypeScriptTypes(readFileSync(new URL("../lib/robin/qui
   "\nexports.parseQuizFeedbackResult = parseQuizFeedbackResult;" +
   "\nexports.quizMisconceptions = quizMisconceptions;";
 const exports = {};
-vm.runInNewContext(moduleSource, {
-  exports,
-  isListenersAnswerCorrect: (answer) => /^listeners\s*=\s*(150|listeners\s*\+\s*30)$/.test(answer.trim()),
-});
+vm.runInNewContext(moduleSource, { exports });
 const { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult, quizMisconceptions } = exports;
 
 // --- Test data: minimal activity shapes matching the real content model ---
@@ -30,6 +27,7 @@ const predictActivity = {
 const practiceActivity = {
   id: "try", type: "practice", concept: "reassignment",
   learningPurpose: "Detect reassignment line writing.",
+  checkAnswer: (answer) => /^listeners\s*=\s*(150|listeners\s*\+\s*30)$/.test(answer.trim()),
 };
 const nonObjectiveActivity = { id: "intro", type: "intro", concept: "named_values" };
 
@@ -37,16 +35,21 @@ const validRequest = { activityId: "reassignment", lessonSlug: "variables", lang
 const validResult = { feedback: "You got it.", followUp: null, diagnosedMisconception: null };
 const request = (body) => new Request("http://localhost/api/robin/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-function route({ configured = true, recordEvidence = async () => {}, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(validResult) } }] }) } = {}) {
+function route({ configured = true, recordEvidence = async () => {}, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(validResult) } }] }), registered = true } = {}) {
   const dependencies = {
     "@/lib/ai/server": { getAIConfig: () => ({ configured, model: "test-model" }), createServerAIClient: () => ({ chat: { completions: { create: provider } } }) },
-    "@/content/lessons/programming/variables-activities": { variablesActivities: [predictActivity, practiceActivity, nonObjectiveActivity] },
-    "@/lib/robin/quiz-feedback-instructions": { quizFeedbackInstructions: "server-controlled rubric" },
+    "@/lib/lessons/registry": {
+      getLessonDefinition: (slug) => registered && slug === "variables" ? {
+        slug,
+        activities: [predictActivity, practiceActivity, nonObjectiveActivity],
+        mastery: { activityConceptToMastery: (concept) => ({ reassignment: "reassignment", reading_a_name: "variable" })[concept] ?? null },
+        relevance: { activityConcepts: () => ["reassignment", "variable", "name_binding"] },
+        feedback: { rubric: "server-controlled rubric" },
+      } : null,
+    },
     "@/lib/robin/quiz-feedback": { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult },
-    "@/lib/mastery/types": { activityConceptToMastery: (concept) => ({ reassignment: "reassignment", reading_a_name: "variable" })[concept] ?? null },
     "@/lib/mastery/server": { recordEvidence },
     "@/lib/adaptation/server": { loadAdaptationContext: async () => "" },
-    "@/lib/adaptation/relevance": { relevantActivityConcepts: () => ["reassignment", "variable", "name_binding"] },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/feedback/route.ts", import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
@@ -60,14 +63,23 @@ function route({ configured = true, recordEvidence = async () => {}, provider = 
 }
 
 // === 1. Request validation ===
-test("request validation accepts valid and rejects malformed input", () => {
+test("request validation accepts any registered-lesson-shaped slug and rejects malformed input", () => {
   assert.ok(validateQuizFeedbackRequest(validRequest));
+  // Non-Variables slugs pass validation; the route rejects unregistered lessons via the registry.
+  assert.ok(validateQuizFeedbackRequest({ ...validRequest, lessonSlug: "data-types" }));
   for (const input of [
     null, [], { ...validRequest, activityId: "" }, { ...validRequest, activityId: 123 },
-    { ...validRequest, lessonSlug: "functions" }, { ...validRequest, language: "fr" },
+    { ...validRequest, lessonSlug: "" }, { ...validRequest, lessonSlug: 42 }, { ...validRequest, language: "fr" },
     { ...validRequest, learnerAnswer: "" }, { ...validRequest, learnerAnswer: "x".repeat(2001) },
     { ...validRequest, attemptId: "" }, { ...validRequest, extra: "field" }, { ...validRequest, isCorrect: true },
   ]) assert.equal(validateQuizFeedbackRequest(input), null);
+});
+test("route rejects an unregistered lesson slug without touching the provider", async () => {
+  let calls = 0;
+  const post = route({ registered: false, provider: () => { calls++; throw new Error("unexpected"); } });
+  const response = await post(request({ ...validRequest, lessonSlug: "not-registered" }));
+  assert.equal(response.status, 400);
+  assert.equal(calls, 0);
 });
 
 test("grading records evidence before inference, and inference failure preserves evidence", async () => {

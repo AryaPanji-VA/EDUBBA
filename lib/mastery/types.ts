@@ -1,8 +1,6 @@
-// Phase 8E concept mastery: what the learner appears to understand.
-// Lesson completion (page progress) is never mastery evidence.
-
-export const masteryConcepts = ["variable", "assignment", "reassignment", "expression", "name_binding", "identifier_naming"] as const;
-export type MasteryConcept = (typeof masteryConcepts)[number];
+// Generic mastery types shared across all lessons.
+// Lesson-specific concept lists and activity→concept mappings live in
+// the lesson's own config module (e.g. content/lessons/programming/variables-mastery.ts).
 
 export const masteryStates = ["unseen", "shaky", "developing", "strong"] as const;
 export type MasteryState = (typeof masteryStates)[number];
@@ -13,9 +11,13 @@ export const evidenceTypes = [
 ] as const;
 export type EvidenceType = (typeof evidenceTypes)[number];
 
+// Lesson-owned: the set of concept keys tracked for a lesson.
+// The engine accepts any string; the lesson validates its own concepts.
+export type MasteryConcept = string;
+
 export type ConceptMastery = {
   lesson_slug: string;
-  concept_key: MasteryConcept;
+  concept_key: string;
   state: MasteryState;
   evidence_count: number;
   success_count: number;
@@ -27,29 +29,12 @@ export type ConceptMastery = {
 
 export type MasterySummary = {
   lesson: string;
-  concepts: { concept: MasteryConcept; state: MasteryState; evidenceCount: number }[];
+  concepts: { concept: string; state: MasteryState; evidenceCount: number }[];
 };
 
-// Activity concept strings (variables-activities.ts) → mastery concept keys.
-// Only objective activities (predict/practice) generate evidence today.
-const activityConceptMap: Record<string, MasteryConcept> = {
-  named_values: "variable",
-  reading_a_name: "variable",
-  assignment: "assignment",
-  reassignment: "reassignment",
-  name_binding: "name_binding",
+// Lesson-owned contract: each lesson provides these mappings.
+export type LessonMasteryConfig = {
+  concepts: readonly string[];
+  activityConceptToMastery: (activityConcept: string) => string | null;
+  robinCheckSignalToEvidence: (signal: "strong" | "developing" | "shaky") => { evidenceType: EvidenceType; concepts: string[] };
 };
-
-export function activityConceptToMastery(activityConcept: string): MasteryConcept | null {
-  return activityConceptMap[activityConcept] ?? null;
-}
-
-// Robin Check tests the x = 5 mental model as a whole: the name, the value/object,
-// and the assignment binding. A signal therefore maps to all three concepts,
-// not to individual recognizedConcepts (the AI cannot invent concept keys).
-const robinCheckConcepts: MasteryConcept[] = ["assignment", "name_binding", "variable"];
-
-export function robinCheckSignalToEvidence(signal: "strong" | "developing" | "shaky"): { evidenceType: EvidenceType; concepts: MasteryConcept[] } {
-  const evidenceType: EvidenceType = signal === "strong" ? "robin_check_strong" : signal === "developing" ? "robin_check_developing" : "robin_check_shaky";
-  return { evidenceType, concepts: robinCheckConcepts };
-}

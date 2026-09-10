@@ -1,7 +1,8 @@
 import "server-only";
 import { createMemorySupabaseClient } from "@/lib/supabase/memory-server";
 import { applyEvidence } from "./engine";
-import { masteryConcepts, type ConceptMastery, type MasterySummary } from "./types";
+import { type ConceptMastery, type MasterySummary } from "./types";
+import { getLessonDefinition } from "@/lib/lessons/registry";
 
 const columns = "lesson_slug,concept_key,state,evidence_count,success_count,struggle_count,last_evidence_type,last_evidence_at,last_attempt_id";
 
@@ -19,14 +20,13 @@ export function requireLocalMastery(request: Request) {
 
 // Best-effort evidence recording: mastery never blocks learning.
 export async function recordEvidence(lessonSlug: string, concept: string, evidenceType: string, attemptId: string): Promise<void> {
-  if (lessonSlug !== "variables") return;
   try {
     const client = createMemorySupabaseClient();
     const { data, error: readError } = await client.from("concept_mastery")
       .select(columns).eq("lesson_slug", lessonSlug).eq("concept_key", concept).maybeSingle();
     if (readError) throw new Error("Mastery read unavailable");
     const current = (data ?? null) as ConceptMastery | null;
-    const updated = applyEvidence(current, concept, evidenceType, attemptId);
+    const updated = applyEvidence(current, lessonSlug, concept, evidenceType, attemptId);
     const { error: writeError } = await client.from("concept_mastery").upsert({
       lesson_slug: updated.lesson_slug, concept_key: updated.concept_key, state: updated.state,
       evidence_count: updated.evidence_count, success_count: updated.success_count, struggle_count: updated.struggle_count,
@@ -40,6 +40,8 @@ export async function recordEvidence(lessonSlug: string, concept: string, eviden
 }
 
 export async function loadMasterySummary(lessonSlug: string): Promise<MasterySummary> {
+  const definition = getLessonDefinition(lessonSlug);
+  const concepts = definition?.mastery.concepts ?? [];
   try {
     const client = createMemorySupabaseClient();
     const { data } = await client.from("concept_mastery")
@@ -48,7 +50,7 @@ export async function loadMasterySummary(lessonSlug: string): Promise<MasterySum
     const byConcept = new Map(rows.map((row) => [row.concept_key, row]));
     return {
       lesson: lessonSlug,
-      concepts: masteryConcepts.map((concept) => {
+      concepts: concepts.map((concept) => {
         const row = byConcept.get(concept);
         return { concept, state: row?.state ?? "unseen", evidenceCount: row?.evidence_count ?? 0 };
       }),
@@ -56,22 +58,7 @@ export async function loadMasterySummary(lessonSlug: string): Promise<MasterySum
   } catch {
     return {
       lesson: lessonSlug,
-      concepts: masteryConcepts.map((concept) => ({ concept, state: "unseen" as const, evidenceCount: 0 })),
+      concepts: concepts.map((concept) => ({ concept, state: "unseen" as const, evidenceCount: 0 })),
     };
-  }
-}
-
-// Compact context for Robin chat: current concept states only.
-// Fails gracefully to empty string — chat never depends on mastery.
-export async function loadMasteryContext(request: Request): Promise<string> {
-  try {
-    requireLocalMastery(request);
-    const summary = await loadMasterySummary("variables");
-    if (summary.concepts.every((entry) => entry.state === "unseen")) return "";
-    return "CONCEPT MASTERY (evidence-based, not absolute truth):\n" +
-      summary.concepts.filter((entry) => entry.state !== "unseen")
-        .map((entry) => `${entry.concept}: ${entry.state}`).join("\n");
-  } catch {
-    return "";
   }
 }

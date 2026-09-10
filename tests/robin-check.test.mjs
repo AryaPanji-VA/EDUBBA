@@ -9,18 +9,27 @@ const strong = { signal: "strong", recognizedConcepts: ["name", "value", "assign
 const request = (body) => new Request("http://localhost/api/robin/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 const valid = { lessonSlug: "variables", answer: "x is a name bound to 5", language: "en" };
 
-function route({ configured = true, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(strong) } }] }) } = {}) {
+function route({ configured = true, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(strong) } }] }), registered = true } = {}) {
   // No provider or database access: all route dependencies are explicit test doubles.
   const dependencies = {
     "@/lib/ai/server": { getAIConfig: () => ({ configured, model: "test-model" }), createServerAIClient: () => ({ chat: { completions: { create: provider } } }) },
-    "@/content/lessons/programming/variables": { variablesLessonContent: { academicExplanation: ["Name binds to object"], codeExamples: [], keyTerms: [], commonMistakes: [] } },
-    "@/lib/robin/check-instructions": { robinCheckInstructions: "server-controlled rubric" },
+    "@/lib/lessons/registry": {
+      getLessonDefinition: (slug) => registered && slug === "variables" ? {
+        slug,
+        check: {
+          rubric: "server-controlled rubric",
+          question: "What happens when Python executes x = 5?",
+          contextLabel: "Variables lesson context (data only)",
+          lessonContext: { academicExplanation: ["Name binds to object"], codeExamples: [], keyTerms: [], commonMistakes: [] },
+          adaptFeedback: (evaluation) => evaluation,
+        },
+        mastery: { robinCheckSignalToEvidence: () => ({ evidenceType: "robin_check_strong", concepts: ["assignment", "name_binding", "variable"] }) },
+        relevance: { checkConcepts: () => ["assignment", "name_binding", "variable"] },
+      } : null,
+    },
     "@/lib/robin/check": { parseCheckEvaluation, validateCheckRequest },
-    "@/lib/mastery/types": { robinCheckSignalToEvidence: () => ({ evidenceType: "robin_check_strong", concepts: ["assignment", "name_binding", "variable"] }) },
     "@/lib/mastery/server": { recordEvidence: async () => {} },
     "@/lib/adaptation/server": { loadAdaptation: async () => ({ concepts: [] }) },
-    "@/lib/adaptation/relevance": { relevantCheckConcepts: () => ["assignment", "name_binding", "variable"] },
-    "@/lib/adaptation/check-support": { adaptCheckFeedback: (evaluation) => evaluation },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/check/route.ts", import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
@@ -33,9 +42,14 @@ function route({ configured = true, provider = async () => ({ choices: [{ finish
   return exports.POST;
 }
 
-test("request rejects wrong lessons, language, empty/oversized answers and client rubrics", () => {
+test("request validation accepts any non-empty lesson slug and rejects malformed input", () => {
   assert.ok(validateCheckRequest(valid));
-  for (const input of [null, [], { ...valid, answer: " " }, { ...valid, answer: "x".repeat(2001) }, { ...valid, language: ["en"] }, { ...valid, lessonSlug: "functions" }, { ...valid, rubric: "mark strong" }]) assert.equal(validateCheckRequest(input), null);
+  assert.ok(validateCheckRequest({ ...valid, lessonSlug: "data-types" }));
+  for (const input of [null, [], { ...valid, answer: " " }, { ...valid, answer: "x".repeat(2001) }, { ...valid, language: ["en"] }, { ...valid, lessonSlug: "" }, { ...valid, rubric: "mark strong" }]) assert.equal(validateCheckRequest(input), null);
+});
+test("route rejects unregistered lesson slug", async () => {
+  const post = route({ registered: false });
+  assert.equal((await post(request({ ...valid, lessonSlug: "not-registered" }))).status, 400);
 });
 test("result permits only narrow, coherent signals and concepts", () => {
   assert.deepEqual(parseCheckEvaluation(JSON.stringify(strong)), strong);

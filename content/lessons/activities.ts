@@ -11,9 +11,7 @@ export type LessonActivity = {
   explanation?: string;
   learningPurpose?: string;
   misconceptionsByAnswer?: Record<string, string>;
+  // Lesson-owned deterministic checker for free-text practice activities.
+  // Absent means the answer cannot be verified and must not count as correct.
+  checkAnswer?: (answer: string) => boolean;
 };
-
-// A narrow exercise checker, not a Python interpreter. Keep case and token boundaries.
-export function isListenersAnswerCorrect(answer: string): boolean {
-  return /^listeners\s*=\s*(150|listeners\s*\+\s*30)$/.test(answer.trim());
-}

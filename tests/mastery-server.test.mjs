@@ -7,6 +7,7 @@ import vm from "node:vm";
 function source(path, exports) {
   return stripTypeScriptTypes(readFileSync(new URL(path, import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import "server-only";/g, "")
+    .replace(/import "\.\/[^"]+";/g, "")
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
     .replace(/export /g, "") + exports.map((name) => `\nexports.${name} = ${name};`).join("");
 }
@@ -20,26 +21,35 @@ test("mastery read and write errors are safely logged; a failed read never overw
       async upsert(row) { writes.push(row); return { error: { message: "private error" } }; },
     };
     const exports = {};
-    vm.runInNewContext(source("../lib/mastery/server.ts", ["recordEvidence", "loadMasteryContext"]), {
+    vm.runInNewContext(source("../lib/mastery/server.ts", ["recordEvidence", "loadMasterySummary"]), {
       exports, URL, process: { env: { NODE_ENV: "development" } }, console: { warn: (message) => warnings.push(message) },
       require(name) {
         if (name.includes("memory-server")) return { createMemorySupabaseClient: () => ({ from: () => query }) };
-        if (name === "./engine") return { applyEvidence: () => ({ lesson_slug: "variables" }) };
-        if (name === "./types") return { masteryConcepts: ["variable"] };
+        if (name === "./engine") return { applyEvidence: (current, lessonSlug, concept) => ({ lesson_slug: lessonSlug, concept_key: concept, state: "developing", evidence_count: 1, success_count: 1, struggle_count: 0, last_evidence_type: "correct_prediction", last_evidence_at: "now", last_attempt_id: "attempt" }) };
+        if (name === "./types") return {};
+        if (name.includes("lessons/registry")) return { getLessonDefinition: () => ({ mastery: { concepts: ["variable"] } }) };
         throw new Error(name);
       },
     });
     await exports.recordEvidence("variables", "variable", "correct_prediction", "attempt");
     assert.equal(writes.length, failAt === "read" ? 0 : 1);
     assert.deepEqual(warnings, ["[ROBIN MASTERY] Evidence recording unavailable; learning continues."]);
-    assert.equal(await exports.loadMasteryContext(new Request("https://public.example/api/robin/chat")), "");
+    // loadMasterySummary returns concepts from the registry; with no DB rows it returns all unseen.
+    const summary = await exports.loadMasterySummary("variables");
+    assert.equal(summary.lesson, "variables");
+    assert.ok(summary.concepts.length > 0);
   }
 });
 
 test("mastery GET returns the summary without caching and safely rejects unsupported lessons", async () => {
   const exports = {};
   vm.runInNewContext(source("../app/api/learning/mastery/route.ts", ["GET"]), {
-    exports, URL, Response, require: () => ({ requireLocalMastery() {}, loadMasterySummary: async (lesson) => ({ lesson, concepts: [] }) }),
+    exports, URL, Response,
+    require(name) {
+      if (name.includes("mastery/server")) return { requireLocalMastery() {}, loadMasterySummary: async (lesson) => ({ lesson, concepts: [] }) };
+      if (name.includes("lessons/registry")) return { getLessonDefinition: (slug) => slug === "variables" ? {} : null };
+      throw new Error(name);
+    },
   });
   const response = await exports.GET(new Request("http://localhost/api/learning/mastery?lesson=variables"));
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store");

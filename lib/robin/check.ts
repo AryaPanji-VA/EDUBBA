@@ -7,15 +7,16 @@ export type CheckEvaluation = {
   feedback: string;
   recommendedAction: "continue" | "reinforce" | "reteach";
 };
-export type CheckRequest = { lessonSlug: "variables"; answer: string; language: "id" | "en" };
+export type CheckRequest = { lessonSlug: string; answer: string; language: "id" | "en" };
 
 export function validateCheckRequest(value: unknown): CheckRequest | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const row = value as Record<string, unknown>;
   if (Object.keys(row).some((key) => !["lessonSlug", "answer", "language"].includes(key)) ||
-      row.lessonSlug !== "variables" || (row.language !== "id" && row.language !== "en") ||
+      typeof row.lessonSlug !== "string" || !row.lessonSlug.trim() ||
+      (row.language !== "id" && row.language !== "en") ||
       typeof row.answer !== "string" || !row.answer.trim() || row.answer.length > 2_000) return null;
-  return { lessonSlug: "variables", answer: row.answer.trim(), language: row.language as "id" | "en" };
+  return { lessonSlug: row.lessonSlug.trim(), answer: row.answer.trim(), language: row.language as "id" | "en" };
 }
 
 export function parseCheckEvaluation(text: string): CheckEvaluation {

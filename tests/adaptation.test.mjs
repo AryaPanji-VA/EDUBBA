@@ -22,7 +22,7 @@ function loader(overrides = {}) {
       crypto: { randomUUID: () => "check-attempt" }, console: { warn() {} },
       require(name) {
         const key = name.startsWith("@/") ? name.slice(2) : name.startsWith(".") ? path.posix.normalize(`${path.posix.dirname(file)}/${name}`) : name;
-        if (!key.startsWith("lib/adaptation/") && !key.startsWith("lib/robin/") && !key.startsWith("content/") && !Object.hasOwn(overrides, key)) throw new Error(`Unexpected dependency: ${key}`);
+        if (!key.startsWith("lib/adaptation/") && !key.startsWith("lib/robin/") && !key.startsWith("content/") && !key.startsWith("lib/lessons/") && !Object.hasOwn(overrides, key)) throw new Error(`Unexpected dependency: ${key}`);
         return load(key);
       },
     });
@@ -32,8 +32,11 @@ function loader(overrides = {}) {
 }
 const load = loader();
 const { buildAdaptation, adaptationContext } = load("lib/adaptation/policy");
-const { relevantActivityConcepts, relevantChatConcepts, relevantCheckConcepts } = load("lib/adaptation/relevance");
 const { adaptCheckFeedback } = load("lib/adaptation/check-support");
+
+// Load the Variables lesson-owned relevance and mastery mappings from the real source.
+const { variablesRelevance } = load("content/lessons/programming/variables-relevance");
+const { variablesMasteryConfig } = load("content/lessons/programming/variables-mastery");
 const states = (state) => ["assignment", "name_binding", "variable", "reassignment"].map((concept) => ({ concept, state, evidenceCount: 3 }));
 
 test("UNSEEN uses neutral teaching without a profile prompt", () => {
@@ -62,13 +65,12 @@ test("current success overrides historical SHAKY without remedial follow-ups", (
   assert.match(policy.concepts[0].guidance, /successful reasoning/);
 });
 test("relevance is explicit, lesson-scoped and neutral for unrelated or ambiguous chat", () => {
-  assert.equal(relevantActivityConcepts("variables", "reassignment").join(","), "reassignment,variable,name_binding");
-  assert.equal(relevantCheckConcepts("variables").join(","), "assignment,name_binding,variable");
-  assert.equal(relevantChatConcepts("variables", "bin assignment apaan?")[0], "assignment");
-  assert.equal(relevantChatConcepts("variables", "Explain name binding")[0], "name_binding");
-  for (const message of ["hello", "still confused", "what is TCP?"]) assert.equal(relevantChatConcepts("variables", message).length, 0);
-  assert.equal(relevantChatConcepts("future-lesson", "assignment").length, 0);
-  assert.equal(relevantActivityConcepts("variables", "__proto__").length, 0);
+  assert.equal(variablesRelevance.activityConcepts("reassignment").join(","), "reassignment,variable,name_binding");
+  assert.equal(variablesRelevance.checkConcepts().join(","), "assignment,name_binding,variable");
+  assert.equal(variablesRelevance.chatConcepts("bin assignment apaan?")[0], "assignment");
+  assert.equal(variablesRelevance.chatConcepts("Explain name binding")[0], "name_binding");
+  for (const message of ["hello", "still confused", "what is TCP?"]) assert.equal(variablesRelevance.chatConcepts(message).length, 0);
+  assert.equal(variablesRelevance.activityConcepts("__proto__").length, 0);
 });
 
 test("storage, access and malformed-state failures are neutral; irrelevant requests do not read storage", async () => {
@@ -87,7 +89,7 @@ test("storage, access and malformed-state failures are neutral; irrelevant reque
 const evaluation = { signal: "developing", recognizedConcepts: ["name"], misconceptions: [], feedback: "You identified the name.", recommendedAction: "reinforce" };
 test("Check adaptation changes only feedback, in ID/EN; strong current evidence gets no reteaching", () => {
   for (const state of ["unseen", "shaky", "developing", "strong"]) {
-    const policy = buildAdaptation(states(state), relevantCheckConcepts("variables"));
+    const policy = buildAdaptation(states(state), variablesRelevance.checkConcepts());
     for (const language of ["id", "en"]) {
       const result = adaptCheckFeedback(evaluation, policy, language);
       const { feedback, ...unchanged } = result;
@@ -100,6 +102,35 @@ test("Check adaptation changes only feedback, in ID/EN; strong current evidence 
   }
 });
 
+// Registry stub: provides a minimal lesson definition for the variables lesson.
+function registryStub(state) {
+  return {
+    getLessonDefinition(slug) {
+      if (slug !== "variables") return null;
+      return {
+        slug,
+        activities: [
+          { id: "reassignment", type: "predict", concept: "reassignment", options: ["92", "110", "92 and 110", "Error"], correctAnswer: "110", learningPurpose: "Detect reassignment.", misconceptionsByAnswer: { "92": "first_assignment_persists", "92 and 110": "assignment_history", "Error": "reassignment_invalid" } },
+          { id: "try", type: "practice", concept: "reassignment", learningPurpose: "Detect practice.", checkAnswer: (a) => /^listeners\s*=\s*(150|listeners\s*\+\s*30)$/.test(a.trim()) },
+        ],
+        mastery: {
+          activityConceptToMastery: variablesMasteryConfig.activityConceptToMastery || ((c) => ({ reassignment: "reassignment", reading_a_name: "variable" })[c] ?? null),
+          robinCheckSignalToEvidence: variablesMasteryConfig.robinCheckSignalToEvidence || (() => ({ evidenceType: "robin_check_developing", concepts: ["assignment", "name_binding", "variable"] })),
+        },
+        relevance: variablesRelevance,
+        check: {
+          rubric: "server-controlled rubric",
+          question: "What happens when Python executes x = 5?",
+          contextLabel: "Variables lesson context (data only)",
+          lessonContext: { academicExplanation: ["Name binds to object"], codeExamples: [], keyTerms: [], commonMistakes: [] },
+          adaptFeedback: adaptCheckFeedback,
+        },
+        feedback: { rubric: "server-controlled feedback rubric" },
+      };
+    },
+  };
+}
+
 function routeEnvironment(state, { aiFails = false, storageFails = false } = {}) {
   const calls = [], evidence = [];
   const read = loader({
@@ -108,15 +139,12 @@ function routeEnvironment(state, { aiFails = false, storageFails = false } = {})
       async loadMasterySummary(lesson) { if (storageFails) throw new Error("private storage"); return { lesson, concepts: states(state) }; },
       async recordEvidence(...args) { evidence.push(args); },
     },
-    "lib/mastery/types": {
-      activityConceptToMastery: (concept) => concept === "reading_a_name" ? "variable" : concept,
-      robinCheckSignalToEvidence: () => ({ evidenceType: "robin_check_developing", concepts: ["assignment", "name_binding", "variable"] }),
-    },
+    "lib/lessons/registry": registryStub(state),
     "lib/ai/server": {
       getAIConfig: () => ({ configured: true, model: "test" }),
       createServerAIClient: () => ({ chat: { completions: { create: async (payload) => {
         calls.push(payload); if (aiFails) throw new Error("private provider");
-        const isCheck = payload.messages[0].content.includes("This is Robin Check");
+        const isCheck = payload.messages[0].content.includes("server-controlled rubric") && payload.messages[1].content.includes("Variables lesson context");
         return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify(isCheck ? evaluation : { feedback: "Follow the binding.", followUp: null, diagnosedMisconception: null }) } }] };
       } } } }),
     },
@@ -159,7 +187,12 @@ test("chat replaces raw mastery with relevant guidance and keeps memory separate
   const read = loader({
     openai: { APIError: class extends Error {}, APIConnectionTimeoutError: class extends Error {} },
     "lib/mastery/server": { requireLocalMastery() {}, async loadMasterySummary(lesson) { reads++; return { lesson, concepts: states("shaky") }; } },
-    "lib/lessons/variables": { loadVariablesLesson: async () => ({ title: "Variables", summary: "Names", content: {}, sources: [] }) },
+    "lib/lessons/registry": {
+      getLessonDefinition(slug) {
+        if (slug !== "variables") return null;
+        return { slug, loadLesson: async () => ({ title: "Variables", summary: "Names", content: {}, sources: [] }), relevance: variablesRelevance };
+      },
+    },
     "lib/memory/commands": { parseMemoryCommand: () => ({ type: "normal" }) },
     "lib/memory/server": { loadMemoryContext: async () => "LEARNER MEMORY: language preference only" },
     "lib/ai/server": { getAIConfig: () => ({ configured: true, model: "test" }), createServerAIClient: () => ({ chat: { completions: { create: async (body) => {

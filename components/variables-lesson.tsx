@@ -122,7 +122,7 @@ export function VariablesLesson() {
             <div className="lesson-meta"><span>◷ {lesson.estimatedMinutes} min</span><span>{copy.beginner}</span><span>{copy.structured}</span><span>{lesson.sources.length} {copy.sources}</span></div>
           </header>
 
-          <LessonActivityRenderer activities={activities} language={language} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck language={language} sourceMode={sourceMode} onCompleteChange={setCheckComplete} />}>
+          <LessonActivityRenderer activities={activities} lessonSlug="variables" language={language} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="variables" language={language} sourceMode={sourceMode} onCompleteChange={setCheckComplete} />}>
             <details className="activity-supplement"><summary>{copy.notes}</summary>
           <section className="lesson-section academic"><span className="section-number">02</span><div><span className="academic-label">{copy.academic}</span><h2>{copy.definition}</h2>{content.academicExplanation.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
 
@@ -155,7 +155,7 @@ export function VariablesLesson() {
 
         </article>
 
-        <RobinCompanion sourceMode={sourceMode} onStateChange={updateRobinState} />
+        <RobinCompanion lessonSlug="variables" sourceMode={sourceMode} onStateChange={updateRobinState} />
       </div>}
     </AppShell>
   );

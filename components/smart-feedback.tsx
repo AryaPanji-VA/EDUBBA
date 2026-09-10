@@ -7,6 +7,7 @@ import { startFeedbackRequest } from "@/lib/robin/feedback-request";
 
 type Props = {
   activityId: string;
+  lessonSlug: string;
   language: LessonLanguage;
   sourceMode: boolean;
   submitted: boolean;
@@ -14,14 +15,14 @@ type Props = {
   attemptId: string;
 };
 
-export function SmartFeedback({ activityId, language, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
+export function SmartFeedback({ activityId, lessonSlug, language, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
   const copy = lessonCopy[language];
   const [result, setResult] = useState<QuizFeedbackResult | null>(null);
   const [loading, setLoading] = useState(false);
   const lastFetch = useRef<string>("");
   // Read submission content without treating a language change as a new attempt.
   const startRequest = useEffectEvent(() => startFeedbackRequest(
-    { activityId, lessonSlug: "variables", language, learnerAnswer, attemptId },
+    { activityId, lessonSlug, language, learnerAnswer, attemptId },
     lastFetch, setResult, setLoading,
   ));
 

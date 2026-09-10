@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
 import { parseCheckEvaluation, type CheckEvaluation } from "@/lib/robin/check";
 
-type Props = { language: LessonLanguage; sourceMode: boolean; onCompleteChange: (complete: boolean) => void };
+type Props = { lessonSlug: string; language: LessonLanguage; sourceMode: boolean; onCompleteChange: (complete: boolean) => void };
 
 function reinforcement(result: CheckEvaluation, language: LessonLanguage) {
   const id = language === "id";
@@ -25,7 +25,7 @@ function reinforcement(result: CheckEvaluation, language: LessonLanguage) {
     : "Use the diagram x → 5. What is the label, which value does it refer to, and how does assignment connect them? Complete your explanation.";
 }
 
-export function RobinCheck({ language, sourceMode, onCompleteChange }: Props) {
+export function RobinCheck({ lessonSlug, language, sourceMode, onCompleteChange }: Props) {
   const copy = lessonCopy[language];
   const [answer, setAnswer] = useState("");
   const [retryAnswer, setRetryAnswer] = useState("");
@@ -56,7 +56,7 @@ export function RobinCheck({ language, sourceMode, onCompleteChange }: Props) {
     try {
       const response = await fetch("/api/robin/check", {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: requestController.signal,
-        body: JSON.stringify({ lessonSlug: "variables", answer: text, language }),
+        body: JSON.stringify({ lessonSlug, answer: text, language }),
       });
       if (!response.ok) throw new Error("Check unavailable.");
       const data = await response.json();
