@@ -43,6 +43,10 @@ export const lessonCopy = {
     characters: "characters · stays on this page", feedbackNote: "Feedback follows the language of your answer; switching lesson language does not re-run AI.",
     feedbackLoading: "Robin lagi ngecek bagian yang ketuker…", feedbackReady: "Robin:", feedbackUnavailable: "AI feedback unavailable. The explanation above still applies.",
     followUpLabel: "Try this:", followUpNote: "Display only — not graded. Continue when ready.",
+    masteryTitle: "Your understanding", masteryRefresh: "Refresh", masteryNote: "Evidence-based, not page completion. One mistake doesn't erase strong understanding; one correct answer doesn't create it.",
+    masteryUnseen: "Not assessed", masteryShaky: "Shaky", masteryDeveloping: "Developing", masteryStrong: "Strong",
+    masteryVariable: "Variable", masteryAssignment: "Assignment", masteryReassignment: "Reassignment",
+    masteryExpression: "Expressions", masteryNameBinding: "Name binding", masteryIdentifierNaming: "Naming",
   },
   id: {
     step: "Langkah", of: "dari", references: "Sumber / Referensi", previous: "Sebelumnya", next: "Lanjut",
@@ -72,6 +76,10 @@ export const lessonCopy = {
     characters: "karakter · hanya di halaman ini", feedbackNote: "Bahasa feedback mengikuti jawaban kamu; ganti bahasa lesson tidak menjalankan AI lagi.",
     feedbackLoading: "Robin lagi ngecek bagian yang ketuker…", feedbackReady: "Robin:", feedbackUnavailable: "Feedback AI belum tersedia. Penjelasan di atas tetap berlaku.",
     followUpLabel: "Coba ini:", followUpNote: "Hanya tampilan — nggak dinilai. Lanjut aja kalau udah siap.",
+    masteryTitle: "Pemahaman lu", masteryRefresh: "Segarkan", masteryNote: "Berdasarkan bukti, bukan kelar halaman. Satu salah nggak ngilangin pemahaman kuat; satu bener nggak langsung bikin kuat.",
+    masteryUnseen: "Belum diuji", masteryShaky: "Masih goyang", masteryDeveloping: "Mulai masuk", masteryStrong: "Kuat",
+    masteryVariable: "Variable", masteryAssignment: "Assignment", masteryReassignment: "Reassignment",
+    masteryExpression: "Expressions", masteryNameBinding: "Name binding", masteryIdentifierNaming: "Penamaan",
   },
 };
 

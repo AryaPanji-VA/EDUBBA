@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
-import { parseQuizFeedbackResult, type QuizFeedbackResult } from "@/lib/robin/quiz-feedback";
+import { type QuizFeedbackResult } from "@/lib/robin/quiz-feedback";
+import { startFeedbackRequest } from "@/lib/robin/feedback-request";
 
 type Props = {
   activityId: string;
@@ -10,49 +11,27 @@ type Props = {
   sourceMode: boolean;
   submitted: boolean;
   learnerAnswer: string;
+  attemptId: string;
 };
 
-export function SmartFeedback({ activityId, language, sourceMode, submitted, learnerAnswer }: Props) {
+export function SmartFeedback({ activityId, language, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
   const copy = lessonCopy[language];
   const [result, setResult] = useState<QuizFeedbackResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const controller = useRef<AbortController | null>(null);
+  const lastFetch = useRef<string>("");
+  // Read submission content without treating a language change as a new attempt.
+  const startRequest = useEffectEvent(() => startFeedbackRequest(
+    { activityId, lessonSlug: "variables", language, learnerAnswer, attemptId },
+    lastFetch, setResult, setLoading,
+  ));
 
+  // Fetch feedback only on a new submission attempt, not on language toggle or rerender.
   useEffect(() => {
-    if (!submitted || sourceMode) {
-      controller.current?.abort();
-      controller.current = null;
-      setLoading(false);
-      setResult(null);
-      return;
-    }
-    const requestController = new AbortController();
-    controller.current = requestController;
-    const timeout = window.setTimeout(() => requestController.abort(), 35_000);
-    setLoading(true);
-    setResult(null);
-    fetch("/api/robin/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: requestController.signal,
-      body: JSON.stringify({ activityId, lessonSlug: "variables", language, learnerAnswer }),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("unavailable");
-        return response.json();
-      })
-      .then((data) => {
-        if (controller.current !== requestController) return;
-        const parsed = parseQuizFeedbackResult(JSON.stringify(data.result), false);
-        setResult(parsed);
-      })
-      .catch(() => { if (controller.current === requestController) setResult(null); })
-      .finally(() => {
-        window.clearTimeout(timeout);
-        if (controller.current === requestController) { controller.current = null; setLoading(false); }
-      });
-    return () => { requestController.abort(); };
-  }, [activityId, language, sourceMode, submitted, learnerAnswer]);
+    if (!submitted) { setLoading(false); setResult(null); return; }
+    if (sourceMode) { setLoading(false); return; }
+    if (!attemptId) return;
+    return startRequest();
+  }, [submitted, sourceMode, attemptId]);
 
   if (sourceMode || !submitted) return null;
   if (loading) return <p className="panel-footnote" role="status"><span className="typing-dots"><i /><i /><i /></span> {copy.feedbackLoading}</p>;

@@ -126,3 +126,28 @@ where category = 'learning' and key = 'variables';
 delete from public.robin_memories
 where category = 'learning' and key = 'variables';
 rollback;
+
+-- Phase 8E: concept mastery exercises, AFTER phase8e-concept-mastery.sql.
+-- A concept row is keyed by (lesson_slug, concept_key). Aggregate counters track evidence.
+
+-- A. Read all Variables mastery rows, ordered by concept.
+select concept_key, state, evidence_count, success_count, struggle_count, last_evidence_type, last_evidence_at
+from public.concept_mastery
+where lesson_slug = 'variables'
+order by concept_key;
+
+-- B. Filter for concepts that need attention: shaky or unseen.
+select concept_key, state, struggle_count, success_count
+from public.concept_mastery
+where lesson_slug = 'variables' and state in ('shaky', 'unseen')
+order by struggle_count desc;
+
+-- C. See which concepts were recently practiced.
+select concept_key, state, last_evidence_type, last_evidence_at
+from public.concept_mastery
+where lesson_slug = 'variables' and last_evidence_at is not null
+order by last_evidence_at desc;
+
+-- D. DESTRUCTIVE: reset all Variables mastery back to unseen. This erases evidence.
+-- Only run this when you want a clean slate. There is no undo.
+-- delete from public.concept_mastery where lesson_slug = 'variables';

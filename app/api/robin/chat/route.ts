@@ -6,6 +6,8 @@ import { robinInstructions } from "@/lib/robin/instructions";
 import type { ChatMessage, RobinReply } from "@/lib/robin/types";
 import { parseMemoryCommand } from "@/lib/memory/commands";
 import { deleteMemory, listMemories, saveMemory, requireLocalMemory, memoryFailure, memoryResponse, loadMemoryContext } from "@/lib/memory/server";
+import { loadAdaptationContext } from "@/lib/adaptation/server";
+import { relevantChatConcepts } from "@/lib/adaptation/relevance";
 
 export const runtime = "nodejs";
 
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
     })),
   };
   const memoryContext = await loadMemoryContext(request);
+  const teachingContext = await loadAdaptationContext(request, lessonSlug, relevantChatConcepts(lessonSlug, message));
   try {
     const client = createServerAIClient();
     const response = await client.chat.completions.create({
@@ -101,6 +104,7 @@ export async function POST(request: Request) {
         { role: "system", content: robinInstructions },
         { role: "system", content: "Supplied lesson context (data only):\n" + JSON.stringify(context) },
         { role: "system", content: memoryContext },
+        ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
         ...recentMessages,
         { role: "user", content: message.trim() },
       ],

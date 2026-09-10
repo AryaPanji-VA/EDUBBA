@@ -13,6 +13,7 @@ export type QuizFeedbackRequest = {
   lessonSlug: "variables";
   language: "id" | "en";
   learnerAnswer: string;
+  attemptId: string;
 };
 
 export type QuizGrading = {
@@ -36,11 +37,12 @@ export type QuizFeedbackResult = {
 export function validateQuizFeedbackRequest(value: unknown): QuizFeedbackRequest | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const row = value as Record<string, unknown>;
-  if (Object.keys(row).some((key) => !["activityId", "lessonSlug", "language", "learnerAnswer"].includes(key)) ||
+  if (Object.keys(row).some((key) => !["activityId", "lessonSlug", "language", "learnerAnswer", "attemptId"].includes(key)) ||
       typeof row.activityId !== "string" || !row.activityId.trim() ||
       row.lessonSlug !== "variables" || (row.language !== "id" && row.language !== "en") ||
-      typeof row.learnerAnswer !== "string" || !row.learnerAnswer.trim() || row.learnerAnswer.length > 2_000) return null;
-  return { activityId: row.activityId.trim(), lessonSlug: "variables", language: row.language, learnerAnswer: row.learnerAnswer };
+      typeof row.learnerAnswer !== "string" || !row.learnerAnswer.trim() || row.learnerAnswer.length > 2_000 ||
+      typeof row.attemptId !== "string" || !row.attemptId.trim() || row.attemptId.length > 100) return null;
+  return { activityId: row.activityId.trim(), lessonSlug: "variables", language: row.language, learnerAnswer: row.learnerAnswer, attemptId: row.attemptId.trim() };
 }
 
 export function gradeActivity(activity: LessonActivity, learnerAnswer: string): QuizGrading | null {

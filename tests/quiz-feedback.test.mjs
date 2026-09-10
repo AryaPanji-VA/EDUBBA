@@ -33,22 +33,26 @@ const practiceActivity = {
 };
 const nonObjectiveActivity = { id: "intro", type: "intro", concept: "named_values" };
 
-const validRequest = { activityId: "reassignment", lessonSlug: "variables", language: "en", learnerAnswer: "92" };
+const validRequest = { activityId: "reassignment", lessonSlug: "variables", language: "en", learnerAnswer: "92", attemptId: "test-attempt-1" };
 const validResult = { feedback: "You got it.", followUp: null, diagnosedMisconception: null };
 const request = (body) => new Request("http://localhost/api/robin/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-function route({ configured = true, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(validResult) } }] }) } = {}) {
+function route({ configured = true, recordEvidence = async () => {}, provider = async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(validResult) } }] }) } = {}) {
   const dependencies = {
     "@/lib/ai/server": { getAIConfig: () => ({ configured, model: "test-model" }), createServerAIClient: () => ({ chat: { completions: { create: provider } } }) },
     "@/content/lessons/programming/variables-activities": { variablesActivities: [predictActivity, practiceActivity, nonObjectiveActivity] },
     "@/lib/robin/quiz-feedback-instructions": { quizFeedbackInstructions: "server-controlled rubric" },
     "@/lib/robin/quiz-feedback": { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult },
+    "@/lib/mastery/types": { activityConceptToMastery: (concept) => ({ reassignment: "reassignment", reading_a_name: "variable" })[concept] ?? null },
+    "@/lib/mastery/server": { recordEvidence },
+    "@/lib/adaptation/server": { loadAdaptationContext: async () => "" },
+    "@/lib/adaptation/relevance": { relevantActivityConcepts: () => ["reassignment", "variable", "name_binding"] },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/feedback/route.ts", import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
     .replace(/export /g, "") + "\nexports.POST = POST;";
   const routeExports = {};
-  vm.runInNewContext(code, { exports: routeExports, Response, TextDecoder, require: (name) => {
+  vm.runInNewContext(code, { exports: routeExports, Response, TextDecoder, console: { warn: (message) => assert.equal(message, "[ROBIN MASTERY] Evidence recording unavailable; continuing feedback.") }, require: (name) => {
     assert.ok(name in dependencies, `Unexpected dependency (including memory): ${name}`);
     return dependencies[name];
   } });
@@ -62,8 +66,32 @@ test("request validation accepts valid and rejects malformed input", () => {
     null, [], { ...validRequest, activityId: "" }, { ...validRequest, activityId: 123 },
     { ...validRequest, lessonSlug: "functions" }, { ...validRequest, language: "fr" },
     { ...validRequest, learnerAnswer: "" }, { ...validRequest, learnerAnswer: "x".repeat(2001) },
-    { ...validRequest, extra: "field" }, { ...validRequest, isCorrect: true },
+    { ...validRequest, attemptId: "" }, { ...validRequest, extra: "field" }, { ...validRequest, isCorrect: true },
   ]) assert.equal(validateQuizFeedbackRequest(input), null);
+});
+
+test("grading records evidence before inference, and inference failure preserves evidence", async () => {
+  const events = [];
+  const post = route({
+    recordEvidence: async (...args) => { events.push("mastery"); assert.deepEqual(args, ["variables", "reassignment", "incorrect_prediction", validRequest.attemptId]); },
+    provider: async () => { events.push("ai"); throw new Error("private error"); },
+  });
+  assert.equal((await post(request(validRequest))).status, 502);
+  assert.deepEqual(events, ["mastery", "ai"]);
+});
+
+test("mastery failure logs safely and still returns parsed AI feedback", async () => {
+  const response = await route({ recordEvidence: async () => { throw new Error("private database credential"); } })(request(validRequest));
+  assert.equal(response.status, 200);
+  checkResult((await response.json()).result, validResult);
+});
+
+test("missing or malformed attempt IDs stop before evidence and inference", async () => {
+  const unexpected = () => assert.fail("must not execute");
+  const post = route({ recordEvidence: unexpected, provider: unexpected });
+  for (const attemptId of [undefined, null, 123, {}, "", " ", "x".repeat(101)]) {
+    assert.equal((await post(request({ ...validRequest, attemptId }))).status, 400);
+  }
 });
 
 // === 2. Deterministic grading stays deterministic ===

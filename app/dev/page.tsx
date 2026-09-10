@@ -13,6 +13,7 @@ const endpoints = [
   { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via 9Inference Chat Completions" },
   { route: "POST /api/robin/check", purpose: "Robin Check explain-back AI evaluation (Phase 8C)" },
   { route: "POST /api/robin/feedback", purpose: "Smart quiz feedback: server-graded result + AI pedagogical explanation" },
+  { route: "GET /api/learning/mastery", purpose: "Concept mastery summary for Variables (all 6 concepts)" },
   { route: "GET /api/hello", purpose: "Small connection test and JSON response" },
   { route: "GET /api/courses", purpose: "Reads course metadata from Supabase" },
   { route: "GET /api/courses/programming", purpose: "Returns one course with nested modules and lessons" },
@@ -75,6 +76,21 @@ export default async function DevPage() {
           <div><dt>Memory writes</dt><dd>NONE</dd></div>
         </dl>
         <p className="lab-panel-note">Objective activities remain deterministically graded. Robin explains the result using misconception-aware feedback. Source Mode keeps this AI-light: deterministic explanations only.</p>
+      </section>
+
+      <section className="lab-panel lab-wide">
+        <div className="lab-panel-head"><span>8E</span><h2>Concept Mastery</h2></div>
+        <dl className="status-list">
+          <div><dt>System</dt><dd>PERSISTENT V1</dd></div>
+          <div><dt>Scope</dt><dd>SINGLE USER</dd></div>
+          <div><dt>Lesson</dt><dd>Variables</dd></div>
+          <div><dt>Concepts</dt><dd>6</dd></div>
+          <div><dt>Evidence</dt><dd>DETERMINISTIC + ROBIN CHECK</dd></div>
+          <div><dt>AI decides mastery</dt><dd>NO</dd></div>
+          <div><dt>Adaptive routing</dt><dd>NOT IMPLEMENTED</dd></div>
+          <div><dt>Memory writes</dt><dd>NONE (separate from robin_memories)</dd></div>
+        </dl>
+        <p className="lab-panel-note">Mastery states accumulate evidence from objective activities and Robin Check. States: unseen, shaky, developing, strong. One mistake does not destroy strong; one correct does not create strong. Run database/phase8e-concept-mastery.sql to set up.</p>
       </section>
 
       <section className="lab-panel architecture lab-wide"><div className="lab-panel-head"><span>04</span><h2>Request lifecycle</h2></div><div className="architecture-flow"><div><span>01</span><strong>Browser</strong><small>fetch() starts here</small></div><b>→</b><div><span>02</span><strong>Next.js API</strong><small>Server route handles GET</small></div><b>→</b><div><span>03</span><strong>Supabase</strong><small>Client sends the query</small></div><b>→</b><div><span>04</span><strong>PostgreSQL</strong><small>related rows are selected</small></div><b>→</b><div><span>05</span><strong>JSON</strong><small>Nested result returns</small></div></div><p>React tidak pernah menerima credential Supabase. Browser tetap bicara ke Next.js; hanya backend yang bicara ke database.</p></section>

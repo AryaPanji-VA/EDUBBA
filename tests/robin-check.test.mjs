@@ -16,12 +16,17 @@ function route({ configured = true, provider = async () => ({ choices: [{ finish
     "@/content/lessons/programming/variables": { variablesLessonContent: { academicExplanation: ["Name binds to object"], codeExamples: [], keyTerms: [], commonMistakes: [] } },
     "@/lib/robin/check-instructions": { robinCheckInstructions: "server-controlled rubric" },
     "@/lib/robin/check": { parseCheckEvaluation, validateCheckRequest },
+    "@/lib/mastery/types": { robinCheckSignalToEvidence: () => ({ evidenceType: "robin_check_strong", concepts: ["assignment", "name_binding", "variable"] }) },
+    "@/lib/mastery/server": { recordEvidence: async () => {} },
+    "@/lib/adaptation/server": { loadAdaptation: async () => ({ concepts: [] }) },
+    "@/lib/adaptation/relevance": { relevantCheckConcepts: () => ["assignment", "name_binding", "variable"] },
+    "@/lib/adaptation/check-support": { adaptCheckFeedback: (evaluation) => evaluation },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/check/route.ts", import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
     .replace(/export /g, "") + "\nexports.POST = POST;";
   const exports = {};
-  vm.runInNewContext(code, { exports, Response, TextDecoder, require: (name) => {
+  vm.runInNewContext(code, { exports, Response, TextDecoder, crypto: { randomUUID: () => "test-uuid" }, require: (name) => {
     assert.ok(name in dependencies, `Unexpected dependency (including memory): ${name}`);
     return dependencies[name];
   } });

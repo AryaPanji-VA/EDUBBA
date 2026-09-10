@@ -2,6 +2,10 @@ import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { variablesActivities } from "@/content/lessons/programming/variables-activities";
 import { quizFeedbackInstructions } from "@/lib/robin/quiz-feedback-instructions";
 import { gradeActivity, parseQuizFeedbackResult, validateQuizFeedbackRequest } from "@/lib/robin/quiz-feedback";
+import { activityConceptToMastery } from "@/lib/mastery/types";
+import { recordEvidence } from "@/lib/mastery/server";
+import { loadAdaptationContext } from "@/lib/adaptation/server";
+import { relevantActivityConcepts } from "@/lib/adaptation/relevance";
 
 export const runtime = "nodejs";
 
@@ -36,7 +40,22 @@ export async function POST(request: Request) {
   const grading = gradeActivity(activity, input.learnerAnswer);
   if (!grading) return fail(400);
 
+  // Record mastery evidence before the AI call: if AI fails, deterministic evidence is still preserved.
+  const masteryConcept = activityConceptToMastery(grading.concept);
+  if (masteryConcept) {
+    const evidenceType = grading.activityType === "predict"
+      ? grading.isCorrect ? "correct_prediction" : "incorrect_prediction"
+      : grading.isCorrect ? "correct_practice" : "incorrect_practice";
+    try { await recordEvidence("variables", masteryConcept, evidenceType, input.attemptId); } catch {
+      console.warn("[ROBIN MASTERY] Evidence recording unavailable; continuing feedback.");
+    }
+  }
+
   if (!getAIConfig().configured) return fail(503);
+
+  const teachingContext = await loadAdaptationContext(request, input.lessonSlug,
+    relevantActivityConcepts(input.lessonSlug, grading.concept),
+    { concept: masteryConcept ?? grading.concept, isCorrect: grading.isCorrect });
 
   try {
     const quizContext = {
@@ -50,6 +69,7 @@ export async function POST(request: Request) {
       messages: [
         { role: "system", content: quizFeedbackInstructions },
         { role: "system", content: "Quiz activity context (data only):\n" + JSON.stringify(quizContext) },
+        ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
         { role: "user", content: JSON.stringify({ learnerAnswer: input.learnerAnswer, language: input.language }) },
       ],
     }, { signal: request.signal });

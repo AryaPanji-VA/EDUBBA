@@ -2,6 +2,11 @@ import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { variablesLessonContent } from "@/content/lessons/programming/variables";
 import { robinCheckInstructions } from "@/lib/robin/check-instructions";
 import { parseCheckEvaluation, validateCheckRequest } from "@/lib/robin/check";
+import { robinCheckSignalToEvidence } from "@/lib/mastery/types";
+import { recordEvidence } from "@/lib/mastery/server";
+import { loadAdaptation } from "@/lib/adaptation/server";
+import { relevantCheckConcepts } from "@/lib/adaptation/relevance";
+import { adaptCheckFeedback } from "@/lib/adaptation/check-support";
 
 export const runtime = "nodejs";
 
@@ -46,6 +51,19 @@ export async function POST(request: Request) {
     const choice = response.choices?.[0];
     if (choice?.finish_reason !== "stop" || typeof choice.message?.content !== "string") return fail(502);
     const evaluation = parseCheckEvaluation(choice.message.content);
-    return Response.json({ evaluation }, { headers: { "Cache-Control": "no-store" } });
+    // Record mastery evidence for the mapped Robin Check concepts. Best-effort, never blocks.
+    const { evidenceType, concepts } = robinCheckSignalToEvidence(evaluation.signal);
+    const attemptId = crypto.randomUUID();
+    for (const concept of concepts) {
+      try { await recordEvidence("variables", concept, evidenceType, attemptId); } catch { /* best-effort */ }
+    }
+    // Historical mastery is never sent to the evaluator. Adapt only after the
+    // original signal has been validated and used for unchanged evidence weights.
+    let supportedEvaluation = evaluation;
+    try {
+      const policy = await loadAdaptation(request, input.lessonSlug, relevantCheckConcepts(input.lessonSlug));
+      supportedEvaluation = adaptCheckFeedback(evaluation, policy, input.language);
+    } catch { /* Keep the original evaluated feedback if adaptation is unavailable. */ }
+    return Response.json({ evaluation: supportedEvaluation }, { headers: { "Cache-Control": "no-store" } });
   } catch { return fail(502); }
 }
