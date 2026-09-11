@@ -21,6 +21,10 @@ const { variablesActivities } = loadModule("content/lessons/programming/variable
 const { variablesLessonContent } = loadModule("content/lessons/programming/variables");
 const { variablesMasteryConfig } = loadModule("content/lessons/programming/variables-mastery", { LessonMasteryConfig: {} });
 const { variablesRelevance } = loadModule("content/lessons/programming/variables-relevance");
+const { dataTypesActivities } = loadModule("content/lessons/programming/data-types-activities");
+const { dataTypesLessonContent } = loadModule("content/lessons/programming/data-types");
+const { dataTypesMasteryConfig } = loadModule("content/lessons/programming/data-types-mastery", { LessonMasteryConfig: {} });
+const { dataTypesRelevance } = loadModule("content/lessons/programming/data-types-relevance");
 
 // Load the registry with all its dependencies provided.
 const registryRaw = stripTypeScriptTypes(readFileSync(new URL("../lib/lessons/registry.ts", import.meta.url), "utf8"), { mode: "transform" });
@@ -42,8 +46,16 @@ vm.runInNewContext(registryCode, {
   robinCheckInstructions: "rubric",
   quizFeedbackInstructions: "feedback rubric",
   adaptCheckFeedback: (e) => e,
+  checkConcepts: ["name", "value", "assignment"],
+  checkMisconceptions: ["equality", "identity", "printing", "immutable_binding"],
+  dataTypesActivities,
+  dataTypesLessonContent,
+  dataTypesMasteryConfig,
+  dataTypesRelevance,
+  loadDataTypesLesson: async () => ({}),
+  dataTypesCheckInstructions: "dt-rubric",
+  dataTypesFeedbackInstructions: "dt-feedback-rubric",
   require(name) {
-    // All imports should have been inlined as globals above.
     throw new Error(`Unexpected require after inlining: ${name}`);
   },
 });
@@ -77,11 +89,12 @@ test("registry resolves the Variables lesson definition", () => {
 
 // === 2. Unknown lesson slug fails safely ===
 test("registry rejects unknown lesson slugs", () => {
-  assert.equal(getLessonDefinition("data-types"), null);
+  assert.equal(getLessonDefinition("not-registered"), null);
   assert.equal(getLessonDefinition(""), null);
   assert.equal(getLessonDefinition("nonexistent"), null);
   assert.equal(isRegisteredLesson("nonexistent"), false);
   assert.equal(isRegisteredLesson("variables"), true);
+  assert.equal(isRegisteredLesson("data-types"), true);
 });
 
 // === 3. Request types accept non-Variables lesson slugs ===

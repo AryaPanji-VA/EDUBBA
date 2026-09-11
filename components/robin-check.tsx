@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
-import { parseCheckEvaluation, type CheckEvaluation } from "@/lib/robin/check";
+import { type CheckEvaluation } from "@/lib/robin/check";
 
 type Props = { lessonSlug: string; language: LessonLanguage; sourceMode: boolean; onCompleteChange: (complete: boolean) => void };
 
@@ -60,8 +60,8 @@ export function RobinCheck({ lessonSlug, language, sourceMode, onCompleteChange 
       });
       if (!response.ok) throw new Error("Check unavailable.");
       const data = await response.json();
-      const evaluation = parseCheckEvaluation(JSON.stringify(data.evaluation));
       if (controller.current !== requestController) return;
+      const evaluation = data.evaluation as CheckEvaluation;
       if (retry) setRetryResult(evaluation); else setResult(evaluation);
       onCompleteChange(retry || evaluation.signal === "strong");
     } catch {

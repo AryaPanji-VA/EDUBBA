@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     }, { signal: request.signal });
     const choice = response.choices?.[0];
     if (choice?.finish_reason !== "stop" || typeof choice.message?.content !== "string") return fail(502);
-    const evaluation = parseCheckEvaluation(choice.message.content);
+    const evaluation = parseCheckEvaluation(choice.message.content, definition.check.concepts, definition.check.misconceptions);
     // Record mastery evidence for the mapped Robin Check concepts. Best-effort, never blocks.
     const { evidenceType, concepts } = definition.mastery.robinCheckSignalToEvidence(evaluation.signal);
     const attemptId = crypto.randomUUID();

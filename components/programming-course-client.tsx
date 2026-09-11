@@ -143,8 +143,8 @@ export function ProgrammingCourseClient() {
 
                       return (
                         <li key={lesson.slug}>
-                          {state === "current" && lesson.slug === "variables"
-                            ? <Link className="module-row current" href="/courses/programming/variables">{content}</Link>
+                          {state === "current" && (lesson.slug === "variables" || lesson.slug === "data-types")
+                            ? <Link className="module-row current" href={`/courses/programming/${lesson.slug}`}>{content}</Link>
                             : <div className={`module-row ${state}`}>{content}</div>}
                         </li>
                       );

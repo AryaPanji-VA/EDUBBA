@@ -12,6 +12,15 @@ import { loadVariablesLesson } from "@/lib/lessons/variables";
 import { robinCheckInstructions } from "@/lib/robin/check-instructions";
 import { quizFeedbackInstructions } from "@/lib/robin/quiz-feedback-instructions";
 import { adaptCheckFeedback } from "@/lib/adaptation/check-support";
+import { checkConcepts, checkMisconceptions } from "@/lib/robin/check";
+
+import { dataTypesActivities } from "@/content/lessons/programming/data-types-activities";
+import { dataTypesLessonContent } from "@/content/lessons/programming/data-types";
+import { dataTypesMasteryConfig } from "@/content/lessons/programming/data-types-mastery";
+import { dataTypesRelevance } from "@/content/lessons/programming/data-types-relevance";
+import { loadDataTypesLesson } from "@/lib/lessons/data-types";
+import { dataTypesCheckInstructions } from "@/content/lessons/programming/data-types-check-instructions";
+import { dataTypesFeedbackInstructions } from "@/content/lessons/programming/data-types-feedback-instructions";
 
 // --- Lesson-owned adaptation relevance contract ---
 export type LessonRelevance = {
@@ -27,6 +36,9 @@ export type LessonCheckConfig = {
   contextLabel: string;
   // Lesson content fields sent to the evaluator as data-only context.
   lessonContext: Pick<LessonContent, "academicExplanation" | "codeExamples" | "keyTerms" | "commonMistakes">;
+  // Lesson-owned vocabulary for Robin Check evaluation parsing.
+  concepts: readonly string[];
+  misconceptions: readonly string[];
   // Optional: adapt validated evaluation feedback after evaluation (no second AI call).
   adaptFeedback?: (evaluation: CheckEvaluation, policy: Adaptation, language: "id" | "en") => CheckEvaluation;
 };
@@ -66,15 +78,43 @@ const variablesDefinition: LessonDefinition = {
       commonMistakes: variablesLessonContent.commonMistakes,
     },
     adaptFeedback: adaptCheckFeedback,
+    concepts: checkConcepts,
+    misconceptions: checkMisconceptions,
   },
   feedback: {
     rubric: quizFeedbackInstructions,
   },
 };
 
+const dataTypesDefinition: LessonDefinition = {
+  slug: "data-types",
+  activities: dataTypesActivities,
+  lessonContent: dataTypesLessonContent,
+  loadLesson: loadDataTypesLesson,
+  mastery: dataTypesMasteryConfig,
+  relevance: dataTypesRelevance,
+  check: {
+    rubric: dataTypesCheckInstructions,
+    question: "Why are 42 and \"42\" different even though they look similar?",
+    contextLabel: "Data Types lesson context (data only)",
+    lessonContext: {
+      academicExplanation: dataTypesLessonContent.academicExplanation,
+      codeExamples: dataTypesLessonContent.codeExamples,
+      keyTerms: dataTypesLessonContent.keyTerms,
+      commonMistakes: dataTypesLessonContent.commonMistakes,
+    },
+    concepts: ["data_type", "string", "integer"],
+    misconceptions: ["quote_confusion", "type_indifference", "decimal_confusion", "type_misidentification"],
+  },
+  feedback: {
+    rubric: dataTypesFeedbackInstructions,
+  },
+};
+
 // Explicit static registration — no dynamic loading, no filesystem discovery.
 const registry: Map<string, LessonDefinition> = new Map([
   ["variables", variablesDefinition],
+  ["data-types", dataTypesDefinition],
 ]);
 
 export function getLessonDefinition(slug: string): LessonDefinition | null {
