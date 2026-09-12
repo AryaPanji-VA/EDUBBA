@@ -1,32 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { type LessonLanguage } from "@/content/lessons/shared-copy";
 import { type CheckEvaluation } from "@/lib/robin/check";
 
-type Props = { lessonSlug: string; language: LessonLanguage; sourceMode: boolean; onCompleteChange: (complete: boolean) => void };
+type Props = {
+  lessonSlug: string;
+  language: LessonLanguage;
+  copy: Record<string, string>;
+  sourceMode: boolean;
+  onCompleteChange: (complete: boolean) => void;
+  // Lesson-owned retry reinforcement prompts keyed by misconception; optional.
+  reinforcement?: (result: CheckEvaluation, language: LessonLanguage) => string;
+};
 
-function reinforcement(result: CheckEvaluation, language: LessonLanguage) {
+// Generic fallback when a lesson provides no misconception-specific reinforcement.
+function genericReinforcement(result: CheckEvaluation, language: LessonLanguage) {
   const id = language === "id";
-  if (result.misconceptions.includes("equality")) return id
-    ? "Bayangkan = sebagai memasang label, sedangkan == sebagai pertanyaan. Pada x = 5, apakah Python membuat binding atau bertanya? Jelaskan perbedaannya."
-    : "Think of = as attaching a label and == as asking a question. Does x = 5 create a binding or ask a question? Explain the difference.";
-  if (result.misconceptions.includes("printing")) return id
-    ? "x = 5 memasang label; print(x) baru menampilkan value. Coba jelaskan apa yang dilakukan tiap baris, dan baris mana yang menghasilkan output."
-    : "x = 5 attaches a label; print(x) displays the value. Explain what each line does and which produces output.";
-  if (result.misconceptions.includes("immutable_binding")) return id
-    ? "Ikuti labelnya: x = 5, lalu x = 8. Label x boleh berpindah. Jelaskan binding awal dan binding setelah assignment kedua."
-    : "Follow the label: x = 5, then x = 8. The label can move. Explain the initial binding and the binding after the second assignment.";
-  if (result.misconceptions.includes("identity")) return id
-    ? "Pisahkan label x dari object dengan value 5: x → 5. Label dan object bukan benda yang sama. Jelaskan tugas masing-masing dan apa yang dilakukan =."
-    : "Separate the label x from the object with value 5: x → 5. The label and object are not identical. Explain each role and what = does.";
   return id
-    ? "Pakai diagram x → 5. Apa nama labelnya, value apa yang dirujuk, dan bagaimana assignment menghubungkannya? Coba lengkapi penjelasan kamu."
-    : "Use the diagram x → 5. What is the label, which value does it refer to, and how does assignment connect them? Complete your explanation.";
+    ? "Coba lengkapi penjelasan kamu dengan ide inti dari lesson ini. Apa yang masih kurang jelas dari feedback di atas?"
+    : "Try completing your explanation with the core idea from this lesson. What part of the feedback above is still unclear?";
 }
 
-export function RobinCheck({ lessonSlug, language, sourceMode, onCompleteChange }: Props) {
-  const copy = lessonCopy[language];
+export function RobinCheck({ lessonSlug, language, copy, sourceMode, onCompleteChange, reinforcement = genericReinforcement }: Props) {
   const [answer, setAnswer] = useState("");
   const [retryAnswer, setRetryAnswer] = useState("");
   const [result, setResult] = useState<CheckEvaluation | null>(null);

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
 import { getDataTypesActivities, dataTypesCopy, localizeDataTypesContent, type LessonLanguage } from "@/content/lessons/programming/data-types-localization";
+import { dataTypesMasteryConceptLabels } from "@/content/lessons/programming/data-types-lesson-config";
 import { lessonLanguageStorageKey } from "@/content/lessons/variables-localization";
 import { RobinCheck } from "@/components/robin-check";
 import { useEffect, useState } from "react";
@@ -110,7 +111,7 @@ export function DataTypesLesson() {
             <div className="lesson-meta"><span>◷ {lesson.estimatedMinutes} min</span><span>{copy.beginner}</span><span>{copy.structured}</span><span>{lesson.sources.length} {copy.sources}</span></div>
           </header>
 
-          <LessonActivityRenderer activities={activities} lessonSlug="data-types" language={language} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="data-types" language={language} sourceMode={sourceMode} onCompleteChange={setCheckComplete} />}>
+          <LessonActivityRenderer activities={activities} lessonSlug="data-types" language={language} copy={copy} masteryConceptLabels={dataTypesMasteryConceptLabels} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="data-types" language={language} copy={copy} sourceMode={sourceMode} onCompleteChange={setCheckComplete} />}>
             <details className="activity-supplement"><summary>{copy.notes}</summary>
           <section className="lesson-section academic"><span className="section-number">02</span><div><span className="academic-label">{copy.academic}</span><h2>{copy.definition}</h2>{content.academicExplanation.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { type LessonLanguage } from "@/content/lessons/shared-copy";
 import { type QuizFeedbackResult } from "@/lib/robin/quiz-feedback";
 import { startFeedbackRequest } from "@/lib/robin/feedback-request";
 
@@ -9,14 +9,14 @@ type Props = {
   activityId: string;
   lessonSlug: string;
   language: LessonLanguage;
+  copy: Record<string, string>;
   sourceMode: boolean;
   submitted: boolean;
   learnerAnswer: string;
   attemptId: string;
 };
 
-export function SmartFeedback({ activityId, lessonSlug, language, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
-  const copy = lessonCopy[language];
+export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
   const [result, setResult] = useState<QuizFeedbackResult | null>(null);
   const [loading, setLoading] = useState(false);
   const lastFetch = useRef<string>("");

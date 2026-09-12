@@ -1,8 +1,9 @@
 import { variablesActivities } from "./programming/variables-activities";
 import type { LessonContent } from "./types";
-
-export type LessonLanguage = "id" | "en";
-export const lessonLanguageStorageKey = "robin.lessonLanguage";
+export type { LessonLanguage } from "./shared-copy";
+import type { LessonLanguage } from "./shared-copy";
+import { lessonLanguageStorageKey } from "./shared-copy";
+export { lessonLanguageStorageKey };
 
 export function localizeSourceNote(note: string, language: LessonLanguage) {
   const notes: Record<string, string> = {

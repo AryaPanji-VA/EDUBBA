@@ -1,7 +1,6 @@
 import { dataTypesActivities } from "./data-types-activities";
 import type { LessonContent } from "../types";
-import { getSharedCopy } from "../shared-copy";
-import type { LessonLanguage } from "../variables-localization";
+import { getSharedCopy, type LessonLanguage } from "../shared-copy";
 export type { LessonLanguage };
 
 export const dataTypesCopy: Record<LessonLanguage, Record<string, string>> = {

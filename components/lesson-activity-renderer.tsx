@@ -1,6 +1,6 @@
 "use client";
 
-import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { type LessonLanguage } from "@/content/lessons/shared-copy";
 import { useRef, useState, type ReactNode } from "react";
 import { type LessonActivity } from "@/content/lessons/activities";
 import { SmartFeedback } from "@/components/smart-feedback";
@@ -11,14 +11,15 @@ type Props = {
   activities: LessonActivity[];
   lessonSlug: string;
   language: LessonLanguage;
+  copy: Record<string, string>;
+  masteryConceptLabels?: Record<string, string>;
   sourceMode: boolean;
   robinCheck: ReactNode;
   robinCheckComplete: boolean;
   children: ReactNode;
 };
 
-export function LessonActivityRenderer({ activities, lessonSlug, language, sourceMode, robinCheck, robinCheckComplete, children }: Props) {
-  const copy = lessonCopy[language];
+export function LessonActivityRenderer({ activities, lessonSlug, language, copy, masteryConceptLabels, sourceMode, robinCheck, robinCheckComplete, children }: Props) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [complete, setComplete] = useState(false);
@@ -60,14 +61,14 @@ export function LessonActivityRenderer({ activities, lessonSlug, language, sourc
       </form>}
       {/* Keep each attempt's feedback mounted across Previous/Next navigation. */}
       {activities.filter((item) => (item.type === "predict" || item.type === "practice") && item.learningPurpose).map((item) => <div key={item.id} hidden={activity.id !== item.id}>
-        <SmartFeedback activityId={item.id} lessonSlug={lessonSlug} language={language} sourceMode={sourceMode} submitted={answers[item.id]?.submitted ?? false} learnerAnswer={answers[item.id]?.value ?? ""} attemptId={answers[item.id]?.attemptId ?? ""} />
+        <SmartFeedback activityId={item.id} lessonSlug={lessonSlug} language={language} copy={copy} sourceMode={sourceMode} submitted={answers[item.id]?.submitted ?? false} learnerAnswer={answers[item.id]?.value ?? ""} attemptId={answers[item.id]?.attemptId ?? ""} />
       </div>)}
       {activity.type === "formalize" && children}
       {/* Keep the check mounted so Previous and language changes preserve its response. */}
       <div hidden={activity.type !== "robin_check"}>{robinCheck}</div>
       {!sourceMode && activity.type === "intro" && <p className="panel-footnote">{copy.encouragement}</p>}
       {activity.type === "connect" && complete && <p className="mock-feedback" role="status"><strong>{copy.complete}</strong> {copy.completeNote}</p>}
-      {activity.type === "connect" && <MasterySummary language={language} />}
+      {activity.type === "connect" && masteryConceptLabels && <MasterySummary lessonSlug={lessonSlug} language={language} copy={copy} conceptLabels={masteryConceptLabels} />}
     </section>
     <nav className="learning-flow-nav" aria-label={copy.step}><button className="button" disabled={step === 0} onClick={() => move(step - 1)}>{copy.previous}</button>{step < activities.length - 1 ? <button className="button button-primary" disabled={!canContinue} onClick={() => move(step + 1)}>{copy.next}</button> : <button className="button button-primary" disabled={complete} onClick={() => setComplete(true)}>{complete ? copy.finished : copy.finish}</button>}</nav>
     {!canContinue && <p className="panel-footnote">{activity.type === "robin_check" ? copy.checkGate : copy.gate}</p>}

@@ -1,7 +1,8 @@
-import type { LessonLanguage } from "./variables-localization";
-
-// Global UI strings shared across all lessons.
+// Shared lesson types and UI strings.
 // Lesson-specific copy (prompts, concept labels, module titles) lives in each lesson's own localization file.
+
+export type LessonLanguage = "id" | "en";
+export const lessonLanguageStorageKey = "robin.lessonLanguage";
 export const sharedCopy = {
   step: "Step", of: "of", references: "Sources / References", previous: "Previous", next: "Continue",
   check: "Check answer", reveal: "Reveal + explain", correct: "Correct.", incorrect: "Not quite.",

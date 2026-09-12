@@ -1,17 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { lessonCopy, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { type LessonLanguage } from "@/content/lessons/shared-copy";
 
 type MasteryEntry = { concept: string; state: "unseen" | "shaky" | "developing" | "strong"; evidenceCount: number };
 type MasteryResponse = { lesson?: string; concepts?: MasteryEntry[] };
 
-export function MasterySummary({ language }: { language: LessonLanguage }) {
-  const copy = lessonCopy[language];
-  const conceptLabels: Record<string, string> = {
-    variable: copy.masteryVariable, assignment: copy.masteryAssignment, reassignment: copy.masteryReassignment,
-    expression: copy.masteryExpression, name_binding: copy.masteryNameBinding, identifier_naming: copy.masteryIdentifierNaming,
-  };
+type Props = {
+  lessonSlug: string;
+  language: LessonLanguage;
+  copy: Record<string, string>;
+  conceptLabels: Record<string, string>;
+};
+
+export function MasterySummary({ lessonSlug, language, copy, conceptLabels }: Props) {
   const stateLabels: Record<string, string> = {
     unseen: copy.masteryUnseen, shaky: copy.masteryShaky, developing: copy.masteryDeveloping, strong: copy.masteryStrong,
   };
@@ -19,7 +21,7 @@ export function MasterySummary({ language }: { language: LessonLanguage }) {
 
   const load = useCallback(async (controller: AbortController) => {
     try {
-      const response = await fetch("/api/learning/mastery?lesson=variables", { signal: controller.signal });
+      const response = await fetch(`/api/learning/mastery?lesson=${encodeURIComponent(lessonSlug)}`, { signal: controller.signal });
       if (!response.ok) throw new Error("unavailable");
       const data = await response.json() as MasteryResponse;
       if (Array.isArray(data.concepts)) setEntries(data.concepts);

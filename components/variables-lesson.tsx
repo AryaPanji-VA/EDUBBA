@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
 import { getVariablesActivities, localizeSourceNote, lessonCopy, lessonLanguageStorageKey, localizeVariablesContent, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { variablesReinforcement, variablesMasteryConceptLabels } from "@/content/lessons/programming/variables-lesson-config";
 import { RobinCheck } from "@/components/robin-check";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -122,7 +123,7 @@ export function VariablesLesson() {
             <div className="lesson-meta"><span>◷ {lesson.estimatedMinutes} min</span><span>{copy.beginner}</span><span>{copy.structured}</span><span>{lesson.sources.length} {copy.sources}</span></div>
           </header>
 
-          <LessonActivityRenderer activities={activities} lessonSlug="variables" language={language} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="variables" language={language} sourceMode={sourceMode} onCompleteChange={setCheckComplete} />}>
+          <LessonActivityRenderer activities={activities} lessonSlug="variables" language={language} copy={copy} masteryConceptLabels={variablesMasteryConceptLabels} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="variables" language={language} copy={copy} sourceMode={sourceMode} onCompleteChange={setCheckComplete} reinforcement={variablesReinforcement} />}>
             <details className="activity-supplement"><summary>{copy.notes}</summary>
           <section className="lesson-section academic"><span className="section-number">02</span><div><span className="academic-label">{copy.academic}</span><h2>{copy.definition}</h2>{content.academicExplanation.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
 

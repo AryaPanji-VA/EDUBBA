@@ -8,10 +8,13 @@ import { variablesLessonContent } from "../content/lessons/programming/variables
 
 // Resolve the existing extensionless content import without another test dependency.
 const source = stripTypeScriptTypes(readFileSync(new URL("../content/lessons/variables-localization.ts", import.meta.url), "utf8"), { mode: "transform" })
-  .replace(/import \{ variablesActivities \} from "[^"]+";/, "")
-  .replace(/export /g, "") + "\nexports.getVariablesActivities = getVariablesActivities; exports.lessonCopy = lessonCopy; exports.localizeVariablesContent = localizeVariablesContent;";
+  .replace(/import \{[^}]+\} from "[^"]+";/g, "")
+  .replace(/import type \{[^}]+\} from "[^"]+";/g, "")
+  .replace(/export type \{[^}]+\} from "[^"]+";/g, "")
+  .replace(/import "[^"]+";/g, "")
+  .replace(/export /g, "") + "\nexports.getVariablesActivities = getVariablesActivities; exports.lessonCopy = lessonCopy; exports.localizeVariablesContent = localizeVariablesContent; exports.localizeSourceNote = localizeSourceNote;";
 const exports = {};
-vm.runInNewContext(source, { exports, variablesActivities });
+vm.runInNewContext(source, { exports, variablesActivities, lessonLanguageStorageKey: "robin.lessonLanguage" });
 
 test("ID and EN change prose without changing exercise identity or grading", () => {
   const id = exports.getVariablesActivities("id");
