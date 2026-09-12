@@ -68,7 +68,7 @@ export function gradeActivity(activity: LessonActivity, learnerAnswer: string): 
   return null;
 }
 
-export function parseQuizFeedbackResult(text: string, isCorrect: boolean): QuizFeedbackResult {
+export function parseQuizFeedbackResult(text: string, isCorrect: boolean, allowedMisconceptions: readonly string[] = quizMisconceptions): QuizFeedbackResult {
   if (text.length > 6_000) throw new Error("Invalid feedback.");
   const row = JSON.parse(text.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, "$1"));
   if (!row || typeof row !== "object" || Array.isArray(row) || Object.keys(row).length !== 3 ||
@@ -78,7 +78,7 @@ export function parseQuizFeedbackResult(text: string, isCorrect: boolean): QuizF
   if (typeof row.feedback !== "string" || !row.feedback.trim() || row.feedback.length > 1_200 ||
       /https?:\/\/|\b(?:sb_secret_|sk-)|\b\d+(?:\.\d+)?\s*%/i.test(row.feedback)) throw new Error("Invalid feedback.");
   if (row.diagnosedMisconception !== null &&
-      (typeof row.diagnosedMisconception !== "string" || !(quizMisconceptions as readonly string[]).includes(row.diagnosedMisconception))) {
+      (typeof row.diagnosedMisconception !== "string" || !(allowedMisconceptions as readonly string[]).includes(row.diagnosedMisconception))) {
     throw new Error("Invalid feedback.");
   }
   if (row.followUp !== null) {

@@ -125,7 +125,7 @@ function registryStub(state) {
           lessonContext: { academicExplanation: ["Name binds to object"], codeExamples: [], keyTerms: [], commonMistakes: [] },
           adaptFeedback: adaptCheckFeedback,
         },
-        feedback: { rubric: "server-controlled feedback rubric" },
+        feedback: { rubric: "server-controlled feedback rubric", misconceptions: ["first_assignment_persists", "assignment_history", "reassignment_invalid", "prints_name_text", "declaration_required"] },
       };
     },
   };

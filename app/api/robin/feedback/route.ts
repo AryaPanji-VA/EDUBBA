@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     }, { signal: request.signal });
     const choice = response.choices?.[0];
     if (choice?.finish_reason !== "stop" || typeof choice.message?.content !== "string") return fail(502);
-    const result = parseQuizFeedbackResult(choice.message.content, grading.isCorrect);
+    const result = parseQuizFeedbackResult(choice.message.content, grading.isCorrect, definition.feedback.misconceptions);
     return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });
   } catch { return fail(502); }
 }

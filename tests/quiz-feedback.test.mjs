@@ -44,7 +44,7 @@ function route({ configured = true, recordEvidence = async () => {}, provider = 
         activities: [predictActivity, practiceActivity, nonObjectiveActivity],
         mastery: { activityConceptToMastery: (concept) => ({ reassignment: "reassignment", reading_a_name: "variable" })[concept] ?? null },
         relevance: { activityConcepts: () => ["reassignment", "variable", "name_binding"] },
-        feedback: { rubric: "server-controlled rubric" },
+        feedback: { rubric: "server-controlled rubric", misconceptions: ["first_assignment_persists", "assignment_history", "reassignment_invalid", "prints_name_text", "declaration_required"] },
       } : null,
     },
     "@/lib/robin/quiz-feedback": { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult },
@@ -212,4 +212,57 @@ test("server reconstructs correctness from activity data, not client claims", as
   await post(request({ ...validRequest, learnerAnswer: "92" }));
   assert.equal(quizContext.isCorrect, false);
   assert.equal(quizContext.likelyMisconception, "first_assignment_persists");
+});
+
+// === 6. Lesson-owned misconception vocabulary (Phase 9C bugfix regression) ===
+const variablesMisconceptions = ["first_assignment_persists", "assignment_history", "reassignment_invalid", "prints_name_text", "declaration_required"];
+const dataTypesMisconceptions = ["quote_confusion", "type_indifference", "decimal_confusion", "type_misidentification"];
+const incorrectResult = (misconception) => ({ feedback: "Belum pas. Coba lagi.", followUp: null, diagnosedMisconception: misconception });
+
+test("Variables parser accepts Variables misconception for incorrect answer", () => {
+  assert.doesNotThrow(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("first_assignment_persists")), false, variablesMisconceptions));
+});
+test("Variables parser rejects Data Types misconception", () => {
+  assert.throws(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("quote_confusion")), false, variablesMisconceptions));
+});
+test("Data Types parser accepts Data Types misconception for incorrect answer", () => {
+  assert.doesNotThrow(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("quote_confusion")), false, dataTypesMisconceptions));
+});
+test("Data Types parser rejects Variables misconception", () => {
+  assert.throws(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("first_assignment_persists")), false, dataTypesMisconceptions));
+});
+test("arbitrary misconception strings are rejected by both vocabularies", () => {
+  assert.throws(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("random_code")), false, variablesMisconceptions));
+  assert.throws(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("random_code")), false, dataTypesMisconceptions));
+});
+test("default parser (no vocabulary arg) uses Variables vocabulary", () => {
+  assert.doesNotThrow(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("first_assignment_persists")), false));
+  assert.throws(() => parseQuizFeedbackResult(JSON.stringify(incorrectResult("quote_confusion")), false));
+});
+
+// === 7. Incorrect answer reaches AI feedback response (the live regression) ===
+test("incorrect answer reaches AI feedback response with valid misconception", async () => {
+  const wrongResult = { feedback: "Belum pas. Yang masih ketuker itu cara reassignment dibaca.", followUp: { prompt: "What is x after x = 5; x = 8?", code: "x = 5\nx = 8", options: ["5", "8"] }, diagnosedMisconception: "first_assignment_persists" };
+  const response = await route({ provider: async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(wrongResult) } }] }) })(request(validRequest));
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  assert.equal(data.result.diagnosedMisconception, "first_assignment_persists");
+  assert.ok(data.result.followUp);
+});
+test("mastery failure does not suppress incorrect-answer feedback", async () => {
+  const wrongResult = { feedback: "Belum pas.", followUp: null, diagnosedMisconception: "first_assignment_persists" };
+  const response = await route({
+    recordEvidence: async () => { throw new Error("private mastery failure"); },
+    provider: async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(wrongResult) } }] }),
+  })(request(validRequest));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).result.feedback, "Belum pas.");
+});
+test("adaptation failure does not suppress incorrect-answer feedback", async () => {
+  const wrongResult = { feedback: "Belum pas.", followUp: null, diagnosedMisconception: "first_assignment_persists" };
+  const response = await route({
+    provider: async () => ({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(wrongResult) } }] }),
+    loadAdaptationContext: async () => { throw new Error("private adaptation failure"); },
+  })(request(validRequest));
+  assert.equal(response.status, 200);
 });

@@ -13,6 +13,7 @@ import { robinCheckInstructions } from "@/lib/robin/check-instructions";
 import { quizFeedbackInstructions } from "@/lib/robin/quiz-feedback-instructions";
 import { adaptCheckFeedback } from "@/lib/adaptation/check-support";
 import { checkConcepts, checkMisconceptions } from "@/lib/robin/check";
+import { quizMisconceptions } from "@/lib/robin/quiz-feedback";
 
 import { dataTypesActivities } from "@/content/lessons/programming/data-types-activities";
 import { dataTypesLessonContent } from "@/content/lessons/programming/data-types";
@@ -46,6 +47,8 @@ export type LessonCheckConfig = {
 // --- Lesson-owned feedback configuration ---
 export type LessonFeedbackConfig = {
   rubric: string;
+  // Lesson-owned quiz feedback misconception vocabulary.
+  misconceptions: readonly string[];
 };
 
 // --- The registry entry: everything shared infrastructure needs from a lesson ---
@@ -83,6 +86,7 @@ const variablesDefinition: LessonDefinition = {
   },
   feedback: {
     rubric: quizFeedbackInstructions,
+    misconceptions: quizMisconceptions,
   },
 };
 
@@ -108,6 +112,7 @@ const dataTypesDefinition: LessonDefinition = {
   },
   feedback: {
     rubric: dataTypesFeedbackInstructions,
+    misconceptions: ["quote_confusion", "type_indifference", "decimal_confusion", "type_misidentification"],
   },
 };
 

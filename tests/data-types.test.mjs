@@ -50,6 +50,7 @@ vm.runInNewContext(regCode, {
   adaptCheckFeedback: (e) => e,
   checkConcepts: ["name", "value", "assignment"],
   checkMisconceptions: ["equality", "identity", "printing", "immutable_binding"],
+  quizMisconceptions: ["first_assignment_persists", "assignment_history", "reassignment_invalid", "prints_name_text", "declaration_required"],
   dataTypesActivities,
   dataTypesLessonContent,
   dataTypesMasteryConfig,

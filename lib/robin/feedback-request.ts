@@ -1,4 +1,4 @@
-import { parseQuizFeedbackResult, type QuizFeedbackRequest, type QuizFeedbackResult } from "./quiz-feedback";
+import { type QuizFeedbackRequest, type QuizFeedbackResult } from "./quiz-feedback";
 
 // One effect lifetime. Defer dispatch so Strict Mode's setup/cleanup replay
 // cannot mark an aborted, never-started request as an already-sent attempt.
@@ -24,8 +24,8 @@ export function startFeedbackRequest(
       });
       if (!response.ok) throw new Error("unavailable");
       const data = await response.json();
-      const result = parseQuizFeedbackResult(JSON.stringify(data.result), false);
-      if (!disposed) onResult(result);
+      // Trust the server-validated result; the server already parsed with the lesson's vocabulary.
+      if (!disposed) onResult(data.result as QuizFeedbackResult);
     } catch {
       if (!disposed) onResult(null);
     } finally {
