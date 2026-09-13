@@ -1,0 +1,23 @@
+/* Environment canvas + scroll veil.
+   Ported from the Kimi mockup's environments.css.
+   Layer order (back → front): environment canvas → scroll veil
+   → structural UI (.app, z-index 1) → content (.content, z-index 3). */
+
+.env {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 0; pointer-events: none; opacity: 0;
+}
+.env.xfade { transition: opacity .6s ease; }
+
+/* Scroll-responsive readability veil. Opacity is driven by scroll
+   depth (JS in environment-layer.tsx); color comes from the active
+   combination's --veil-rgb / --veil-end. Never fully opaque. */
+.veil {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 36vh;
+  z-index: 0; pointer-events: none; opacity: 0;
+  background: linear-gradient(180deg,
+    rgba(var(--veil-rgb), 0)               0%,
+    rgba(var(--veil-rgb), .5)            45%,
+    rgba(var(--veil-rgb), .82)           78%,
+    rgba(var(--veil-rgb), var(--veil-end)) 100%);
+}

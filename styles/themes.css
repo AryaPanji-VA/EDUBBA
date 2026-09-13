@@ -1,0 +1,210 @@
+/* Design tokens for all six approved visual states.
+   Ported from the Kimi mockup's themes.css — exact approved values.
+   Editor palettes are theme-keyed, mode-independent (always dark).
+   Surface tokens are scoped to [data-theme="X"][data-mode="Y"]. */
+
+/* ── Editor palettes (always dark, theme-keyed) ──────────── */
+
+/* Light companion surfaces only; existing dark panels remain untouched. */
+[data-mode="light"] {
+  --companion-surface: var(--panel);
+  --companion-border: var(--line);
+  --companion-shadow: var(--shadow);
+  --companion-text: var(--text);
+  --companion-meta: var(--mut);
+}
+
+[data-theme="after-dark"] {
+  --editor-bg: #0A1020; --editor-bar: #0D1526; --editor-line: #223154; --editor-linesoft: #1A2542;
+  --ed-file: #8FA0C2; --ed-meta: #5F6F93; --ln: #3D4C6E; --fsq: #E9AC58;
+  --tok-k: #86A9E6; --tok-b: #8FB6C9; --tok-n: #D99A5C; --tok-c: #5B6B8E; --tok-p: #93A3C4; --tok-plain: #C7D2E8;
+  --editor-hover: rgba(131,168,230,.04);
+}
+
+[data-theme="signal"] {
+  --editor-bg: #080E18; --editor-bar: #0B1322; --editor-line: #1F2E4C; --editor-linesoft: #182339;
+  --ed-file: #8A9BBD; --ed-meta: #5C6B8E; --ln: #3D4C6E; --fsq: #79C7E2;
+  --tok-k: #86A9E6; --tok-b: #8FB6C9; --tok-n: #7FC6DD; --tok-c: #5B6B8E; --tok-p: #93A3C4; --tok-plain: #C7D2E8;
+  --editor-hover: rgba(127,168,232,.05);
+}
+
+[data-theme="deep-space"] {
+  --editor-bg: #05090F; --editor-bar: #090F1B; --editor-line: #1E2A45; --editor-linesoft: #172136;
+  --ed-file: #8997B6; --ed-meta: #5A6788; --ln: #3A4766; --fsq: #93C6E4;
+  --tok-k: #8DA6D9; --tok-b: #93AEC0; --tok-n: #9FC3E2; --tok-c: #576384; --tok-p: #8C9ABB; --tok-plain: #C2CCE0;
+  --editor-hover: rgba(141,166,217,.05);
+}
+
+/* ── After Dark × Dark ────────────────────────────────────── */
+
+[data-theme="after-dark"][data-mode="dark"] {
+  --bg: #0B1120;
+  --bg-image: radial-gradient(78% 34% at 50% 100%, rgba(233,172,88,.05), transparent 72%), linear-gradient(180deg, #0A0F1D 0%, #0C1324 55%, #0E1528 100%);
+  --side: #0D1526; --panel: #131E36; --inset: #0A1020;
+  --line: #223154; --linesoft: #1A2542;
+  --text: #DCE5F5; --mut: #8FA0C2; --dim: #5F6F93;
+  --blue: #83A8E6; --bar: #5D7FB8; --accent: #E9AC58; --accent-text: #E9AC58;
+  --bright: #F0E4C6; --ok: #82B49B; --ok-opt: rgba(130,180,155,.07); --ok-fb: rgba(130,180,155,.05); --streak: #E9AC58;
+  --shadow: 0 1px 0 rgba(4,8,18,.4), 0 18px 40px -18px rgba(3,7,17,.55);
+  --thumb: #2A3A5F; --sel: #2C3F6B; --sel-ink: #F0E4C6;
+  --nav-rgb: 131,168,230; --nav-hov: .05; --nav-on: .08;
+  --course-bg: #111B31; --track: #1B2743; --track-dim: #151E35; --cbar: #18233D;
+  --avatar-bg: #2C3F6B; --avatar-ink: #F0E4C6;
+  --chip-bg: rgba(10,16,32,.72); --kbd-bg: #0A1020;
+  --hero-h1: #E9EFFB; --hero-shadow: rgba(6,10,20,.6); --hero-hl: #F0E4C6;
+  --lesson-title: #E7EDFA;
+  --btn-ink: #241A08; --btn-hover: #F0BA6B; --btn-shadow: rgba(0,0,0,.25);
+  --ghost-bd: #223154; --ghost-bd-h: #324771;
+  --now-bg: rgba(233,172,88,.06); --now-glow: rgba(233,172,88,.12); --hover-bg: rgba(131,168,230,.04);
+  --code-bg: #18233D; --code-ink: #F0E4C6;
+  --bubble: #17233F; --input-bg: #0A1020; --input-focus: #324771;
+  --ava-bg: #18233D; --ava-dim: #3A4A6E; --key-bd: #223154;
+  --veil-rgb: 11,17,32; --veil-end: .9;
+  --bird-body: #9FB4DA; --bird-wing: #5D7FB8; --bird-breast: #E9AC58; --bird-beak: #F0E4C6; --bird-eye: #10192C;
+  --danger: #ff8e9f;
+}
+
+/* ── After Dark × Light (Morning City) ────────────────────── */
+
+[data-theme="after-dark"][data-mode="light"] {
+  --bg: #E9EEF5;
+  --bg-image: radial-gradient(70% 45% at 72% 100%, rgba(240,224,196,.30), transparent 72%), linear-gradient(180deg, #D5E1EF 0%, #E2E9F2 48%, #EDEAE2 100%);
+  --side: #EDF1F7; --panel: #FCFDFE; --inset: #EEF2F8;
+  --line: #D8E0EC; --linesoft: #E2E8F1;
+  --text: #1E2A3E; --mut: #5B6B86; --dim: #8A97AF;
+  --blue: #4A70B5; --bar: #7A97C8; --accent: #DFA558; --accent-text: #A5712A;
+  --bright: #16233A; --ok: #3E8E74; --ok-opt: rgba(62,142,116,.08); --ok-fb: rgba(62,142,116,.07); --streak: #B9863F;
+  --shadow: 0 1px 2px rgba(30,42,62,.05), 0 16px 36px -20px rgba(30,42,62,.14);
+  --thumb: #C3CFE0; --sel: rgba(223,165,88,.30); --sel-ink: #1E2A3E;
+  --nav-rgb: 74,112,181; --nav-hov: .06; --nav-on: .10;
+  --course-bg: #F7FAFD; --track: #DCE4EF; --track-dim: #E6ECF4; --cbar: #DDE5F0;
+  --avatar-bg: #35507F; --avatar-ink: #EFF4FB;
+  --chip-bg: rgba(255,255,255,.7); --kbd-bg: #EDF2F8;
+  --hero-h1: #1C2942; --hero-shadow: rgba(255,255,255,.5); --hero-hl: #A5712A;
+  --lesson-title: #20304A;
+  --btn-ink: #3D2B10; --btn-hover: #E9B671; --btn-shadow: rgba(61,43,16,.18);
+  --ghost-bd: #C5D1E2; --ghost-bd-h: #A2B4CE;
+  --now-bg: rgba(223,165,88,.07); --now-glow: rgba(223,165,88,.18); --hover-bg: rgba(74,112,181,.05);
+  --code-bg: #E7EDF5; --code-ink: #24406B;
+  --bubble: #EAF0F7; --input-bg: #FFFFFF; --input-focus: #4A70B5;
+  --ava-bg: #E9EEF6; --ava-dim: #C7D0DE; --key-bd: #C5D1E2;
+  --veil-rgb: 233,238,245; --veil-end: .9;
+  --bird-body: #5F7BA6; --bird-wing: #46608C; --bird-breast: #DFA558; --bird-beak: #C4934A; --bird-eye: #1E2A3E;
+  --danger: #D96A55;
+}
+
+/* ── Signal × Dark ────────────────────────────────────────── */
+
+[data-theme="signal"][data-mode="dark"] {
+  --bg: #0A101C;
+  --bg-image: radial-gradient(70% 45% at 78% 12%, rgba(111,178,214,.035), transparent 70%), linear-gradient(180deg, #090E18 0%, #0A101C 55%, #0B1220 100%);
+  --side: #0C1320; --panel: #121C30; --inset: #080E18;
+  --line: #1F2E4C; --linesoft: #182339;
+  --text: #D8E3F2; --mut: #8A9BBD; --dim: #5C6B8E;
+  --blue: #7FA8E8; --bar: #54749F; --accent: #79C7E2; --accent-text: #79C7E2;
+  --bright: #E8F0F8; --ok: #76B5A6; --ok-opt: rgba(118,181,166,.07); --ok-fb: rgba(118,181,166,.05); --streak: #79C7E2;
+  --shadow: 0 1px 0 rgba(3,6,13,.4), 0 18px 40px -18px rgba(2,5,12,.55);
+  --thumb: #253450; --sel: #263A5E; --sel-ink: #E8F0F8;
+  --nav-rgb: 127,168,232; --nav-hov: .05; --nav-on: .08;
+  --course-bg: #101A2C; --track: #172440; --track-dim: #131C30; --cbar: #152238;
+  --avatar-bg: #263A5E; --avatar-ink: #E8F0F8;
+  --chip-bg: rgba(8,14,24,.72); --kbd-bg: #080E18;
+  --hero-h1: #E6EEF8; --hero-shadow: rgba(5,9,17,.6); --hero-hl: #E8F0F8;
+  --lesson-title: #E4ECF8;
+  --btn-ink: #0A1A26; --btn-hover: #93D6EA; --btn-shadow: rgba(0,0,0,.25);
+  --ghost-bd: #1F2E4C; --ghost-bd-h: #324771;
+  --now-bg: rgba(121,199,226,.06); --now-glow: rgba(121,199,226,.12); --hover-bg: rgba(127,168,232,.04);
+  --code-bg: #152238; --code-ink: #E8F0F8;
+  --bubble: #162238; --input-bg: #080E18; --input-focus: #324771;
+  --ava-bg: #152238; --ava-dim: #2E4266; --key-bd: #1F2E4C;
+  --veil-rgb: 9,14,24; --veil-end: .9;
+  --bird-body: #9FB4DA; --bird-wing: #54749F; --bird-breast: #79C7E2; --bird-beak: #E8F0F8; --bird-eye: #10192C;
+  --danger: #ff8e9f;
+}
+
+/* ── Signal × Light (Day Signal) ───────────────────────────── */
+
+[data-theme="signal"][data-mode="light"] {
+  --bg: #F3F6FA;
+  --bg-image: radial-gradient(70% 45% at 78% 12%, rgba(150,185,215,.12), transparent 70%), linear-gradient(180deg, #EFF3F8 0%, #F3F6FA 55%, #EDF2F7 100%);
+  --side: #EDF1F7; --panel: #FCFDFE; --inset: #EEF2F8;
+  --line: #D8E0EC; --linesoft: #E2E8F1;
+  --text: #1E2A3E; --mut: #5B6B86; --dim: #8A97AF;
+  --blue: #4A74B0; --bar: #6E8CB2; --accent: #79B4CC; --accent-text: #2B7A99;
+  --bright: #16233A; --ok: #3E8E74; --ok-opt: rgba(62,142,116,.08); --ok-fb: rgba(62,142,116,.07); --streak: #79B4CC;
+  --shadow: 0 1px 2px rgba(30,42,62,.05), 0 16px 36px -20px rgba(30,42,62,.14);
+  --thumb: #C3CFE0; --sel: rgba(121,180,204,.32); --sel-ink: #1E2A3E;
+  --nav-rgb: 74,116,176; --nav-hov: .06; --nav-on: .10;
+  --course-bg: #F7FAFD; --track: #DCE4EF; --track-dim: #E6ECF4; --cbar: #DDE5F0;
+  --avatar-bg: #35507F; --avatar-ink: #EFF4FB;
+  --chip-bg: rgba(255,255,255,.7); --kbd-bg: #EDF2F8;
+  --hero-h1: #1C2942; --hero-shadow: rgba(255,255,255,.5); --hero-hl: #2B7A99;
+  --lesson-title: #20304A;
+  --btn-ink: #0F2A36; --btn-hover: #8CC2D8; --btn-shadow: rgba(15,42,54,.16);
+  --ghost-bd: #C5D1E2; --ghost-bd-h: #A2B4CE;
+  --now-bg: rgba(121,180,204,.08); --now-glow: rgba(121,180,204,.2); --hover-bg: rgba(74,116,176,.05);
+  --code-bg: #E7EDF5; --code-ink: #24406B;
+  --bubble: #EAF0F7; --input-bg: #FFFFFF; --input-focus: #4A74B0;
+  --ava-bg: #E9EEF6; --ava-dim: #C7D0DE; --key-bd: #C5D1E2;
+  --veil-rgb: 243,246,250; --veil-end: .9;
+  --bird-body: #5F7BA6; --bird-wing: #46608C; --bird-breast: #79B4CC; --bird-beak: #4E87AE; --bird-eye: #1E2A3E;
+  --danger: #D96A55;
+}
+
+/* ── Deep Space × Dark ─────────────────────────────────────── */
+
+[data-theme="deep-space"][data-mode="dark"] {
+  --bg: #070C16;
+  --bg-image: radial-gradient(80% 55% at 80% 10%, rgba(120,135,200,.035), transparent 70%), linear-gradient(180deg, #070C16 0%, #090F1A 55%, #0A1120 100%);
+  --side: #0A1019; --panel: #101827; --inset: #05090F;
+  --line: #1E2A45; --linesoft: #172136;
+  --text: #D7E0EF; --mut: #8997B6; --dim: #5A6788;
+  --blue: #8DA6D9; --bar: #5E739E; --accent: #93C6E4; --accent-text: #93C6E4;
+  --bright: #EAEFF7; --ok: #7BA696; --ok-opt: rgba(123,166,150,.07); --ok-fb: rgba(123,166,150,.05); --streak: #C79B62;
+  --shadow: 0 1px 0 rgba(2,5,10,.4), 0 18px 40px -18px rgba(1,3,8,.55);
+  --thumb: #212F4B; --sel: #233050; --sel-ink: #EAEFF7;
+  --nav-rgb: 141,166,217; --nav-hov: .05; --nav-on: .08;
+  --course-bg: #0E1524; --track: #141F33; --track-dim: #0F1828; --cbar: #111A2C;
+  --avatar-bg: #22314E; --avatar-ink: #EAEFF7;
+  --chip-bg: rgba(5,9,15,.72); --kbd-bg: #05090F;
+  --hero-h1: #E5EAF4; --hero-shadow: rgba(3,6,12,.6); --hero-hl: #EAEFF7;
+  --lesson-title: #E3E9F4;
+  --btn-ink: #08131C; --btn-hover: #A8D4EC; --btn-shadow: rgba(0,0,0,.25);
+  --ghost-bd: #1E2A45; --ghost-bd-h: #2E4166;
+  --now-bg: rgba(147,198,228,.06); --now-glow: rgba(147,198,228,.12); --hover-bg: rgba(141,166,217,.04);
+  --code-bg: #101A2C; --code-ink: #EAEFF7;
+  --bubble: #151F31; --input-bg: #05090F; --input-focus: #2E4166;
+  --ava-bg: #101A2C; --ava-dim: #28395A; --key-bd: #1E2A45;
+  --veil-rgb: 7,12,22; --veil-end: .88;
+  --bird-body: #9FB4DA; --bird-wing: #5E739E; --bird-breast: #A8D4EA; --bird-beak: #EAEFF7; --bird-eye: #0E1524;
+  --danger: #ff8e9f;
+}
+
+/* ── Deep Space × Light (Cosmic Mist) ──────────────────────── */
+
+[data-theme="deep-space"][data-mode="light"] {
+  --bg: #EDF0F6;
+  --bg-image: radial-gradient(75% 50% at 78% 10%, rgba(180,175,215,.14), transparent 70%), linear-gradient(180deg, #EAEDF5 0%, #EEF1F7 55%, #EAEEF5 100%);
+  --side: #EDF1F7; --panel: #FCFDFE; --inset: #EEF2F8;
+  --line: #D8E0EC; --linesoft: #E2E8F1;
+  --text: #1E2A3E; --mut: #5B6B86; --dim: #8A97AF;
+  --blue: #5B6FB8; --bar: #8195C2; --accent: #93A4D8; --accent-text: #5566B0;
+  --bright: #16233A; --ok: #3E8E74; --ok-opt: rgba(62,142,116,.08); --ok-fb: rgba(62,142,116,.07); --streak: #B9863F;
+  --shadow: 0 1px 2px rgba(30,42,62,.05), 0 16px 36px -20px rgba(30,42,62,.14);
+  --thumb: #C3CFE0; --sel: rgba(147,164,216,.32); --sel-ink: #1E2A3E;
+  --nav-rgb: 91,111,184; --nav-hov: .06; --nav-on: .10;
+  --course-bg: #F7FAFD; --track: #DCE4EF; --track-dim: #E6ECF4; --cbar: #DDE5F0;
+  --avatar-bg: #35507F; --avatar-ink: #EFF4FB;
+  --chip-bg: rgba(255,255,255,.7); --kbd-bg: #EDF2F8;
+  --hero-h1: #1C2942; --hero-shadow: rgba(255,255,255,.5); --hero-hl: #5566B0;
+  --lesson-title: #20304A;
+  --btn-ink: #1D2542; --btn-hover: #A6B5E2; --btn-shadow: rgba(29,37,66,.16);
+  --ghost-bd: #C5D1E2; --ghost-bd-h: #A2B4CE;
+  --now-bg: rgba(147,164,216,.09); --now-glow: rgba(147,164,216,.22); --hover-bg: rgba(91,111,184,.05);
+  --code-bg: #E7EDF5; --code-ink: #24406B;
+  --bubble: #EAF0F7; --input-bg: #FFFFFF; --input-focus: #5B6FB8;
+  --ava-bg: #E9EEF6; --ava-dim: #C7D0DE; --key-bd: #C5D1E2;
+  --veil-rgb: 237,240,246; --veil-end: .88;
+  --bird-body: #5F7BA6; --bird-wing: #46608C; --bird-breast: #93A4D8; --bird-beak: #5B6FB8; --bird-eye: #1E2A3E;
+  --danger: #D96A55;
+}

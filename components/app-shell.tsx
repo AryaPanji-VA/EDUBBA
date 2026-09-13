@@ -1,30 +1,105 @@
 import Link from "next/link";
-import { SignalBackground } from "@/components/signal-background";
+import { EnvironmentLayer } from "@/components/environment-layer";
+import { BrandTagline, LearnerLabel } from "@/components/theme-switcher";
+import type { ReactNode } from "react";
 
 type AppShellProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   active?: "dashboard" | "courses" | "lesson";
   signalMode?: "calm" | "active" | "quiet" | "error";
   signalPulse?: boolean;
 };
 
-export function AppShell({ children, active = "dashboard", signalMode = "calm", signalPulse = false }: AppShellProps) {
+// Mockup sidebar SVG icons (exact from the Kimi mockup)
+const DashboardIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <rect x="2" y="2" width="5" height="5" rx="1" /><rect x="9" y="2" width="5" height="5" rx="1" />
+    <rect x="2" y="9" width="5" height="5" rx="1" /><rect x="9" y="9" width="5" height="5" rx="1" />
+  </svg>
+);
+const CoursesIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <path d="M8 4.5C6.5 3 4 3 2.5 3.5v9C4 12 6.5 12 8 13.5 9.5 12 12 12 13.5 12.5v-9C12 3 9.5 3 8 4.5z" /><path d="M8 4.5v9" />
+  </svg>
+);
+const LessonIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <rect x="2" y="3" width="12" height="10" rx="1.5" /><path d="M5 7l2.5 2L5 11" /><path d="M9.5 11H12" />
+  </svg>
+);
+
+// Pixel-bird brand mark (exact from the Kimi mockup)
+const RobinBird = () => (
+  <svg width="18" height="18" viewBox="0 0 10 10" shapeRendering="crispEdges" aria-hidden="true">
+    <g className="b-body">
+      <rect x="4" y="0" width="2" height="1" /><rect x="3" y="1" width="4" height="1" />
+      <rect x="3" y="2" width="1" height="1" /><rect x="5" y="2" width="3" height="1" />
+      <rect x="0" y="3" width="1" height="1" /><rect x="2" y="3" width="6" height="1" />
+      <rect x="0" y="4" width="4" height="1" /><rect x="6" y="4" width="1" height="1" />
+      <rect x="1" y="5" width="3" height="1" /><rect x="5" y="5" width="1" height="1" />
+      <rect x="2" y="6" width="3" height="1" />
+    </g>
+    <g className="b-wing">
+      <rect x="4" y="4" width="2" height="1" /><rect x="4" y="5" width="1" height="1" />
+      <rect x="3" y="8" width="1" height="1" /><rect x="5" y="8" width="1" height="1" />
+    </g>
+    <g className="b-breast">
+      <rect x="7" y="4" width="1" height="1" />
+      <rect x="6" y="5" width="2" height="1" />
+      <rect x="5" y="6" width="2" height="1" />
+    </g>
+    <rect className="b-beak" x="8" y="2" width="1" height="1" />
+    <rect className="b-eye" x="4" y="2" width="1" height="1" />
+  </svg>
+);
+
+function ShellInner({ children, active = "dashboard", signalMode = "calm" }: AppShellProps) {
   return (
-    <div className={`workspace mode-${signalMode}`}>
-      <SignalBackground intensity={signalMode} pulse={signalPulse} />
-      <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="ROBIN dashboard">
-          <span className="brand-signal"><i /><i /><i /></span>
-          <span><span className="brand-name">ROBIN</span><span className="brand-note">// LEARNING SYSTEM</span></span>
-        </Link>
-        <nav className="nav" aria-label="Main navigation">
-          <Link className={`nav-link ${active === "dashboard" ? "active" : ""}`} href="/"><span className="nav-icon">⌂</span><span className="nav-label">Dashboard</span></Link>
-          <Link className={`nav-link ${active === "courses" ? "active" : ""}`} href="/courses"><span className="nav-icon">□</span><span className="nav-label">Courses</span></Link>
-          <Link className={`nav-link ${active === "lesson" ? "active" : ""}`} href="/courses/programming/variables"><span className="nav-icon">↗</span><span className="nav-label">Current lesson</span></Link>
+    <div className={`app mode-${signalMode}`}>
+      <aside className="side">
+        <div className="brand">
+          <RobinBird />
+          <div>
+            <span className="brand-name">robin</span>
+            <BrandTagline />
+          </div>
+        </div>
+
+        <nav className="nav">
+          <Link href="/" className={active === "dashboard" ? "on" : ""}>
+            <DashboardIcon /> Dashboard
+          </Link>
+          <Link href="/courses" className={active === "courses" ? "on" : ""}>
+            <CoursesIcon /> Courses
+          </Link>
+          <Link href="/courses/programming/variables" className={active === "lesson" ? "on" : ""}>
+            <LessonIcon /> Current lesson
+          </Link>
         </nav>
-        <div className="sidebar-footer"><div><span className="online-dot" />SIGNAL ONLINE</div><div>SEM 01 · WEEK 06</div></div>
+
+        <div className="side-foot">
+          <div className="me">
+            <span className="avatar">A</span>
+            <div>
+              <div className="me-name">Arya</div>
+              <LearnerLabel />
+            </div>
+          </div>
+        </div>
       </aside>
-      <main className="main">{children}</main>
+
+      <main className="main">
+        {children}
+      </main>
     </div>
+  );
+}
+
+export function AppShell(props: AppShellProps) {
+  return (
+    <>
+      <EnvironmentLayer />
+      <ShellInner {...props} />
+    </>
   );
 }

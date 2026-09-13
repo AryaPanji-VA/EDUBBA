@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
+import { TopBar } from "@/components/top-bar";
 import { getDataTypesActivities, dataTypesCopy, localizeDataTypesContent, type LessonLanguage } from "@/content/lessons/programming/data-types-localization";
 import { dataTypesMasteryConceptLabels } from "@/content/lessons/programming/data-types-lesson-config";
 import { lessonLanguageStorageKey } from "@/content/lessons/variables-localization";
@@ -91,14 +92,16 @@ export function DataTypesLesson() {
 
   return (
     <AppShell active="lesson" signalMode={sourceMode ? "quiet" : robinState === "error" ? "error" : robinState === "thinking" ? "active" : "calm"} signalPulse={signalPulse}>
-      <div className="lesson-topbar">
-        <div className="mode-control" role="group" aria-label={copy.language}>{(["id", "en"] as const).map((value) => <button key={value} type="button" aria-pressed={language === value} className={language === value ? "selected" : ""} onClick={() => changeLanguage(value)}>{value.toUpperCase()}</button>)}</div>
-        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/courses">{copy.courses}</Link><span>/</span><Link href="/courses/programming">CS-101</Link><span>/</span><span>Data Types</span></nav>
-        <div className="mode-control" role="group" aria-label={copy.mode}>
-          <button className={!sourceMode ? "selected" : ""} onClick={() => setSourceMode(false)}>Robin ON</button>
-          <button className={sourceMode ? "selected" : ""} onClick={() => { setSourceMode(true); setRobinState("idle"); setSignalPulse(false); }}>Source Mode</button>
-        </div>
-      </div>
+      <TopBar
+        breadcrumb={<><Link href="/courses">{copy.courses}</Link><span className="sep">/</span><Link href="/courses/programming">CS-101</Link><span className="sep">/</span><b>Data Types</b></>}
+        contextual={<>
+          <div className="switcher" role="group" aria-label={copy.language}>{(["id", "en"] as const).map((value) => <button key={value} type="button" aria-pressed={language === value} className={language === value ? "on" : ""} onClick={() => changeLanguage(value)}>{value.toUpperCase()}</button>)}</div>
+          <div className="switcher" role="group" aria-label={copy.mode}>
+            <button type="button" className={!sourceMode ? "on" : ""} aria-pressed={!sourceMode} onClick={() => setSourceMode(false)}>Robin</button>
+            <button type="button" className={sourceMode ? "on" : ""} aria-pressed={sourceMode} onClick={() => { setSourceMode(true); setRobinState("idle"); setSignalPulse(false); }}>Source</button>
+          </div>
+        </>}
+      />
 
       {isLoading && <div className="course-request-state" role="status"><span className="typing-dots"><i /><i /><i /></span><strong>{copy.loading}</strong><small>{copy.loadingNote}</small></div>}
 
