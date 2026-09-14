@@ -33,7 +33,9 @@ function mount() {
   vm.runInNewContext(helperCode, { exports: helper, AbortController, setTimeout, clearTimeout,
     parseQuizFeedbackResult: JSON.parse,
     fetch: (_url, options) => new Promise((resolve, reject) => {
-      calls.push({ body: JSON.parse(options.body), signal: options.signal, resolve: () => resolve({ ok: true, json: async () => ({ result: { feedback: "Concept understood.", followUp: null } }) }) });
+      calls.push({ body: JSON.parse(options.body), signal: options.signal,
+        resolve: () => resolve({ ok: true, json: async () => ({ result: { feedback: "Concept understood.", followUp: null } }) }),
+        fail: () => resolve({ ok: false }), malformed: () => resolve({ ok: true, json: async () => ({}) }), reject });
       options.signal.addEventListener("abort", () => reject(new Error("aborted")));
     }),
   });
@@ -46,7 +48,7 @@ function mount() {
     if (name.includes("feedback-request")) return helper;
     throw new Error(`Unexpected import ${name}`);
   } });
-  let props = { activityId: "predict", lessonSlug: "variables", language: "en", copy: {}, sourceMode: false, submitted: true, learnerAnswer: "92", attemptId: "attempt-1" };
+  let props = { activityId: "predict", lessonSlug: "variables", language: "en", copy: { feedbackUnavailable: "AI feedback unavailable. The explanation above still applies." }, sourceMode: false, submitted: true, learnerAnswer: "92", attemptId: "attempt-1" };
   return {
     calls,
     render(changes = {}) { props = { ...props, ...changes }; cursor = 0; const view = component.SmartFeedback(props); effects.splice(0).forEach((effect) => effect()); return view; },
@@ -55,6 +57,23 @@ function mount() {
   };
 }
 const settle = () => new Promise((resolve) => setImmediate(resolve));
+
+for (const lessonSlug of ["variables", "data-types"]) {
+  for (const failure of ["fail", "malformed", "reject"]) {
+    test(`${lessonSlug}: ${failure} visibly falls back without duplicate evidence; new attempt recovers`, async () => {
+      const app = mount(); app.render({ lessonSlug }); await settle();
+      app.calls[0][failure](); await settle();
+      assert.match(JSON.stringify(app.render()), /AI feedback unavailable/);
+      app.render({ language: "id" }); await settle(); assert.equal(app.calls.length, 1);
+      assert.equal(app.render({ sourceMode: true }), null);
+      app.render({ sourceMode: false, attemptId: "new-attempt" }); await settle();
+      app.calls[1].resolve(); await settle();
+      assert.match(JSON.stringify(app.render()), /Concept understood/);
+      assert.doesNotMatch(JSON.stringify(app.render()), /AI feedback unavailable/);
+      app.cleanup();
+    });
+  }
+}
 
 test("Strict Mode replay sends one valid request and renders completed feedback", async () => {
   const app = mount(); app.render(); app.replay(); await settle();

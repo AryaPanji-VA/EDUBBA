@@ -7,6 +7,7 @@ export function startFeedbackRequest(
   lastAttempt: { current: string },
   onResult: (result: QuizFeedbackResult | null) => void,
   onLoading: (loading: boolean) => void,
+  onError: (failed: boolean) => void,
 ) {
   const controller = new AbortController();
   let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -15,6 +16,7 @@ export function startFeedbackRequest(
     if (disposed || lastAttempt.current === input.attemptId) return;
     lastAttempt.current = input.attemptId;
     onLoading(true);
+    onError(false);
     onResult(null);
     timeout = setTimeout(() => controller.abort(), 35_000);
     try {
@@ -24,10 +26,15 @@ export function startFeedbackRequest(
       });
       if (!response.ok) throw new Error("unavailable");
       const data = await response.json();
+      // Check the response envelope without imposing Variables' vocabulary on other lessons.
+      if (!data?.result || typeof data.result.feedback !== "string" || !data.result.feedback.trim() ||
+          !(data.result.followUp === null || (typeof data.result.followUp?.prompt === "string" &&
+            typeof data.result.followUp.code === "string" && Array.isArray(data.result.followUp.options) &&
+            data.result.followUp.options.every((option: unknown) => typeof option === "string")))) throw new Error("unavailable");
       // Trust the server-validated result; the server already parsed with the lesson's vocabulary.
       if (!disposed) onResult(data.result as QuizFeedbackResult);
     } catch {
-      if (!disposed) onResult(null);
+      if (!disposed) { onResult(null); onError(true); }
     } finally {
       clearTimeout(timeout);
       if (!disposed) onLoading(false);

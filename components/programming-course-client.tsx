@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ProgressBar } from "@/components/progress-bar";
+import { TopBar } from "@/components/top-bar";
 import {
   programmingLessonStateBySlug,
   type LessonPresentationState,
@@ -36,6 +36,16 @@ type ProgrammingCourseResponse = {
   error?: string;
 };
 
+// Pixel avatar SVG (from Kimi mockup)
+const AssistantAvatar = () => (
+  <span className="a-ava" aria-hidden="true">
+    <svg width="12" height="12" viewBox="0 0 10 10" shapeRendering="crispEdges" aria-hidden="true">
+      <g className="ava-pane"><rect x="1" y="1" width="3" height="3" /><rect x="6" y="1" width="3" height="3" /><rect x="1" y="6" width="3" height="3" /></g>
+      <rect className="ava-dim" x="6" y="6" width="3" height="3" />
+    </svg>
+  </span>
+);
+
 export function ProgrammingCourseClient() {
   const [course, setCourse] = useState<ProgrammingCourse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,125 +54,234 @@ export function ProgrammingCourseClient() {
   async function loadCourse() {
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch("/api/courses/programming");
       const data = await response.json() as ProgrammingCourseResponse;
-
-      if (!response.ok) {
-        throw new Error(data.error ?? `Backend returned ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(data.error ?? `Backend returned ${response.status}`);
       setCourse(data.course);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Course request failed.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Course request failed.");
     } finally {
       setIsLoading(false);
     }
   }
 
-  useEffect(() => {
-    void loadCourse();
-  }, []);
+  useEffect(() => { void loadCourse(); }, []);
+
+  // Build progress bar segments from lesson states
+  function buildPxbarSegments(totalLessons: number, completedCount: number) {
+    const segments = [];
+    for (let i = 0; i < totalLessons; i++) segments.push(i < completedCount);
+    return segments;
+  }
+
+  // Build mbar segments for a module
+  function buildMbarSegments(lessons: Lesson[], moduleIndex: number, modules: CourseModule[]) {
+    const lessonsBefore = modules.slice(0, moduleIndex).reduce((t, m) => t + m.lessons.length, 0);
+    const segments = [];
+    for (let i = 0; i < lessons.length; i++) {
+      const globalIdx = lessonsBefore + i;
+      const allLessons = modules.flatMap(m => m.lessons);
+      const slug = lessons[i].slug;
+      const state = programmingLessonStateBySlug[slug] ?? "locked";
+      segments.push(state === "completed");
+    }
+    return segments;
+  }
+
+  const courseData = course;
+  const allLessons = courseData?.modules.flatMap(m => m.lessons) ?? [];
+  const completedCount = allLessons.filter(l => programmingLessonStateBySlug[l.slug] === "completed").length;
+  const progress = allLessons.length === 0 ? 0 : Math.round((completedCount / allLessons.length) * 100);
+  const currentLesson = allLessons.find(l => programmingLessonStateBySlug[l.slug] === "current");
+  const totalLessons = allLessons.length;
 
   if (isLoading) {
     return (
-      <div className="course-request-state" role="status">
-        <span className="typing-dots"><i /><i /><i /></span>
-        <strong>requesting /api/courses/programming</strong>
-        <small>Browser lagi minta modules dan lessons dari backend.</small>
-      </div>
+      <>
+        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Foundations of Programming</>} />
+        <div className="content">
+          <div className="course-request-state" role="status">
+            <span className="typing-dots"><i /><i /><i /></span>
+            <strong>Loading course…</strong>
+          </div>
+        </div>
+      </>
     );
   }
 
-  if (error || !course) {
+  if (error || !courseData) {
     return (
-      <div className="course-request-state is-error" role="alert">
-        <strong>Relational course signal putus.</strong>
-        <small>{error ?? "The backend returned no course."}</small>
-        <button className="button" onClick={() => void loadCourse()}>coba lagi</button>
-      </div>
+      <>
+        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Foundations of Programming</>} />
+        <div className="content">
+          <div className="course-request-state is-error" role="alert">
+            <strong>Course signal putus.</strong>
+            <small>{error ?? "The backend returned no course."}</small>
+            <button className="button" onClick={() => void loadCourse()}>coba lagi</button>
+          </div>
+        </div>
+      </>
     );
   }
-
-  const lessons = course.modules.flatMap((module) => module.lessons);
-  const completedLessons = lessons.filter(
-    (lesson) => programmingLessonStateBySlug[lesson.slug] === "completed",
-  ).length;
-  const progress = lessons.length === 0 ? 0 : Math.round((completedLessons / lessons.length) * 100);
-  const currentLesson = lessons.find(
-    (lesson) => programmingLessonStateBySlug[lesson.slug] === "current",
-  );
 
   return (
     <>
-      <header className="course-hero">
-        <div className="course-hero-copy">
-          <span className="eyebrow">CS-101 · Foundations</span>
-          <h1>{course.title}</h1>
-          <p>{course.description}</p>
+      <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>{courseData.title}</>} />
+      <div className="content">
+        {/* Course hero */}
+        <div className="page-hero">
+          <span className="tag blue">Course · CS-101 · Semester 1</span>
+          <h1 className="page-title">{courseData.title}</h1>
+          <p className="page-context">{courseData.modules.length} modules · {totalLessons} lessons · taught in ID &amp; EN</p>
+          <p className="page-desc">Build the mental model behind code, from values and variables to functions. <em>slowly, precisely, and out loud.</em></p>
+          <div className="course-progress">
+            <div className="pxbar" aria-hidden="true">
+              {buildPxbarSegments(totalLessons, completedCount).map((filled, i) => (
+                <i key={i} className={filled ? "f" : ""} style={{ flex: 1 }} />
+              ))}
+            </div>
+            <span className="course-progress-meta">{completedCount} of {totalLessons} lessons · {progress}%</span>
+            {currentLesson && (
+              <Link className="btn-p" href={`/courses/programming/${currentLesson.slug}`}>Continue: {currentLesson.title} →</Link>
+            )}
+          </div>
         </div>
-        <div className="course-progress-card">
-          <span className="card-kicker">Course progress</span>
-          <strong>{completedLessons} / {lessons.length}</strong>
-          <ProgressBar value={progress} />
-          <small>{currentLesson ? `Next up: ${currentLesson.title} · ${currentLesson.estimatedMinutes} min` : "No current lesson"}</small>
-        </div>
-      </header>
 
-      <div className="learning-layout">
-        <section>
-          <div className="section-head lesson-head">
-            <div><span className="eyebrow">Learning path</span><h2>{course.modules.length} modules. {lessons.length} useful steps.</h2></div>
-            <span className="path-legend"><i className="legend-complete" /> done <i className="legend-current" /> current</span>
+        {/* Content grid */}
+        <div className="grid">
+          {/* Left column — curriculum signal map */}
+          <div className="col">
+            <section className="cmap" aria-label="Curriculum map">
+              {courseData.modules.map((module, moduleIndex) => {
+                const lessonsInModule = module.lessons;
+                const completedInModule = lessonsInModule.filter(l => programmingLessonStateBySlug[l.slug] === "completed").length;
+                const hasCurrent = lessonsInModule.some(l => programmingLessonStateBySlug[l.slug] === "current");
+                const isCollapsed = !hasCurrent && completedInModule === lessonsInModule.length;
+                const moduleState = hasCurrent ? "open" : completedInModule === lessonsInModule.length ? "done" : completedInModule > 0 ? "open" : "dim";
+
+                return (
+                  <section key={module.slug} className={`cmap-module ${isCollapsed && !hasCurrent ? "collapsed" : ""}`}>
+                    <div className="cmap-mrow">
+                      <span className="node" style={moduleState === "done" ? { background: "var(--ok)", borderColor: "var(--ok)" } : hasCurrent ? { background: "var(--accent)", borderColor: "var(--accent)" } : undefined} />
+                      <span className="cmap-mnum">{String(module.position).padStart(2, "0")}</span>
+                      <span className="cmap-mtitle">{module.title}{module.description && <small>{module.description}</small>}</span>
+                      <span className={`mtag ${hasCurrent ? "now" : completedInModule === lessonsInModule.length ? "master" : "lock"}`}>
+                        {hasCurrent ? "in progress" : completedInModule === lessonsInModule.length ? "mastered" : "locked"}
+                      </span>
+                      <span className="mbar">
+                        {buildMbarSegments(lessonsInModule, moduleIndex, courseData.modules).map((filled, i) => (
+                          <i key={i} className={filled ? "f" : ""} />
+                        ))}
+                      </span>
+                      <span className="mcount">{completedInModule}/{lessonsInModule.length}</span>
+                    </div>
+
+                    {/* Lessons (only show for current/active modules) */}
+                    {hasCurrent && (
+                      <ul className="cmap-lessons">
+                        {lessonsInModule.map((lesson, lessonIndex) => {
+                          const state: LessonPresentationState = programmingLessonStateBySlug[lesson.slug] ?? "locked";
+                          const lessonNumber = `${module.position}.${lesson.position}`;
+                          const isLinkable = state === "current" && (lesson.slug === "variables" || lesson.slug === "data-types");
+                          const nodeStyle = state === "completed"
+                            ? { background: "var(--ok)", borderColor: "var(--ok)" }
+                            : state === "current"
+                            ? { background: "var(--accent)", borderColor: "var(--accent)", boxShadow: "0 0 0 3px var(--now-glow)" }
+                            : undefined;
+
+                          const content = (
+                            <>
+                              <span className="cmap-ltitle">
+                                <span className="cmap-lnum">{lessonNumber}</span>{lesson.title}
+                                {lesson.summary && <small>{lesson.summary}</small>}
+                              </span>
+                              <span className="cmap-ldur">{lesson.estimatedMinutes} min</span>
+                              {state === "completed" ? (
+                                <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
+                              ) : state === "current" ? (
+                                <Link className="cmap-laction" href={`/courses/programming/${lesson.slug}`}>Resume →</Link>
+                              ) : (
+                                <span className="cmap-lock">{state === "locked" ? "locked" : "next"}</span>
+                              )}
+                            </>
+                          );
+
+                          return (
+                            <li key={lesson.slug}>
+                              {isLinkable ? (
+                                <Link className={`cmap-lesson ${state}`} href={`/courses/programming/${lesson.slug}`}>
+                                  <span className="lnode" style={nodeStyle} />{content}
+                                </Link>
+                              ) : (
+                                <div className={`cmap-lesson ${state}`}>
+                                  <span className="lnode" style={nodeStyle} />{content}
+                                </div>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </section>
+                );
+              })}
+            </section>
           </div>
 
-          <div className="course-module-groups">
-            {course.modules.map((module, moduleIndex) => {
-              const lessonsBeforeThisModule = course.modules
-                .slice(0, moduleIndex)
-                .reduce((total, item) => total + item.lessons.length, 0);
+          {/* Right column — mastery + companion */}
+          <div className="col side-col">
+            <section className="panel mastery" aria-label="Mastery">
+              <header className="shead" style={{ marginBottom: "6px" }}>
+                <span className="tag blue">Mastery</span>
+                <span className="shead-meta">by concept</span>
+              </header>
+              <ul className="mast-list">
+                <li className="mast-item hot">
+                  <div className="mast-top"><span className="mast-name">Variables</span><span className="mast-pct">completed</span></div>
+                  <div className="mbar2"><i className="f" /><i className="f" /><i className="f" /><i className="f" /><i /><i /></div>
+                </li>
+                <li className="mast-item">
+                  <div className="mast-top"><span className="mast-name">Data Types</span><span className="mast-pct">in progress</span></div>
+                  <div className="mbar2"><i /><i /><i /><i /></div>
+                </li>
+                <li className="mast-item">
+                  <div className="mast-top"><span className="mast-name">Operators</span><span className="mast-pct">locked</span></div>
+                  <div className="mbar2"><i /><i /><i /><i /></div>
+                </li>
+              </ul>
+              <div className="pxdiv" aria-hidden="true" />
+              <div className="mast-foot">
+                <span>{completedCount} of {totalLessons} lessons · <b>{progress}%</b></span>
+                <span className="up">keep going</span>
+              </div>
+            </section>
 
-              return (
-                <section className="course-module-group" key={module.slug}>
-                  <header className="course-module-header">
-                    <span>Module {String(module.position).padStart(2, "0")}</span>
-                    <div><h3>{module.title}</h3>{module.description && <p>{module.description}</p>}</div>
-                  </header>
-                  <ol className="module-list">
-                    {module.lessons.map((lesson, lessonIndex) => {
-                      const state: LessonPresentationState = programmingLessonStateBySlug[lesson.slug] ?? "locked";
-                      const lessonNumber = lessonsBeforeThisModule + lessonIndex + 1;
-                      const content = (
-                        <>
-                          <span className={`module-number ${state}`}>{state === "completed" ? "✓" : String(lessonNumber).padStart(2, "0")}</span>
-                          <span className="module-copy"><small>Lesson {String(lesson.position).padStart(2, "0")} · {lesson.estimatedMinutes} min</small><strong>{lesson.title}</strong></span>
-                          <span className={`module-state ${state}`}>{state === "completed" ? "completed" : state === "current" ? "continue →" : "locked"}</span>
-                        </>
-                      );
-
-                      return (
-                        <li key={lesson.slug}>
-                          {state === "current" && (lesson.slug === "variables" || lesson.slug === "data-types")
-                            ? <Link className="module-row current" href={`/courses/programming/${lesson.slug}`}>{content}</Link>
-                            : <div className={`module-row ${state}`}>{content}</div>}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </section>
-              );
-            })}
+            <section className="panel companion" aria-label="Robin">
+              <div className="companion-head">
+                <AssistantAvatar />
+                <div>
+                  <div className="companion-name">Robin</div>
+                  <div className="companion-sub">study companion</div>
+                </div>
+                <span className="companion-tag"><i />awake</span>
+              </div>
+              <p className="companion-note">
+                You're {completedCount} lesson{completedCount !== 1 ? "s" : ""} into <b>Foundations of Programming</b>.
+                {currentLesson
+                  ? <> <b>{currentLesson.title}</b> is next — trace by hand before you run anything.</>
+                  : " Keep going."}
+              </p>
+            </section>
           </div>
-          <p className="quiet-note">Course structure from PostgreSQL · progress state stays local for now.</p>
-        </section>
+        </div>
 
-        <aside className="course-note card">
-          <span className="card-kicker">Margin note · Robin</span>
-          <p>Empat lesson pertama udah aman. Struktur belajarnya sekarang datang dari database; progress lu belum gue titipin ke sana.</p>
-          <span>Next checkpoint</span>
-          <strong>Variables → Data Types</strong>
-        </aside>
+        <footer className="foot">
+          <div className="pxdiv" aria-hidden="true" />
+          <div className="foot-row">
+            <span>robin — a place to learn computer science slowly.</span>
+          </div>
+        </footer>
       </div>
     </>
   );

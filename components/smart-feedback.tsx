@@ -19,16 +19,17 @@ type Props = {
 export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
   const [result, setResult] = useState<QuizFeedbackResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
   const lastFetch = useRef<string>("");
   // Read submission content without treating a language change as a new attempt.
   const startRequest = useEffectEvent(() => startFeedbackRequest(
     { activityId, lessonSlug, language, learnerAnswer, attemptId },
-    lastFetch, setResult, setLoading,
+    lastFetch, setResult, setLoading, setFailed,
   ));
 
   // Fetch feedback only on a new submission attempt, not on language toggle or rerender.
   useEffect(() => {
-    if (!submitted) { setLoading(false); setResult(null); return; }
+    if (!submitted) { setLoading(false); setResult(null); setFailed(false); return; }
     if (sourceMode) { setLoading(false); return; }
     if (!attemptId) return;
     return startRequest();
@@ -36,9 +37,10 @@ export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMo
 
   if (sourceMode || !submitted) return null;
   if (loading) return <p className="panel-footnote" role="status"><span className="typing-dots"><i /><i /><i /></span> {copy.feedbackLoading}</p>;
+  if (failed) return <p className="smart-feedback smart-feedback-unavailable" role="status">{copy.feedbackUnavailable}</p>;
   if (!result) return null;
 
-  return <div className="mock-feedback" role="status">
+  return <div className="mock-feedback smart-feedback" role="status">
     <strong>{copy.feedbackReady}</strong> <span>{result.feedback}</span>
     {result.followUp && <div className="quick-follow-up">
       <p><strong>{copy.followUpLabel}</strong> {result.followUp.prompt}</p>

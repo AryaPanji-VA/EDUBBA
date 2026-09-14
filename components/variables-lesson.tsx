@@ -115,6 +115,7 @@ export function VariablesLesson() {
         </>}
       />
 
+      <div className="content">
       {isLoading && <div className="course-request-state" role="status"><span className="typing-dots"><i /><i /><i /></span><strong>{copy.loading}</strong><small>{copy.loadingNote}</small></div>}
 
       {!isLoading && requestError && <div className="course-request-state is-error" role="alert"><strong>{copy.loadError}</strong><button className="button" onClick={() => void loadLesson()}>{copy.retry}</button></div>}
@@ -161,6 +162,7 @@ export function VariablesLesson() {
 
         <RobinCompanion lessonSlug="variables" sourceMode={sourceMode} onStateChange={updateRobinState} />
       </div>}
+      </div>
     </AppShell>
   );
 }
