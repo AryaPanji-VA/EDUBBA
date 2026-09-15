@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 
 type AppShellProps = {
   children: ReactNode;
-  active?: "dashboard" | "courses" | "lesson";
+  active?: "dashboard" | "courses" | "lesson" | "practice";
   signalMode?: "calm" | "active" | "quiet" | "error";
   signalPulse?: boolean;
 };
@@ -26,6 +26,11 @@ const CoursesIcon = () => (
 const LessonIcon = () => (
   <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
     <rect x="2" y="3" width="12" height="10" rx="1.5" /><path d="M5 7l2.5 2L5 11" /><path d="M9.5 11H12" />
+  </svg>
+);
+const PracticeIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <path d="M5.5 8h5" /><rect x="2" y="5.5" width="2.5" height="5" rx="0.75" /><rect x="11.5" y="5.5" width="2.5" height="5" rx="0.75" />
   </svg>
 );
 
@@ -72,6 +77,9 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
           </Link>
           <Link href="/courses" className={active === "courses" ? "on" : ""}>
             <CoursesIcon /> Courses
+          </Link>
+          <Link href="/practice" className={active === "practice" ? "on" : ""}>
+            <PracticeIcon /> Practice
           </Link>
           <CurrentLessonLink className={active === "lesson" ? "on" : ""}>
             <LessonIcon /> Current lesson
