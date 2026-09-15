@@ -24,15 +24,24 @@ function safeDiagnosticToken(value: unknown) {
 
 // TEMPORARY: safe production diagnostics for the current 9Inference failure.
 // Remove after the upstream rejection has been identified.
-function logProviderFailure(error: { status?: number; type?: unknown; code?: unknown }) {
+async function getAPIKeyHashPrefix(apiKey: string) {
+  if (!apiKey || !globalThis.crypto?.subtle) return null;
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(apiKey));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 8);
+}
+
+async function logProviderFailure(error: { status?: number }) {
   const config = getAIConfig();
+  const apiKey = process.env.NINEINFERENCE_API_KEY?.trim() ?? "";
   console.error("[ROBIN AI TEMP DIAGNOSTIC]", {
     upstreamStatus: typeof error.status === "number" ? error.status : null,
-    providerErrorType: safeDiagnosticToken(error.type),
-    providerErrorCode: safeDiagnosticToken(error.code),
-    robinAIAPIKeyExists: Boolean(process.env.ROBIN_AI_API_KEY?.trim()),
+    nineInferenceAPIKeyExists: apiKey.length > 0,
+    apiKeyLength: apiKey.length,
+    apiKeyHashPrefix: await getAPIKeyHashPrefix(apiKey),
     model: safeDiagnosticToken(config.model),
-    baseURLHostname: new URL(config.baseURL).hostname,
+    baseURL: config.baseURL,
   });
 }
 
@@ -199,7 +208,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof OpenAI.APIConnectionTimeoutError) return fail("Robin kelamaan mikir. Coba lagi sebentar.", 504);
     if (error instanceof OpenAI.APIError) {
-      logProviderFailure(error);
+      await logProviderFailure(error);
       if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa key dan izin 9Inference di server.", 503);
       if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo 9Inference.", 503);
       if (error.status === 404) return fail("Model AI Robin belum tersedia. Periksa ROBIN_AI_MODEL di server.", 503);
