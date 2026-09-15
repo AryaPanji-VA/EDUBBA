@@ -18,6 +18,24 @@ function fail(error: string, status: number) {
   return Response.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
 }
 
+function safeDiagnosticToken(value: unknown) {
+  return typeof value === "string" && /^[a-zA-Z0-9_.:/-]{1,100}$/.test(value) ? value : null;
+}
+
+// TEMPORARY: safe production diagnostics for the current 9Inference failure.
+// Remove after the upstream rejection has been identified.
+function logProviderFailure(error: { status?: number; type?: unknown; code?: unknown }) {
+  const config = getAIConfig();
+  console.error("[ROBIN AI TEMP DIAGNOSTIC]", {
+    upstreamStatus: typeof error.status === "number" ? error.status : null,
+    providerErrorType: safeDiagnosticToken(error.type),
+    providerErrorCode: safeDiagnosticToken(error.code),
+    robinAIAPIKeyExists: Boolean(process.env.ROBIN_AI_API_KEY?.trim()),
+    model: safeDiagnosticToken(config.model),
+    baseURLHostname: new URL(config.baseURL).hostname,
+  });
+}
+
 export async function POST(request: Request) {
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
     return fail("Kirim request sebagai JSON.", 415);
@@ -181,6 +199,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof OpenAI.APIConnectionTimeoutError) return fail("Robin kelamaan mikir. Coba lagi sebentar.", 504);
     if (error instanceof OpenAI.APIError) {
+      logProviderFailure(error);
       if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa key dan izin 9Inference di server.", 503);
       if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo 9Inference.", 503);
       if (error.status === 404) return fail("Model AI Robin belum tersedia. Periksa ROBIN_AI_MODEL di server.", 503);

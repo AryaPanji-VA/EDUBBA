@@ -346,6 +346,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .lesson-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; align-items: start; max-width: 100%; }
 .lesson-grid.source-mode { grid-template-columns: minmax(0, 1fr); }
 .lesson-grid > article { max-width: 720px; }
+.lesson-grid > .robin-panel { margin-top: 28px; }
 .lesson-title { padding: 56px 0 40px; border-bottom: 1px solid var(--line); }
 .lesson-title h1 { margin: 20px 0 16px; font: 500 clamp(2.5rem, 4.5vw, 3.5rem)/1.05 var(--serif); letter-spacing: -.02em; color: var(--hero-h1); }
 .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -520,6 +521,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .course-stats { display: none; }
   .lesson-grid { grid-template-columns: minmax(0,1fr); }
   .robin-panel { position: static; }
+  .lesson-grid > .robin-panel { margin-top: 0; }
   .lab-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
