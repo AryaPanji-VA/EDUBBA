@@ -14,9 +14,10 @@ type Props = {
   submitted: boolean;
   learnerAnswer: string;
   attemptId: string;
+  requestEnabled?: boolean;
 };
 
-export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMode, submitted, learnerAnswer, attemptId }: Props) {
+export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMode, submitted, learnerAnswer, attemptId, requestEnabled = true }: Props) {
   const [result, setResult] = useState<QuizFeedbackResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -29,11 +30,11 @@ export function SmartFeedback({ activityId, lessonSlug, language, copy, sourceMo
 
   // Fetch feedback only on a new submission attempt, not on language toggle or rerender.
   useEffect(() => {
-    if (!submitted) { setLoading(false); setResult(null); setFailed(false); return; }
+    if (!submitted || !requestEnabled) { setLoading(false); setResult(null); setFailed(false); return; }
     if (sourceMode) { setLoading(false); return; }
     if (!attemptId) return;
     return startRequest();
-  }, [submitted, sourceMode, attemptId]);
+  }, [submitted, sourceMode, attemptId, requestEnabled]);
 
   if (sourceMode || !submitted) return null;
   if (loading) return <p className="panel-footnote" role="status"><span className="typing-dots"><i /><i /><i /></span> {copy.feedbackLoading}</p>;

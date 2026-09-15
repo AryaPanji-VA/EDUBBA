@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessage, RobinReply, RobinState } from "@/lib/robin/types";
+import type { ChatMessage, LogPreview, RobinReply, RobinState } from "@/lib/robin/types";
 
 const shortcuts = {
   "jelasin lebih goblok": "bin, jelasin yang ini lebih simpel dong. mulai dari intinya dulu.",
@@ -9,6 +9,7 @@ const shortcuts = {
   "contoh kode": "kasih satu contoh kode kecil dong, terus tunjukin jalannya.",
   "gue ngerti setengah": "gue ngerti setengah, bin. bantu cari bagian yang masih ketuker.",
   "quiz gue": "quiz gue satu soal Variables dong. tahan jawabannya dulu.",
+  "catat belajar": "catat apa yang gue pelajarin hari ini",
 };
 
 type DisplayMessage = ChatMessage & { result?: RobinReply };
@@ -24,6 +25,10 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
   const [state, setState] = useState<RobinState>("idle");
   const [error, setError] = useState("");
   const [memoryNotice, setMemoryNotice] = useState("");
+  const [activePreview, setActivePreview] = useState<LogPreview | null>(null);
+  const [editingPreview, setEditingPreview] = useState(false);
+  const [editedSummary, setEditedSummary] = useState("");
+  const [logStatus, setLogStatus] = useState<{ kind: "idle" | "saving" | "saved" | "skipped"; text: string }>({ kind: "idle", text: "" });
   const controller = useRef<AbortController | null>(null);
   const conversation = useRef<HTMLDivElement>(null);
 
@@ -48,6 +53,7 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
     onStateChange("thinking");
     setError("");
     setMemoryNotice("");
+    setLogStatus({ kind: "idle", text: "" });
     const timeout = window.setTimeout(() => requestController.abort(), 45_000);
     try {
       const response = await fetch("/api/robin/chat", {
@@ -75,6 +81,12 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
         { role: "assistant" as const, content: data.reply, result: data as RobinReply },
       ].slice(-8));
       setDraft("");
+      // If Robin returned a learning-log preview, surface it for Save/Edit/Skip.
+      if (data.logPreview && typeof data.logPreview.summary === "string") {
+        setActivePreview(data.logPreview as LogPreview);
+        setEditedSummary(data.logPreview.summary);
+        setEditingPreview(false);
+      }
       setState("success");
       onStateChange("success");
     } catch (failure) {
@@ -88,6 +100,30 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
     } finally {
       clearTimeout(timeout);
       if (controller.current === requestController) controller.current = null;
+    }
+  }
+
+  async function savePreview(preview: LogPreview) {
+    setLogStatus({ kind: "saving", text: "menyimpan…" });
+    try {
+      const response = await fetch("/api/learning/logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseSlug: preview.courseSlug,
+          lessonSlug: preview.lessonSlug,
+          summary: preview.summary,
+          conceptsLearned: preview.conceptsLearned,
+          weakConcepts: preview.weakConcepts,
+          nextStep: preview.nextStep,
+        }),
+      });
+      if (!response.ok) throw new Error("Gagal simpan log.");
+      setLogStatus({ kind: "saved", text: "Learning log tersimpan." });
+      setActivePreview(null);
+      setEditingPreview(false);
+    } catch {
+      setLogStatus({ kind: "idle", text: "Gagal simpan. Coba lagi." });
     }
   }
 
@@ -115,6 +151,61 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
       </div>
       {error && <p className="robin-error" role="alert">{error}</p>}
       {memoryNotice && <p className="panel-footnote" role="status">{memoryNotice}</p>}
+      {activePreview && (
+        <div className="log-preview" role="region" aria-label="Learning log preview">
+          <span className="message-label">LEARNING LOG // PREVIEW</span>
+          {editingPreview ? (
+            <textarea
+              className="log-edit"
+              rows={4}
+              maxLength={2000}
+              value={editedSummary}
+              onChange={(e) => setEditedSummary(e.target.value)}
+            />
+          ) : (
+            <p>{activePreview.summary}</p>
+          )}
+          {activePreview.conceptsLearned.length > 0 && (
+            <div className="log-chips">
+              {activePreview.conceptsLearned.map((c) => <span key={c} className="log-chip ok">{c}</span>)}
+            </div>
+          )}
+          {activePreview.weakConcepts.length > 0 && (
+            <div className="log-chips">
+              {activePreview.weakConcepts.map((c) => <span key={c} className="log-chip weak">{c}</span>)}
+            </div>
+          )}
+          {activePreview.nextStep && <p className="log-next">Next: {activePreview.nextStep}</p>}
+          <div className="companion-actions companion-actions-flush">
+            {editingPreview ? (
+              <button
+                disabled={logStatus.kind === "saving"}
+                onClick={() => { setActivePreview({ ...activePreview, summary: editedSummary.trim() }); setEditingPreview(false); }}
+              >Apply edit</button>
+            ) : (
+              <>
+                <button
+                  className="active"
+                  disabled={logStatus.kind === "saving"}
+                  onClick={() => void savePreview({ ...activePreview, summary: editedSummary.trim() || activePreview.summary })}
+                >{logStatus.kind === "saving" ? "Menyimpan…" : "Save log"}</button>
+                <button
+                  disabled={logStatus.kind === "saving"}
+                  onClick={() => { setEditingPreview(true); setEditedSummary(activePreview.summary); }}
+                >Edit summary</button>
+                <button
+                  disabled={logStatus.kind === "saving"}
+                  onClick={() => { setActivePreview(null); setEditingPreview(false); setLogStatus({ kind: "skipped", text: "Log dilewati. Tidak ada yang disimpan." }); }}
+                >Skip</button>
+              </>
+            )}
+          </div>
+          {logStatus.text && <p className="panel-footnote" role="status">{logStatus.text}</p>}
+        </div>
+      )}
+      {logStatus.kind === "skipped" && !activePreview && (
+        <p className="panel-footnote" role="status">{logStatus.text}</p>
+      )}
       <div className="companion-actions">{Object.entries(shortcuts).map(([label, message]) =>
         <button key={label} disabled={state === "thinking"} onClick={() => void sendMessage(message)}>{label}</button>
       )}</div>

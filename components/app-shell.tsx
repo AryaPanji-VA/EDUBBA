@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CurrentLessonLink } from "@/components/current-lesson-link";
 import { EnvironmentLayer } from "@/components/environment-layer";
 import { BrandTagline, LearnerLabel } from "@/components/theme-switcher";
 import type { ReactNode } from "react";
@@ -72,9 +73,9 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
           <Link href="/courses" className={active === "courses" ? "on" : ""}>
             <CoursesIcon /> Courses
           </Link>
-          <Link href="/courses/programming/variables" className={active === "lesson" ? "on" : ""}>
+          <CurrentLessonLink className={active === "lesson" ? "on" : ""}>
             <LessonIcon /> Current lesson
-          </Link>
+          </CurrentLessonLink>
         </nav>
 
         <div className="side-foot">

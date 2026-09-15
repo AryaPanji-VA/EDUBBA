@@ -22,7 +22,7 @@ function loader(overrides = {}) {
       crypto: { randomUUID: () => "check-attempt" }, console: { warn() {} },
       require(name) {
         const key = name.startsWith("@/") ? name.slice(2) : name.startsWith(".") ? path.posix.normalize(`${path.posix.dirname(file)}/${name}`) : name;
-        if (!key.startsWith("lib/adaptation/") && !key.startsWith("lib/robin/") && !key.startsWith("content/") && !key.startsWith("lib/lessons/") && !Object.hasOwn(overrides, key)) throw new Error(`Unexpected dependency: ${key}`);
+        if (!key.startsWith("lib/adaptation/") && !key.startsWith("lib/robin/") && !key.startsWith("content/") && !key.startsWith("lib/lessons/") && !key.startsWith("lib/learning-log/commands") && !key.startsWith("lib/mastery/") && !key.startsWith("lib/progress/") && !key.startsWith("data/") && !Object.hasOwn(overrides, key)) throw new Error(`Unexpected dependency: ${key}`);
         return load(key);
       },
     });
@@ -195,6 +195,9 @@ test("chat replaces raw mastery with relevant guidance and keeps memory separate
     },
     "lib/memory/commands": { parseMemoryCommand: () => ({ type: "normal" }) },
     "lib/memory/server": { loadMemoryContext: async () => "LEARNER MEMORY: language preference only" },
+    "lib/learning-log/server": { loadLogContext: async () => "" },
+    "lib/learning-log/commands": { parseLogIntent: () => ({ type: "normal" }) },
+    "lib/progress/server": { loadCurrentLesson: async () => ({ courseSlug: "programming", lessonSlug: "variables" }) },
     "lib/ai/server": { getAIConfig: () => ({ configured: true, model: "test" }), createServerAIClient: () => ({ chat: { completions: { create: async (body) => {
       payload = body;
       return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ grounding: "general", reply: "One example." }) } }] };

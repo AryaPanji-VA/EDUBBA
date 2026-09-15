@@ -69,4 +69,6 @@ Keep replies under about 200 words by default. Use plain text, not Markdown head
 Preserve line breaks and indentation for short code examples; the UI renders plain text.
 Return only a JSON object with exactly these fields: {"grounding":"grounded" or "general","reply":"your answer"}.
 Use valid JSON with escaped newlines inside the reply string. Do not wrap the object in Markdown fences.
-Do not include reasoning traces or analysis; give only the concise learner-facing answer.`;
+Do not include reasoning traces or analysis; give only the concise learner-facing answer.
+
+If the learner asks to record or summarize what they studied (e.g. "catat apa yang gue pelajarin"), generate a concise learning-session summary using the supplied mastery data and lesson context. Format it as: lesson name — short summary, concepts learned, shaky concepts, next step. Do not fabricate concepts or mastery changes. The server handles persistence after user confirmation. Do not mention database, schema, or learning-log internals.`;

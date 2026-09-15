@@ -96,9 +96,11 @@ test("app shell has mockup sidebar structure (.app, .side, .brand, .nav, .side-f
 // === 9. Shell uses real production routes ===
 test("app shell links to real production routes", () => {
   const source = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");
+  const currentLink = readFileSync(new URL("../components/current-lesson-link.tsx", import.meta.url), "utf8");
   assert.match(source, /href="\/"/, "Dashboard links to /");
   assert.match(source, /href="\/courses"/, "Courses links to /courses");
-  assert.match(source, /href="\/courses\/programming\/variables"/, "Lesson links to a real route");
+  assert.match(source, /CurrentLessonLink/, "Lesson navigation uses persisted current progress");
+  assert.match(currentLink, /`\/courses\/\$\{current\.courseSlug\}\/\$\{current\.lessonSlug\}`/, "Lesson link resolves a real persisted course/lesson route");
 });
 
 // === 10. Shell CSS has mockup classes ===

@@ -1,13 +1,9 @@
 @import "tailwindcss";
 
-/* Smart Feedback must remain readable in both modes without restyling other feedback. */
-.learning-activity .smart-feedback {
-  color: var(--text);
-  background: var(--panel);
-  border-left: 2px solid var(--accent-text);
-  padding: 13px 15px;
-}
-.learning-activity .smart-feedback-unavailable { color: var(--mut); }
+/* Smart Feedback states — consistent with Robin surface language */
+.smart-feedback { color: var(--text); background: var(--panel); border-left: 2px solid var(--accent-text); padding: 13px 15px; border-radius: 0 8px 8px 0; margin: 12px 0 0; }
+.smart-feedback-unavailable { color: var(--mut); background: var(--panel); border-left: 2px solid var(--dim); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0 0; }
+.smart-feedback .smart-feedback-ready { color: var(--accent-text); font: 600 12px var(--sans); text-transform: uppercase; letter-spacing: .08em; }
 
 /* Font variables — set by next/font in app/layout.tsx.
    --font-* are applied on <body> by next/font, NOT on <html>/<root>.
@@ -203,6 +199,24 @@ button:disabled { cursor: wait; opacity: .72; }
 .mast-foot b { color: var(--mut); font-weight: 500; }
 .mast-foot .up { color: var(--ok); font-family: var(--mono); font-size: 11px; }
 
+/* ── recent learning ─────────────────────────────────────── */
+.recent-learning { min-width: 0; overflow: hidden; padding: 18px 22px 20px; }
+.recent-learning .tag { font: 600 10px var(--mono); }
+.recent-learning .mast-list { margin-bottom: 13px; }
+.recent-learning .mast-item { min-width: 0; padding: 8px 0; }
+.recent-learning .mast-item:last-child { padding-bottom: 0; }
+.recent-learning .mast-name { min-width: 0; color: var(--text); font: 600 15px/1.3 var(--sans); overflow-wrap: anywhere; }
+.recent-learning .mast-pct { flex: none; font: 500 11.5px/1.4 var(--mono); }
+.recent-learning-summary { display: -webkit-box; margin-top: 7px; overflow: hidden; color: var(--mut); font: 400 13px/1.5 var(--sans); overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.recent-learning-chips { display: flex; min-width: 0; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+.recent-learning-chips.weak { margin-top: 4px; }
+.recent-learning-chip { max-width: 100%; padding: 1px 6px; border-radius: 4px; font: 500 10.5px/1.4 var(--mono); overflow-wrap: anywhere; }
+.recent-learning-chip.learned { background: var(--ok-opt); color: var(--ok); }
+.recent-learning-chip.needs-work { background: var(--now-bg); color: var(--accent-text); }
+.recent-learning .mast-foot { padding-top: 13px; }
+.recent-learning-action { color: var(--accent-text); font: 600 13px/1.4 var(--sans); text-decoration: none; }
+.recent-learning-action:hover { color: var(--bright); text-decoration: underline; }
+
 /* ── assistant ───────────────────────────────────────────── */
 .assist { padding: 18px 20px 16px; }
 .a-head { display: flex; align-items: center; gap: 10px; }
@@ -221,9 +235,9 @@ button:disabled { cursor: wait; opacity: .72; }
 .msg-l p b { color: var(--bright); font-weight: 500; }
 .mmeta { display: block; margin-top: 5px; font: 400 10px var(--mono); color: var(--dim); }
 .a-input { margin-top: 16px; display: flex; gap: 8px; }
-.a-input input { flex: 1; background: var(--input-bg); border: 1px solid var(--linesoft); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text); outline: 0; }
-.a-input input:focus { border-color: var(--input-focus); }
-.a-input input::placeholder { color: var(--dim); }
+.a-input input, .a-input textarea { flex: 1; background: var(--input-bg); border: 1px solid var(--linesoft); border-radius: 8px; padding: 10px 12px; font: 400 13px var(--sans); color: var(--text); outline: 0; }
+.a-input input:focus, .a-input textarea:focus { border-color: var(--input-focus); }
+.a-input input::placeholder, .a-input textarea::placeholder { color: var(--dim); }
 .a-send { width: 38px; flex: none; border-radius: 8px; background: var(--accent); color: var(--btn-ink); font-size: 15px; font-weight: 600; display: grid; place-items: center; text-decoration: none; }
 .a-send:hover { background: var(--btn-hover); }
 .a-note { margin-top: 10px; font: 400 10.5px var(--mono); color: var(--dim); }
@@ -418,11 +432,24 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .grounding-badge.general { color: var(--dim); }
 .chat-user { background: var(--bubble); }
 .companion-actions { display: grid; gap: 4px; padding: 10px; }
+.companion-actions-flush { padding-top: 0; border-top: 1px solid var(--linesoft); }
+.companion-actions a { display: block; padding: 7px 10px 7px 16px; border: 1px solid var(--line); border-radius: 6px; color: var(--mut); text-decoration: none; font-size: 12px; transition: color .16s, border .16s, background .16s; }
+.companion-actions a:hover { color: var(--text); border-color: var(--ghost-bd-h); background: var(--hover-bg); }
 .companion-actions button { position: relative; padding: 7px 10px 7px 16px; border: 1px solid var(--line); border-radius: 6px; color: var(--mut); background: transparent; text-align: left; cursor: pointer; font-size: 12px; transition: color .16s, border .16s, background .16s; }
 .companion-actions button::before { content: ""; position: absolute; left: 7px; top: 50%; width: 3px; height: 3px; border-radius: 50%; background: var(--dim); }
 .companion-actions button:hover { color: var(--text); border-color: var(--ghost-bd-h); background: var(--hover-bg); }
 .companion-actions button.active { color: var(--accent-text); border-color: var(--accent); background: var(--now-bg); }
 .companion-actions button.active::before { background: var(--accent); }
+.log-preview { margin: 0 10px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--now-bg); }
+.log-preview .message-label { display: block; margin-bottom: 6px; color: var(--accent-text); }
+.log-preview p { font: 400 12.5px/1.55 var(--sans); color: var(--text); }
+.log-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.log-chip { font: 500 10px var(--mono); padding: 1px 6px; border-radius: 4px; text-transform: lowercase; }
+.log-chip.ok { background: var(--ok-opt); color: var(--ok); }
+.log-chip.weak { background: var(--now-bg); color: var(--accent-text); border: 1px solid var(--accent); }
+.log-next { margin-top: 6px; font: 400 11px var(--mono); color: var(--mut); }
+.log-edit { width: 100%; resize: vertical; padding: 8px 10px; border: 1px solid var(--linesoft); border-radius: 6px; outline: none; color: var(--text); background: var(--input-bg); font: 400 12.5px/1.55 var(--sans); }
+.log-edit:focus { border-color: var(--input-focus); }
 .panel-footnote { margin: 0; padding: 10px 14px; border-top: 1px solid var(--linesoft); color: var(--dim); font: 400 10px/1.5 var(--mono); }
 .robin-error { padding: 0 15px; color: var(--danger); font-size: 12px; }
 .robin-ask { padding: 12px 14px 14px; }

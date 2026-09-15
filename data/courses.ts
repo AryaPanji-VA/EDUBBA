@@ -20,8 +20,8 @@ export const courses: Course[] = [
   { slug: "networking", code: "CS-140", title: "Networking and Communication", description: "Follow data as it moves between devices, protocols, and people.", progress: 0, lessons: 10, status: "Not started" },
 ];
 
-// Progress and status still belong to the Phase 1 presentation layer.
-// The database stores shared course metadata, not Arya's personal progress.
+// These values are presentation fallbacks. Persisted lesson progress is authoritative
+// for implemented lesson routes; broader course progress remains a later phase.
 export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "progress" | "status">> =
   Object.fromEntries(
     courses.map(({ slug, code, progress, status }) => [slug, { code, progress, status }]),
@@ -29,7 +29,7 @@ export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "pro
 
 export type LessonPresentationState = "completed" | "current" | "locked";
 
-// Personal learning state remains local until ROBIN has users and progress storage.
+// Static curriculum fallback used when the local progress API is unavailable.
 export const programmingLessonStateBySlug: Record<string, LessonPresentationState> = {
   "what-is-programming": "completed",
   "programming-languages": "completed",

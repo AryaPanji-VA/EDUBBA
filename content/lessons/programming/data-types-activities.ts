@@ -32,5 +32,5 @@ export const dataTypesActivities: LessonActivity[] = [
   { id: "robin-check", type: "robin_check", title: "ROBIN CHECK · Explain it back", concept: "data_type",
     content: ["Kenapa 42 dan \"42\" itu berbeda walaupun kelihatannya mirip?"] },
   { id: "connect", type: "connect", title: "CONNECT · Where this goes next", concept: "type_inspection",
-    content: ["Data Types → type conversion → operators → conditionals → collections", "Type awareness will matter when you learn about type conversion (int(\"42\") → 42), conditional logic (bool drives if statements), and collections (lists hold many typed values).", "Completing this flow is not a mastery score. Your answers and position stay on this page only and reset on reload."] },
+    content: ["Data Types → type conversion → operators → conditionals → collections", "Type awareness will matter when you learn about type conversion (int(\"42\") → 42), conditional logic (bool drives if statements), and collections (lists hold many typed values).", "Completing this flow is not a mastery score. Your meaningful answers and position are saved so you can continue after reload."] },
 ];

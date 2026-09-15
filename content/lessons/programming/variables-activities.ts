@@ -27,5 +27,5 @@ export const variablesActivities: LessonActivity[] = [
   { id: "robin-check", type: "robin_check", title: "ROBIN CHECK · Explain it back", concept: "assignment",
     content: ["Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python menjalankan x = 5?"] },
   { id: "connect", type: "connect", title: "CONNECT · Where this goes next", concept: "connections",
-    content: ["Variables → expressions → conditionals → loops → functions", "Expressions use named values. Conditionals make choices using them, loops update them, and functions organize work around them. Name binding will matter again when you learn function scope.", "Completing this flow is not a mastery score. Your answers and position stay on this page only and reset on reload."] },
+    content: ["Variables → expressions → conditionals → loops → functions", "Expressions use named values. Conditionals make choices using them, loops update them, and functions organize work around them. Name binding will matter again when you learn function scope.", "Completing this flow is not a mastery score. Your meaningful answers and position are saved so you can continue after reload."] },
 ];

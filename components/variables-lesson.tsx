@@ -6,11 +6,13 @@ import { TopBar } from "@/components/top-bar";
 import { getVariablesActivities, localizeSourceNote, lessonCopy, lessonLanguageStorageKey, localizeVariablesContent, type LessonLanguage } from "@/content/lessons/variables-localization";
 import { variablesReinforcement, variablesMasteryConceptLabels } from "@/content/lessons/programming/variables-lesson-config";
 import { RobinCheck } from "@/components/robin-check";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import type { DeliveredLesson } from "@/content/lessons/types";
 import { RobinCompanion } from "@/components/robin-companion";
 import type { RobinState } from "@/lib/robin/types";
+import { useProgress } from "@/lib/progress/use-progress";
+import { LearningLogOffer } from "@/components/learning-log-offer";
 
 type LessonResponse = {
   lesson?: DeliveredLesson;
@@ -28,11 +30,19 @@ export function VariablesLesson() {
   const [copiedExample, setCopiedExample] = useState<string | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [submittedChecks, setSubmittedChecks] = useState<Record<number, boolean>>({});
+  const [showLogOffer, setShowLogOffer] = useState(false);
 
   const [language, setLanguage] = useState<LessonLanguage>("id");
   const copy = lessonCopy[language];
   const content = lesson ? localizeVariablesContent(lesson.content, language) : null;
-  const activities = getVariablesActivities(language);
+  const activities = useMemo(() => getVariablesActivities(language), [language]);
+  const progress = useProgress("variables", activities, "programming");
+
+  useEffect(() => {
+    if (!progress.isLoaded) return;
+    setCheckComplete(progress.robinCheckComplete);
+    setShowLogOffer(progress.complete && progress.learningLogStatus === "pending");
+  }, [progress.complete, progress.isLoaded, progress.learningLogStatus, progress.robinCheckComplete]);
 
   useEffect(() => {
     try {
@@ -102,6 +112,20 @@ export function VariablesLesson() {
     pulseSignal();
   }
 
+  function handleCheckComplete(complete: boolean) {
+    setCheckComplete(complete);
+    progress.recordRobinCheck(complete);
+  }
+
+  async function handleComplete() {
+    if (await progress.markComplete()) setShowLogOffer(true);
+  }
+
+  async function handleLogDecision(decision: "saved" | "skipped") {
+    await progress.markLearningLog(decision);
+    setShowLogOffer(false);
+  }
+
   return (
     <AppShell active="lesson" signalMode={sourceMode ? "quiet" : robinState === "error" ? "error" : robinState === "thinking" ? "active" : "calm"} signalPulse={signalPulse}>
       <TopBar
@@ -127,7 +151,7 @@ export function VariablesLesson() {
             <div className="lesson-meta"><span>◷ {lesson.estimatedMinutes} min</span><span>{copy.beginner}</span><span>{copy.structured}</span><span>{lesson.sources.length} {copy.sources}</span></div>
           </header>
 
-          <LessonActivityRenderer activities={activities} lessonSlug="variables" language={language} copy={copy} masteryConceptLabels={variablesMasteryConceptLabels} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="variables" language={language} copy={copy} sourceMode={sourceMode} onCompleteChange={setCheckComplete} reinforcement={variablesReinforcement} />}>
+          <LessonActivityRenderer activities={activities} lessonSlug="variables" language={language} copy={copy} masteryConceptLabels={variablesMasteryConceptLabels} sourceMode={sourceMode} robinCheckComplete={checkComplete} robinCheck={<RobinCheck lessonSlug="variables" language={language} copy={copy} sourceMode={sourceMode} onCompleteChange={handleCheckComplete} reinforcement={variablesReinforcement} />} progressStep={progress.step} progressComplete={progress.complete} progressLoaded={progress.isLoaded} progressAnswers={progress.answers} completedActivityIds={progress.completedActivityIds} onStepChange={progress.setStep} onAnswerSubmit={progress.recordAnswer} onComplete={handleComplete}>
             <details className="activity-supplement"><summary>{copy.notes}</summary>
           <section className="lesson-section academic"><span className="section-number">02</span><div><span className="academic-label">{copy.academic}</span><h2>{copy.definition}</h2>{content.academicExplanation.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div></section>
 
@@ -155,6 +179,8 @@ export function VariablesLesson() {
 
             </details>
           </LessonActivityRenderer>
+
+          {showLogOffer && <LearningLogOffer lessonSlug="variables" onDecision={handleLogDecision} />}
 
           <details className="references" id="lesson-references"><summary>{copy.sourceAccess}</summary><span className="card-kicker">{copy.sourceSupport}</span><p className="source-intro">{copy.sourceIntro}</p><ol>{lesson.sources.map((source, index) => <li className="source-item" key={source.url}><span>{String(index + 1).padStart(2, "0")}</span><div><a href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong> ↗</a><div className="source-meta"><span>{source.publisher ?? copy.unknownPublisher}</span><span>{language === "id" ? ({ documentation: "dokumentasi", textbook: "buku teks", course: "materi kuliah", article: "artikel" }[source.sourceType]) : source.sourceType}</span></div>{source.relevanceNote && <p>{localizeSourceNote(source.relevanceNote, language)}</p>}</div></li>)}</ol></details>
 

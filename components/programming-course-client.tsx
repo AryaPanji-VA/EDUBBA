@@ -200,7 +200,7 @@ export function ProgrammingCourseClient() {
                               {state === "completed" ? (
                                 <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
                               ) : state === "current" ? (
-                                <Link className="cmap-laction" href={`/courses/programming/${lesson.slug}`}>Resume →</Link>
+                                <span className="cmap-laction">Resume →</span>
                               ) : (
                                 <span className="cmap-lock">{state === "locked" ? "locked" : "next"}</span>
                               )}

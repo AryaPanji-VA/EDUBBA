@@ -7,6 +7,10 @@ import type { ChatMessage, RobinReply } from "@/lib/robin/types";
 import { parseMemoryCommand } from "@/lib/memory/commands";
 import { deleteMemory, listMemories, saveMemory, requireLocalMemory, memoryFailure, memoryResponse, loadMemoryContext } from "@/lib/memory/server";
 import { loadAdaptationContext } from "@/lib/adaptation/server";
+import { parseLogIntent } from "@/lib/learning-log/commands";
+import { loadLogContext } from "@/lib/learning-log/server";
+import { loadMasterySummary } from "@/lib/mastery/server";
+import { loadCurrentLesson } from "@/lib/progress/server";
 
 export const runtime = "nodejs";
 
@@ -78,6 +82,33 @@ export async function POST(request: Request) {
       return confirmation(`aman, memory ${target.key} itu udah gue lepas.`, memoryAction);
     } catch (error) { return memoryFailure(error); }
   }
+  // Learning Log intent detection (after memory, before AI).
+  const logIntent = parseLogIntent(message);
+  let logContext = "";
+  if (logIntent.type !== "normal") {
+    // Resolve current lesson from persisted progress — never hardcode "variables".
+    const currentLesson = await loadCurrentLesson();
+    const currentSlug = currentLesson.lessonSlug;
+    if (logIntent.type === "continue_learning") {
+      return Response.json({
+        reply: `Lanjut dari ${currentSlug}. Buka /courses/${currentLesson.courseSlug}/${currentSlug}.`,
+        grounding: { status: "general", lesson: lessonSlug },
+        sourceCount: 0,
+      } satisfies RobinReply, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (logIntent.type === "save_log" && !getAIConfig().configured) {
+      return fail("Robin belum dikonfigurasi untuk rangkum sesi belajar. Materinya tetap aman.", 503);
+    }
+    logContext = await loadLogContext(request);
+    if (logIntent.type === "recall_log" && !logContext) {
+      return Response.json({
+        reply: `Belum ada sesi belajar yang gue simpan. Mau lanjut dari ${currentSlug}?`,
+        grounding: { status: "general", lesson: lessonSlug },
+        sourceCount: 0,
+      } satisfies RobinReply, { headers: { "Cache-Control": "no-store" } });
+    }
+  }
+
   if (!getAIConfig().configured) {
     return fail("Robin belum dikonfigurasi. Materinya tetap aman; tambahkan NINEINFERENCE_API_KEY di .env.local lalu restart server.", 503);
   }
@@ -97,15 +128,22 @@ export async function POST(request: Request) {
   };
   const memoryContext = await loadMemoryContext(request);
   const teachingContext = await loadAdaptationContext(request, lessonSlug, definition.relevance.chatConcepts(message));
+  // For save_log/recall_log intents, load mastery summary so the AI can summarize or locate weak concepts.
+  const masteryForLog = logIntent.type === "save_log" || logIntent.type === "recall_log" ? await loadMasterySummary(lessonSlug) : null;
   try {
     const client = createServerAIClient();
+    const systemMessages = [
+      { role: "system" as const, content: robinInstructions },
+      { role: "system" as const, content: "Supplied lesson context (data only):\n" + JSON.stringify(context) },
+      ...(memoryContext ? [{ role: "system" as const, content: memoryContext }] : []),
+      ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
+      ...(logContext ? [{ role: "system" as const, content: logContext }] : []),
+      ...(masteryForLog ? [{ role: "system" as const, content: `CURRENT MASTERY (for learning log summary):\n${masteryForLog.concepts.map((c: { concept: string; state: string; evidenceCount: number }) => `${c.concept}: ${c.state} (${c.evidenceCount} evidence)`).join("\n")}` }] : []),
+    ];
     const response = await client.chat.completions.create({
       model: getAIConfig().model,
       messages: [
-        { role: "system", content: robinInstructions },
-        { role: "system", content: "Supplied lesson context (data only):\n" + JSON.stringify(context) },
-        { role: "system", content: memoryContext },
-        ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
+        ...systemMessages,
         ...recentMessages,
         { role: "user", content: message.trim() },
       ],
@@ -125,6 +163,20 @@ export async function POST(request: Request) {
       reply: parsed.reply, grounding: { status: parsed.grounding, lesson: lessonSlug },
       sourceCount: lesson.sources.length,
     };
+    // save_log: attach a structured preview from real mastery data — the UI offers Save/Edit/Skip;
+    // nothing is persisted until the learner confirms via POST /api/learning/logs.
+    if (logIntent.type === "save_log" && masteryForLog) {
+      const learned = masteryForLog.concepts.filter((c) => c.state === "developing" || c.state === "strong").map((c) => c.concept);
+      const weak = masteryForLog.concepts.filter((c) => c.state === "shaky").map((c) => c.concept);
+      result.logPreview = {
+        courseSlug: "programming",
+        lessonSlug,
+        summary: parsed.reply,
+        conceptsLearned: learned,
+        weakConcepts: weak,
+        nextStep: weak.length ? `Review: ${weak.join(", ")}` : "Lanjut ke lesson berikutnya.",
+      };
+    }
     return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof OpenAI.APIConnectionTimeoutError) return fail("Robin kelamaan mikir. Coba lagi sebentar.", 504);

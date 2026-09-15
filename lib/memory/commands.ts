@@ -6,6 +6,11 @@ type Command = { type: "normal" } | { type: "clarify"; reply: string } |
 
 export function parseMemoryCommand(message: string): Command {
   const text = message.toLowerCase().trim();
+  // Defer to Learning Log when the message is about recording/recalling a study session,
+  // not a preference/concept. These phrases must not be intercepted as memory saves.
+  if (/\b(catat|catet|catatin|catetin|ringkas|ringkasin)\s+.*(pelajarin|belajar|sesi|hari ini|learned)|\b(apa yang (gue|lu) (pelajarin|belajar|blm|belum))|(terakhir|kemarin).*belajar|(lanjut|lanjutin).*(dari mana|dari terakhir)|\blemah di mana\b|\bmasih lemah\b/.test(text)) {
+    return { type: "normal" };
+  }
   const forget = /\b(lupain|lupakan|forget|hapus|jangan inget)\b/.test(text);
   const save = /\b(inget|ingat|remember|catet|catat|simpan|save)\b/.test(text);
   if (!forget && !save) return { type: "normal" };
