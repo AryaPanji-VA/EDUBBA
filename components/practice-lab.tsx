@@ -7,6 +7,7 @@ import { TopBar } from "@/components/top-bar";
 import { ProgressBar } from "@/components/progress-bar";
 import { RobinCompanion } from "@/components/robin-companion";
 import { LearningLogOffer } from "@/components/learning-log-offer";
+import { checkPracticeExercise } from "@/lib/practice/check";
 import { getPracticeTrack } from "@/lib/practice/registry";
 import { usePractice } from "@/lib/progress/use-practice";
 import type { PracticeCheckResult, PracticeExerciseType } from "@/content/practice/types";
@@ -93,18 +94,29 @@ export function PracticeLab() {
   useEffect(() => {
     if (!practice.isLoaded || hydrated.current) return;
     hydrated.current = true;
-    if (practice.currentExerciseId) setCurrentId(practice.currentExerciseId);
-  }, [practice.isLoaded, practice.currentExerciseId]);
+    const resumedTopic = track?.topics.find((item) =>
+      item.exercises.some((itemExercise) => itemExercise.id === practice.currentExerciseId));
+    const resumedId = resumedTopic
+      ? practice.currentExerciseId
+      : track?.topics[0]?.exercises[0]?.id ?? null;
+    if (resumedTopic) setTopicSlug(resumedTopic.lessonSlug);
+    setCurrentId(resumedId);
+    if (!resumedTopic && resumedId) practice.setCurrent(resumedId);
+  }, [practice.isLoaded, practice.currentExerciseId, practice.setCurrent, track]);
 
   // A new exercise starts with a clean attempt surface.
   const exerciseId = exercise?.id ?? null;
   useEffect(() => {
-    if (!exerciseId) return;
-    setSubmission(ordered.find((item) => item.id === exerciseId)?.starterCode ?? "");
-    setResult(null);
+    if (!exerciseId || !exercise) return;
+    const restoredAttempt = practice.attempts[exerciseId];
+    const restoredAnswer = restoredAttempt?.answer;
+    setSubmission(restoredAnswer ?? exercise.starterCode ?? "");
+    // This only reconstructs a previously persisted display result. New grading
+    // remains authoritative in POST /api/practice/check.
+    setResult(restoredAnswer ? checkPracticeExercise(exercise, restoredAnswer) : null);
     setCheckError(null);
     setHintShown(false);
-  }, [exerciseId, ordered]);
+  }, [exercise, exerciseId, practice.attempts]);
 
   function pulseSignal() {
     setSignalPulse(false);
@@ -119,13 +131,18 @@ export function PracticeLab() {
 
   function switchTopic(next: string) {
     if (next === topicSlug) return;
+    const nextTopic = track?.topics.find((item) => item.lessonSlug === next);
+    const nextExercise = nextTopic?.exercises.find((item) =>
+      !practice.completedExerciseIds.includes(item.id)) ?? nextTopic?.exercises[0] ?? null;
     setTopicSlug(next);
-    setCurrentId(null);
+    setCurrentId(nextExercise?.id ?? null);
+    practice.setCurrent(nextExercise?.id ?? null);
     setShakyConcepts([]);
   }
 
   function jumpTo(exerciseId: string) {
     setCurrentId(exerciseId);
+    practice.setCurrent(exerciseId);
   }
 
   async function check() {
@@ -142,7 +159,12 @@ export function PracticeLab() {
       const data = await response.json();
       if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : "Check belum tersedia. Coba lagi.");
       setResult(data.result as PracticeCheckResult);
-      practice.recordAttempt(exercise.id, { attemptId, status: data.result.status, misconception: data.result.misconception ?? null });
+      practice.recordAttempt(exercise.id, {
+        attemptId,
+        status: data.result.status,
+        misconception: data.result.misconception ?? null,
+        answer: submission,
+      });
       pulseSignal();
     } catch (failure) {
       setCheckError(failure instanceof Error ? failure.message : "Check belum tersedia. Coba lagi.");
@@ -153,7 +175,7 @@ export function PracticeLab() {
 
   function next() {
     if (!nextId || !exercise) return;
-    setCurrentId(nextId);
+    jumpTo(nextId);
   }
 
   return (

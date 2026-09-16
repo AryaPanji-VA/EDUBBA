@@ -23,7 +23,7 @@ export default function PracticePage() {
             <section className="panel cut continue" aria-label="Python practice track">
               <div className="continue-in">
                 <div>
-                  <span className="tag acc">{track?.title ?? "Python"} · {exerciseCount} exercises</span>
+                  <span className="tag acc">Guided Practice · Live · {exerciseCount} exercises</span>
                   <h2 className="lesson-title">Python coding gym</h2>
                   <p className="lesson-meta">{track?.topics.map((topic) => topic.title).join(" · ")}</p>
                   <p className="lesson-x">Predict output, perbaiki kode, tulis kode. <em>check-nya deterministic, Robin nemenin.</em></p>
@@ -33,6 +33,18 @@ export default function PracticePage() {
                   <Link className="btn-g" href="/courses/programming">Back to course →</Link>
                 </div>
               </div>
+            </section>
+          </div>
+          <div className="col side-col">
+            <section className="panel practice-coming" aria-label="Python Sandbox coming next">
+              <span className="tag">Coming next</span>
+              <h2>Python Sandbox</h2>
+              <p>Tempat eksperimen kecil dengan Run, Reset, dan output yang ramah pemula. Belum aktif di fase ini.</p>
+            </section>
+            <section className="panel practice-coming" aria-label="Logic and Computational Thinking coming later">
+              <span className="tag">Coming later</span>
+              <h2>Logic &amp; Computational Thinking</h2>
+              <p>Latihan tracing, decomposition, pattern recognition, dan debugging reasoning. Belum aktif di fase ini.</p>
             </section>
           </div>
         </div>

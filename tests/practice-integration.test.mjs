@@ -113,6 +113,8 @@ test("practice sessions resume from persisted progress and reuse the Learning Lo
   assert.match(lab, /LearningLogOffer/, "Practice reuses the existing Save/Edit/Skip offer component");
   assert.match(lab, /lessonSlug=\{topicSlug\}/, "The offer is grounded in the practiced lesson");
   assert.match(lab, /practice\.markLog\(topicSlug, decision\)/, "Save/Skip records the decision through the practice hook");
+  assert.match(lab, /practice\.setCurrent\(exerciseId\)/, "Exercise navigation persists the current exercise");
+  assert.match(lab, /answer: submission/, "The checked answer is persisted for refresh resume");
   assert.match(hook, /fetch\("\/api\/practice\/progress"/);
   // Skip is a decision only — the existing /api/learning/logs endpoint stays the single writer.
   const offer = readFileSync(new URL("../components/learning-log-offer.tsx", import.meta.url), "utf8");
@@ -134,6 +136,10 @@ test("practice routes and the nav entry fit the existing shell", () => {
   assert.match(shell, /PracticeIcon/);
   assert.ok(readFileSync(new URL("../app/practice/page.tsx", import.meta.url), "utf8"));
   assert.ok(readFileSync(new URL("../app/practice/python/page.tsx", import.meta.url), "utf8"));
+  const landing = readFileSync(new URL("../app/practice/page.tsx", import.meta.url), "utf8");
+  assert.match(landing, /Guided Practice/);
+  assert.match(landing, /Python Sandbox/);
+  assert.match(landing, /Logic &amp; Computational Thinking/);
   // The shell keeps its existing nav architecture: no extra state, plain links.
   assert.doesNotMatch(shell, /useState|useEffect/);
 });

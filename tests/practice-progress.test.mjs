@@ -33,7 +33,7 @@ const validInput = {
   currentExerciseId: "variables-write-1",
   completedExerciseIds: ["variables-predict-1"],
   progressState: {
-    attempts: { "variables-predict-1": { attemptId: "attempt-1", status: "correct", misconception: null } },
+    attempts: { "variables-predict-1": { attemptId: "attempt-1", status: "correct", misconception: null, answer: "60" } },
     logStatus: {},
   },
   completedAt: null,
@@ -43,12 +43,14 @@ test("practice progress validation accepts the bounded resume state and rejects 
   const { validatePracticeProgressInput } = loadTypes();
   const valid = validatePracticeProgressInput(validInput);
   assert.equal(valid.progressState.attempts["variables-predict-1"].attemptId, "attempt-1");
+  assert.equal(valid.progressState.attempts["variables-predict-1"].answer, "60");
   for (const input of [
     null, [], { ...validInput, extra: true },
     { ...validInput, courseSlug: "" },
     { ...validInput, currentExerciseId: "x".repeat(81) },
     { ...validInput, completedExerciseIds: Array.from({ length: 61 }, () => "e") },
     { ...validInput, progressState: { attempts: { e: { attemptId: "a", status: "perfect", misconception: null } } } },
+    { ...validInput, progressState: { attempts: { e: { attemptId: "a", status: "correct", misconception: null, answer: "x".repeat(2001) } } } },
     { ...validInput, progressState: { logStatus: { variables: "maybe" } } },
     { ...validInput, progressState: { attempts: { e: { ...validInput.progressState.attempts["variables-predict-1"], extra: true } } } },
     { ...validInput, completedAt: "not-a-date" },
@@ -61,7 +63,7 @@ test("saved current exercise, attempts, and log decisions hydrate after refresh"
     current_exercise_id: "variables-write-1",
     completed_exercise_ids: ["variables-predict-1", "variables-predict-2"],
     progress_state: {
-      attempts: { "variables-predict-1": { attemptId: "attempt-1", status: "correct", misconception: null } },
+      attempts: { "variables-predict-1": { attemptId: "attempt-1", status: "correct", misconception: null, answer: "60" } },
       logStatus: { variables: "pending" },
     },
     completed_at: null,
@@ -69,6 +71,7 @@ test("saved current exercise, attempts, and log decisions hydrate after refresh"
   assert.equal(resumed.currentExerciseId, "variables-write-1");
   assert.deepEqual([...resumed.completedExerciseIds], ["variables-predict-1", "variables-predict-2"]);
   assert.equal(resumed.attempts["variables-predict-1"].status, "correct");
+  assert.equal(resumed.attempts["variables-predict-1"].answer, "60");
   assert.equal(resumed.logStatus.variables, "pending");
   assert.equal(resumed.isLoaded, true);
 });

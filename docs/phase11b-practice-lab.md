@@ -67,7 +67,7 @@ A small coding gym for Python fundamentals: active practice of concepts already 
 
 - New minimal `practice_progress` table (mirrors Phase 11A.5 conventions): `user_id` nullable (future-ready), single row per `course_slug` (track), `current_exercise_id`, `completed_exercise_ids`, `progress_state` jsonb (`attempts` + per-topic `logStatus`), `completed_at`
 - RLS enabled, no public policies, service_role only; `requireLocalPractice` dev-local guard
-- Only meaningful state is persisted; submission text stays transient (attempt result + exercise id are enough to resume)
+- Only meaningful state is persisted: current exercise/topic, completed IDs, checked answer/result metadata, attempt ID, and Learning Log decision. Loading, errors, open hints, and unsent drafts stay transient.
 
 ## Robin integration
 

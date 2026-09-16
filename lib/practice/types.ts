@@ -6,6 +6,8 @@ export type PersistedPracticeAttempt = {
   attemptId: string;
   status: PracticeAttemptStatus;
   misconception: string | null;
+  // Optional for backward compatibility with rows saved before answer resume.
+  answer?: string;
 };
 
 // Per-topic Learning Log decision, keyed by lesson slug — mirrors the lesson
@@ -58,15 +60,18 @@ function validatePersistedState(value: unknown): PersistedPracticeState | null {
     for (const [exerciseId, value] of entries) {
       if (!exerciseId || exerciseId.length > 80 || !value || typeof value !== "object" || Array.isArray(value)) return null;
       const attempt = value as Record<string, unknown>;
-      if (Object.keys(attempt).some((key) => !["attemptId", "status", "misconception"].includes(key)) ||
+      if (Object.keys(attempt).some((key) => !["attemptId", "status", "misconception", "answer"].includes(key)) ||
           typeof attempt.attemptId !== "string" || !attempt.attemptId || attempt.attemptId.length > 100 ||
           typeof attempt.status !== "string" || !attemptStatuses.includes(attempt.status as PracticeAttemptStatus) ||
+          (attempt.answer !== undefined &&
+           (typeof attempt.answer !== "string" || !attempt.answer.trim() || attempt.answer.length > 2_000)) ||
           (attempt.misconception !== null && attempt.misconception !== undefined &&
            (typeof attempt.misconception !== "string" || !attempt.misconception || attempt.misconception.length > 60))) return null;
       attempts[exerciseId] = {
         attemptId: attempt.attemptId,
         status: attempt.status as PracticeAttemptStatus,
         misconception: typeof attempt.misconception === "string" ? attempt.misconception : null,
+        answer: typeof attempt.answer === "string" ? attempt.answer : undefined,
       };
     }
   }
