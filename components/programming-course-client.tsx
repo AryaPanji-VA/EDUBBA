@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import {
+  implementedProgrammingLessonSlugs,
   programmingLessonStateBySlug,
   type LessonPresentationState,
 } from "@/data/courses";
@@ -36,6 +37,11 @@ type ProgrammingCourseResponse = {
   error?: string;
 };
 
+type ProgressResponse = {
+  current?: { lessonSlug?: string; completedAt?: string | null };
+  progress?: { lesson_slug: string; completed_at: string | null } | null;
+};
+
 // Pixel avatar SVG (from Kimi mockup)
 const AssistantAvatar = () => (
   <span className="a-ava" aria-hidden="true">
@@ -48,6 +54,9 @@ const AssistantAvatar = () => (
 
 export function ProgrammingCourseClient() {
   const [course, setCourse] = useState<ProgrammingCourse | null>(null);
+  const [lessonStates, setLessonStates] = useState<Record<string, LessonPresentationState>>(
+    programmingLessonStateBySlug,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +68,34 @@ export function ProgrammingCourseClient() {
       const data = await response.json() as ProgrammingCourseResponse;
       if (!response.ok) throw new Error(data.error ?? `Backend returned ${response.status}`);
       setCourse(data.course);
+
+      // Persisted lesson progress is authoritative when it is available. The
+      // static curriculum map remains the safe fallback for an offline backend.
+      try {
+        const [currentResponse, ...progressResponses] = await Promise.all([
+          fetch("/api/learning/progress"),
+          ...implementedProgrammingLessonSlugs.map((slug) =>
+            fetch(`/api/learning/progress?lesson=${encodeURIComponent(slug)}`),
+          ),
+        ]);
+        const currentData = currentResponse.ok
+          ? await currentResponse.json() as ProgressResponse
+          : null;
+        const persisted = await Promise.all(progressResponses.map(async (progressResponse) =>
+          progressResponse.ok ? await progressResponse.json() as ProgressResponse : null,
+        ));
+        const nextStates = { ...programmingLessonStateBySlug };
+        const currentSlug = currentData?.current?.lessonSlug;
+        implementedProgrammingLessonSlugs.forEach((slug, index) => {
+          const progress = persisted[index]?.progress;
+          if (progress?.completed_at) nextStates[slug] = "completed";
+          else if (slug === currentSlug) nextStates[slug] = "current";
+          else if (nextStates[slug] === "current" && currentSlug) nextStates[slug] = "locked";
+        });
+        setLessonStates(nextStates);
+      } catch {
+        // Keep the static curriculum fallback when progress is unavailable.
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Course request failed.");
     } finally {
@@ -76,14 +113,11 @@ export function ProgrammingCourseClient() {
   }
 
   // Build mbar segments for a module
-  function buildMbarSegments(lessons: Lesson[], moduleIndex: number, modules: CourseModule[]) {
-    const lessonsBefore = modules.slice(0, moduleIndex).reduce((t, m) => t + m.lessons.length, 0);
+  function buildMbarSegments(lessons: Lesson[]) {
     const segments = [];
     for (let i = 0; i < lessons.length; i++) {
-      const globalIdx = lessonsBefore + i;
-      const allLessons = modules.flatMap(m => m.lessons);
       const slug = lessons[i].slug;
-      const state = programmingLessonStateBySlug[slug] ?? "locked";
+      const state = lessonStates[slug] ?? "locked";
       segments.push(state === "completed");
     }
     return segments;
@@ -91,10 +125,17 @@ export function ProgrammingCourseClient() {
 
   const courseData = course;
   const allLessons = courseData?.modules.flatMap(m => m.lessons) ?? [];
-  const completedCount = allLessons.filter(l => programmingLessonStateBySlug[l.slug] === "completed").length;
+  const completedCount = allLessons.filter(l => lessonStates[l.slug] === "completed").length;
   const progress = allLessons.length === 0 ? 0 : Math.round((completedCount / allLessons.length) * 100);
-  const currentLesson = allLessons.find(l => programmingLessonStateBySlug[l.slug] === "current");
+  const currentLesson = allLessons.find(l => lessonStates[l.slug] === "current");
   const totalLessons = allLessons.length;
+  const masteryRows = [
+    { slug: "variables", label: "Variables", segments: 6 },
+    { slug: "data-types", label: "Data Types", segments: 4 },
+    { slug: "conditionals", label: "Conditionals", segments: 4 },
+    { slug: "loops", label: "Loops", segments: 4 },
+    { slug: "functions", label: "Functions", segments: 4 },
+  ];
 
   if (isLoading) {
     return (
@@ -153,10 +194,11 @@ export function ProgrammingCourseClient() {
           {/* Left column — curriculum signal map */}
           <div className="col">
             <section className="cmap" aria-label="Curriculum map">
-              {courseData.modules.map((module, moduleIndex) => {
+              {courseData.modules.map((module) => {
                 const lessonsInModule = module.lessons;
-                const completedInModule = lessonsInModule.filter(l => programmingLessonStateBySlug[l.slug] === "completed").length;
-                const hasCurrent = lessonsInModule.some(l => programmingLessonStateBySlug[l.slug] === "current");
+                const completedInModule = lessonsInModule.filter(l => lessonStates[l.slug] === "completed").length;
+                const hasCurrent = lessonsInModule.some(l => lessonStates[l.slug] === "current");
+                const shouldShowLessons = hasCurrent || (completedInModule > 0 && completedInModule < lessonsInModule.length);
                 const isCollapsed = !hasCurrent && completedInModule === lessonsInModule.length;
                 const moduleState = hasCurrent ? "open" : completedInModule === lessonsInModule.length ? "done" : completedInModule > 0 ? "open" : "dim";
 
@@ -170,7 +212,7 @@ export function ProgrammingCourseClient() {
                         {hasCurrent ? "in progress" : completedInModule === lessonsInModule.length ? "mastered" : "locked"}
                       </span>
                       <span className="mbar">
-                        {buildMbarSegments(lessonsInModule, moduleIndex, courseData.modules).map((filled, i) => (
+                        {buildMbarSegments(lessonsInModule).map((filled, i) => (
                           <i key={i} className={filled ? "f" : ""} />
                         ))}
                       </span>
@@ -178,12 +220,12 @@ export function ProgrammingCourseClient() {
                     </div>
 
                     {/* Lessons (only show for current/active modules) */}
-                    {hasCurrent && (
+                    {shouldShowLessons && (
                       <ul className="cmap-lessons">
                         {lessonsInModule.map((lesson, lessonIndex) => {
-                          const state: LessonPresentationState = programmingLessonStateBySlug[lesson.slug] ?? "locked";
+                          const state: LessonPresentationState = lessonStates[lesson.slug] ?? "locked";
                           const lessonNumber = `${module.position}.${lesson.position}`;
-                          const isLinkable = state === "current" && (lesson.slug === "variables" || lesson.slug === "data-types");
+                          const isLinkable = state !== "locked" && implementedProgrammingLessonSlugs.some((slug) => slug === lesson.slug);
                           const nodeStyle = state === "completed"
                             ? { background: "var(--ok)", borderColor: "var(--ok)" }
                             : state === "current"
@@ -237,18 +279,22 @@ export function ProgrammingCourseClient() {
                 <span className="shead-meta">by concept</span>
               </header>
               <ul className="mast-list">
-                <li className="mast-item hot">
-                  <div className="mast-top"><span className="mast-name">Variables</span><span className="mast-pct">completed</span></div>
-                  <div className="mbar2"><i className="f" /><i className="f" /><i className="f" /><i className="f" /><i /><i /></div>
-                </li>
-                <li className="mast-item">
-                  <div className="mast-top"><span className="mast-name">Data Types</span><span className="mast-pct">in progress</span></div>
-                  <div className="mbar2"><i /><i /><i /><i /></div>
-                </li>
-                <li className="mast-item">
-                  <div className="mast-top"><span className="mast-name">Operators</span><span className="mast-pct">locked</span></div>
-                  <div className="mbar2"><i /><i /><i /><i /></div>
-                </li>
+                {masteryRows.map((row) => {
+                  const state = lessonStates[row.slug] ?? "locked";
+                  return (
+                    <li key={row.slug} className={`mast-item ${state === "current" ? "hot" : ""}`}>
+                      <div className="mast-top">
+                        <span className="mast-name">{row.label}</span>
+                        <span className="mast-pct">{state === "current" ? "in progress" : state}</span>
+                      </div>
+                      <div className="mbar2">
+                        {Array.from({ length: row.segments }, (_, index) => (
+                          <i key={index} className={state === "completed" || (state === "current" && index === 0) ? "f" : ""} />
+                        ))}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="pxdiv" aria-hidden="true" />
               <div className="mast-foot">

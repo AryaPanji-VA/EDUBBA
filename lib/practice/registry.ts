@@ -1,6 +1,9 @@
 import type { PracticeExercise, PracticeTrack } from "@/content/practice/types";
 import { variablesPracticeExercises } from "@/content/practice/python/variables-exercises";
 import { dataTypesPracticeExercises } from "@/content/practice/python/data-types-exercises";
+import { conditionalsPracticeExercises } from "@/content/practice/python/conditionals-exercises";
+import { loopsPracticeExercises } from "@/content/practice/python/loops-exercises";
+import { functionsPracticeExercises } from "@/content/practice/python/functions-exercises";
 
 // Explicit static registration — no dynamic loading, no filesystem discovery.
 // Mirrors lib/lessons/registry.ts conventions.
@@ -12,6 +15,9 @@ const pythonTrack: PracticeTrack = {
   topics: [
     { lessonSlug: "variables", title: "Variables", exercises: variablesPracticeExercises },
     { lessonSlug: "data-types", title: "Data Types", exercises: dataTypesPracticeExercises },
+    { lessonSlug: "conditionals", title: "Conditionals", exercises: conditionalsPracticeExercises },
+    { lessonSlug: "loops", title: "Loops", exercises: loopsPracticeExercises },
+    { lessonSlug: "functions", title: "Functions", exercises: functionsPracticeExercises },
   ],
 };
 

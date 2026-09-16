@@ -1,0 +1,132 @@
+import type { PracticeExercise } from "../types";
+
+// Loops practice set — grounded in the Loops lesson.
+// Concept keys reuse the lesson mastery vocabulary:
+// loop_iteration, range_boundaries, while_condition, counter_accumulator.
+// Misconception codes reuse the lesson's Robin Check / feedback vocabulary.
+
+export const loopsPracticeExercises: PracticeExercise[] = [
+  {
+    id: "loops-predict-1",
+    lessonSlug: "loops",
+    concept: "range trace",
+    type: "predict_output",
+    language: "python",
+    prompt: "Write exactly what this prints — one number per line, in order.",
+    hint: "Where does range start by default, and where does it stop? The stop value is not included.",
+    explanation: "range(3) yields 0, 1, 2 — it starts at 0 and stops before 3. Each value prints on its own line.",
+    masteryConcepts: ["range_boundaries", "loop_iteration"],
+    code: "for i in range(3):\n    print(i)",
+    expectedOutput: "0\n1\n2",
+    misconceptionOutputs: [
+      { output: "1\n2\n3", misconception: "range_one_based", note: "range starts at 0 by default, not at 1." },
+      { output: "0\n1\n2\n3", misconception: "range_inclusive_end", note: "range stops before the stop value; 3 is never produced." },
+      { output: "3", misconception: "prints_last_value", note: "The body runs once per value — three prints, not one." },
+    ],
+    sampleSolution: "0\n1\n2",
+  },
+  {
+    id: "loops-predict-2",
+    lessonSlug: "loops",
+    concept: "while trace",
+    type: "predict_output",
+    language: "python",
+    prompt: "Follow count through every pass. Write exactly what this prints — one number per line.",
+    hint: "The body prints count and then increases it. Read the condition again on every pass, including the pass where it finally fails.",
+    explanation: "count prints as 1, 2, 3. When count becomes 4, the condition 4 <= 3 is False and the loop ends.",
+    masteryConcepts: ["while_condition", "counter_accumulator"],
+    code: "count = 1\nwhile count <= 3:\n    print(count)\n    count = count + 1",
+    expectedOutput: "1\n2\n3",
+    misconceptionOutputs: [
+      { output: "1\n2\n3\n4", misconception: "boundary_off_by_one", note: "When count is 4 the condition 4 <= 3 is already False, so 4 never prints." },
+      { output: "3", misconception: "loop_variable_confusion", note: "The body runs once per pass — each pass prints the current count, not just the last one." },
+      { output: "Forever", misconception: "missing_counter_update", note: "count is updated inside the loop, so the condition eventually turns False." },
+    ],
+    sampleSolution: "1\n2\n3",
+  },
+  {
+    id: "loops-fix-1",
+    lessonSlug: "loops",
+    concept: "Infinite while",
+    type: "fix_code",
+    language: "python",
+    prompt: "This loop never stops. Fix it by updating count inside the loop so it prints 1 through 5.",
+    hint: "The condition reads count on every pass. Which line must run inside the loop to eventually push count past 5?",
+    explanation: "A while loop only stops when its condition turns False. Adding count = count + 1 inside the body moves count toward 6, where 6 <= 5 is False and the loop ends.",
+    masteryConcepts: ["while_condition", "counter_accumulator"],
+    starterCode: "count = 1\nwhile count <= 5:\n    print(count)",
+    requiredPatterns: [
+      { source: "while\\s+count\\s*<=\\s*5\\s*:", description: "keep the while condition" },
+      { source: "print\\s*\\(\\s*count\\s*\\)", description: "keep printing count" },
+      { source: "count\\s*=\\s*count\\s*\\+\\s*1|count\\s*\\+=\\s*1", description: "increase count inside the loop" },
+    ],
+    misconceptionPatterns: [
+      { source: "print\\s*\\(\\s*count\\s*\\)(?![\\s\\S]*(\\+=|count\\s*=\\s*count\\s*\\+))", misconception: "missing_counter_update", note: "Nothing inside the loop ever changes count, so the condition stays True forever." },
+    ],
+    sampleSolution: "count = 1\nwhile count <= 5:\n    print(count)\n    count = count + 1",
+  },
+  {
+    id: "loops-fix-2",
+    lessonSlug: "loops",
+    concept: "Range boundary",
+    type: "fix_code",
+    language: "python",
+    prompt: "This program should add up 1 through 5 and print 15, but it prints 10. Fix the boundary. Target output: 15",
+    hint: "Write out which numbers range(1, 5) actually yields. Where does it stop, and what is missing?",
+    explanation: "range(1, 5) yields 1, 2, 3, 4 — it stops before 5. To include 5, the stop value must be 6: range(1, 6).",
+    masteryConcepts: ["range_boundaries", "counter_accumulator"],
+    starterCode: "total = 0\nfor number in range(1, 5):\n    total = total + number\nprint(total)",
+    requiredPatterns: [
+      { source: "range\\s*\\(\\s*1\\s*,\\s*6\\s*\\)", description: "extend the range to include 5" },
+      { source: "total\\s*=\\s*total\\s*\\+\\s*number", description: "keep accumulating number" },
+      { source: "print\\s*\\(\\s*total\\s*\\)", description: "keep printing total" },
+    ],
+    misconceptionPatterns: [
+      { source: "range\\s*\\(\\s*1\\s*,\\s*5\\s*\\)", misconception: "range_exclusive_end", note: "The boundary is still exclusive — range(1, 5) never yields 5." },
+      { source: "for[\\s\\S]*:\\s*\\n\\s*total\\s*=\\s*0", misconception: "accumulator_reset", note: "Resetting total inside the loop wipes the running sum every pass." },
+    ],
+    sampleSolution: "total = 0\nfor number in range(1, 6):\n    total = total + number\nprint(total)",
+  },
+  {
+    id: "loops-write-1",
+    lessonSlug: "loops",
+    concept: "Write a for loop",
+    type: "write_code",
+    language: "python",
+    prompt: "Write a for loop that prints the numbers 1 through 5, one per line. Use i as the loop variable and range with a start value.",
+    hint: "range needs a start and a stop — remember the stop value is excluded, so to reach 5 you must stop at 6.",
+    explanation: "for i in range(1, 6) walks i through 1, 2, 3, 4, 5, printing each. The loop body is the indented print.",
+    masteryConcepts: ["loop_iteration", "range_boundaries"],
+    requiredPatterns: [
+      { source: "for\\s+i\\s+in\\s+range\\s*\\(\\s*1\\s*,\\s*6\\s*\\)\\s*:", description: "loop i over range(1, 6)" },
+      { source: "print\\s*\\(\\s*i\\s*\\)", description: "print i inside the loop" },
+    ],
+    misconceptionPatterns: [
+      { source: "range\\s*\\(\\s*1\\s*,\\s*5\\s*\\)", misconception: "range_exclusive_end", note: "range(1, 5) stops before 5 — the last number never prints." },
+      { source: "range\\s*\\(\\s*5\\s*\\)", misconception: "boundary_off_by_one", note: "range(5) starts at 0, so 0 through 4 print instead of 1 through 5." },
+    ],
+    sampleSolution: "for i in range(1, 6):\n    print(i)",
+  },
+  {
+    id: "loops-write-2",
+    lessonSlug: "loops",
+    concept: "Write an accumulator",
+    type: "write_code",
+    language: "python",
+    prompt: "total starts at 0. Using a for loop over range(1, 6), add every number into total. Print total AFTER the loop. Target output: 15",
+    hint: "Initialize before the loop, update inside it, print after it. Each pass adds the current number to what total already holds.",
+    explanation: "total = total + number collects 1 + 2 + 3 + 4 + 5 across the five passes. The unindented print(total) runs once, after the loop, and shows 15.",
+    masteryConcepts: ["counter_accumulator", "loop_iteration"],
+    starterCode: "total = 0\n",
+    requiredPatterns: [
+      { source: "for\\s+\\w+\\s+in\\s+range\\s*\\(\\s*1\\s*,\\s*6\\s*\\)\\s*:", description: "loop over range(1, 6)" },
+      { source: "for[^\\n]*:[^\\n]*\\n\\s*total\\s*=\\s*total\\s*\\+\\s*\\w+", description: "add the current number to total inside the loop" },
+      { source: "print\\s*\\(\\s*total\\s*\\)", description: "print total after the loop" },
+    ],
+    misconceptionPatterns: [
+      { source: "for[\\s\\S]*:\\s*\\n\\s*total\\s*=\\s*0", misconception: "accumulator_reset", note: "total = 0 inside the loop wipes the running sum on every pass." },
+      { source: "range\\s*\\(\\s*1\\s*,\\s*5\\s*\\)", misconception: "range_exclusive_end", note: "range(1, 5) never yields 5, so the total falls short." },
+    ],
+    sampleSolution: "total = 0\nfor number in range(1, 6):\n    total = total + number\nprint(total)",
+  },
+];

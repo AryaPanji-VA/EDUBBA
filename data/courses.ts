@@ -29,6 +29,17 @@ export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "pro
 
 export type LessonPresentationState = "completed" | "current" | "locked";
 
+// Implemented lesson routes, in the intended beginner learning order.
+// Operators stays in the curriculum between Data Types and Conditionals, but it
+// is deliberately absent here until it has a complete lesson vertical slice.
+export const implementedProgrammingLessonSlugs = [
+  "variables",
+  "data-types",
+  "conditionals",
+  "loops",
+  "functions",
+] as const;
+
 // Static curriculum fallback used when the local progress API is unavailable.
 export const programmingLessonStateBySlug: Record<string, LessonPresentationState> = {
   "what-is-programming": "completed",
@@ -37,9 +48,9 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   "compiler-vs-interpreter": "completed",
   "source-code-to-program-execution": "locked",
   variables: "completed",
-  "data-types": "current",
+  "data-types": "completed",
   operators: "locked",
-  conditionals: "locked",
-  loops: "locked",
-  functions: "locked",
+  conditionals: "completed",
+  loops: "completed",
+  functions: "current",
 };

@@ -20,7 +20,7 @@ export type ThinkingInteraction =
   | { kind: "fields"; fields: { id: string; label: string; placeholder?: string; expected: string }[]; partialFeedback: string };
 
 export type ThinkingMasteryEvidence = {
-  lessonSlug: "variables" | "data-types";
+  lessonSlug: "variables" | "data-types" | "conditionals" | "loops" | "functions";
   concept: string;
 };
 
@@ -28,7 +28,7 @@ export type ThinkingActivity = {
   id: string;
   title: string;
   type: ThinkingActivityType;
-  lessonSlugs: ("variables" | "data-types")[];
+  lessonSlugs: ("variables" | "data-types" | "conditionals" | "loops" | "functions")[];
   concepts: string[];
   difficulty: "beginner";
   prompt: string;
@@ -46,4 +46,3 @@ export type ThinkingSubmission =
   | { kind: "multi-select"; selectedIds: string[] }
   | { kind: "ordering"; orderedIds: string[] }
   | { kind: "fields"; values: Record<string, string> };
-

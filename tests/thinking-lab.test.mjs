@@ -48,17 +48,20 @@ function correctSubmission(activity) {
   return { kind: "fields", values: Object.fromEntries(interaction.fields.map((field) => [field.id, field.expected])) };
 }
 
-test("Thinking registry ships twelve unique beginner activities across all seven modes", () => {
-  assert.equal(activities.length, 12);
-  assert.equal(new Set(activities.map((activity) => activity.id)).size, 12);
+test("Thinking registry ships twenty-four unique beginner activities across all seven modes", () => {
+  assert.equal(activities.length, 24);
+  assert.equal(new Set(activities.map((activity) => activity.id)).size, 24);
   assert.deepEqual([...new Set(activities.map((activity) => activity.type))].sort(), [
     "abstraction", "algorithm-ordering", "debug-reasoning", "decomposition",
     "pattern-recognition", "pseudocode", "trace-program",
   ]);
-  const allowedLessons = new Set(["variables", "data-types"]);
+  const allowedLessons = new Set(["variables", "data-types", "conditionals", "loops", "functions"]);
   const allowedMastery = {
     variables: new Set(["variable", "assignment", "reassignment", "expression", "name_binding", "identifier_naming"]),
     "data-types": new Set(["data_type", "integer", "float", "string", "boolean", "type_inspection"]),
+    conditionals: new Set(["conditional_flow", "comparison_expression", "branch_selection", "input_conversion"]),
+    loops: new Set(["loop_iteration", "range_boundaries", "while_condition", "counter_accumulator"]),
+    functions: new Set(["function_definition", "function_call", "parameters_arguments", "return_values"]),
   };
   for (const activity of activities) {
     assert.equal(activity.difficulty, "beginner");

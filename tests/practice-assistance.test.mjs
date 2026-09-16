@@ -23,6 +23,9 @@ function loadExerciseSet(path, exportName) {
 
 const variablesExercises = loadExerciseSet("../content/practice/python/variables-exercises.ts", "variablesPracticeExercises");
 const dataTypesExercises = loadExerciseSet("../content/practice/python/data-types-exercises.ts", "dataTypesPracticeExercises");
+const conditionalsExercises = loadExerciseSet("../content/practice/python/conditionals-exercises.ts", "conditionalsPracticeExercises");
+const loopsExercises = loadExerciseSet("../content/practice/python/loops-exercises.ts", "loopsPracticeExercises");
+const functionsExercises = loadExerciseSet("../content/practice/python/functions-exercises.ts", "functionsPracticeExercises");
 const thinkingActivities = loadExerciseSet("../content/practice/thinking/activities.ts", "thinkingActivities");
 
 const checker = {};
@@ -37,6 +40,9 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + "\nexports.getPractice
   exports: registry,
   require: (name) => name.includes("variables-exercises") ? { variablesPracticeExercises: variablesExercises }
     : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: dataTypesExercises }
+    : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: conditionalsExercises }
+    : name.includes("loops-exercises") ? { loopsPracticeExercises: loopsExercises }
+    : name.includes("functions-exercises") ? { functionsPracticeExercises: functionsExercises }
     : (() => { throw new Error(name); })(),
 });
 const thinkingRegistry = {};

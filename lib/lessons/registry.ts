@@ -23,6 +23,30 @@ import { loadDataTypesLesson } from "@/lib/lessons/data-types";
 import { dataTypesCheckInstructions } from "@/content/lessons/programming/data-types-check-instructions";
 import { dataTypesFeedbackInstructions } from "@/content/lessons/programming/data-types-feedback-instructions";
 
+import { conditionalsActivities } from "@/content/lessons/programming/conditionals-activities";
+import { conditionalsLessonContent } from "@/content/lessons/programming/conditionals";
+import { conditionalsMasteryConfig } from "@/content/lessons/programming/conditionals-mastery";
+import { conditionalsRelevance } from "@/content/lessons/programming/conditionals-relevance";
+import { loadConditionalsLesson } from "@/lib/lessons/conditionals";
+import { conditionalsCheckInstructions } from "@/content/lessons/programming/conditionals-check-instructions";
+import { conditionalsFeedbackInstructions } from "@/content/lessons/programming/conditionals-feedback-instructions";
+
+import { loopsActivities } from "@/content/lessons/programming/loops-activities";
+import { loopsLessonContent } from "@/content/lessons/programming/loops";
+import { loopsMasteryConfig } from "@/content/lessons/programming/loops-mastery";
+import { loopsRelevance } from "@/content/lessons/programming/loops-relevance";
+import { loadLoopsLesson } from "@/lib/lessons/loops";
+import { loopsCheckInstructions } from "@/content/lessons/programming/loops-check-instructions";
+import { loopsFeedbackInstructions } from "@/content/lessons/programming/loops-feedback-instructions";
+
+import { functionsActivities } from "@/content/lessons/programming/functions-activities";
+import { functionsLessonContent } from "@/content/lessons/programming/functions";
+import { functionsMasteryConfig } from "@/content/lessons/programming/functions-mastery";
+import { functionsRelevance } from "@/content/lessons/programming/functions-relevance";
+import { loadFunctionsLesson } from "@/lib/lessons/functions";
+import { functionsCheckInstructions } from "@/content/lessons/programming/functions-check-instructions";
+import { functionsFeedbackInstructions } from "@/content/lessons/programming/functions-feedback-instructions";
+
 // --- Lesson-owned adaptation relevance contract ---
 export type LessonRelevance = {
   activityConcepts(concept: string): string[];
@@ -116,10 +140,91 @@ const dataTypesDefinition: LessonDefinition = {
   },
 };
 
+const conditionalsDefinition: LessonDefinition = {
+  slug: "conditionals",
+  activities: conditionalsActivities,
+  lessonContent: conditionalsLessonContent,
+  loadLesson: loadConditionalsLesson,
+  mastery: conditionalsMasteryConfig,
+  relevance: conditionalsRelevance,
+  check: {
+    rubric: conditionalsCheckInstructions,
+    question: "Jelasin pakai bahasa lu sendiri: kapan Python menjalankan blok if, kapan elif, dan kapan else?",
+    contextLabel: "Conditionals lesson context (data only)",
+    lessonContext: {
+      academicExplanation: conditionalsLessonContent.academicExplanation,
+      codeExamples: conditionalsLessonContent.codeExamples,
+      keyTerms: conditionalsLessonContent.keyTerms,
+      commonMistakes: conditionalsLessonContent.commonMistakes,
+    },
+    concepts: ["conditional_flow", "comparison_expression", "branch_selection"],
+    misconceptions: ["assignment_vs_comparison", "missing_colon", "indentation_confusion", "string_number_comparison", "overlapping_branches"],
+  },
+  feedback: {
+    rubric: conditionalsFeedbackInstructions,
+    misconceptions: ["assignment_vs_comparison", "missing_colon", "indentation_confusion", "string_number_comparison", "overlapping_branches"],
+  },
+};
+
+const loopsDefinition: LessonDefinition = {
+  slug: "loops",
+  activities: loopsActivities,
+  lessonContent: loopsLessonContent,
+  loadLesson: loadLoopsLesson,
+  mastery: loopsMasteryConfig,
+  relevance: loopsRelevance,
+  check: {
+    rubric: loopsCheckInstructions,
+    question: "Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python menjalankan for i in range(5)? Dan apa yang bikin while bisa berhenti?",
+    contextLabel: "Loops lesson context (data only)",
+    lessonContext: {
+      academicExplanation: loopsLessonContent.academicExplanation,
+      codeExamples: loopsLessonContent.codeExamples,
+      keyTerms: loopsLessonContent.keyTerms,
+      commonMistakes: loopsLessonContent.commonMistakes,
+    },
+    concepts: ["loop_iteration", "range_boundaries", "while_condition"],
+    misconceptions: ["range_exclusive_end", "missing_counter_update", "loop_variable_confusion", "indentation_confusion"],
+  },
+  feedback: {
+    rubric: loopsFeedbackInstructions,
+    misconceptions: ["range_exclusive_end", "range_one_based", "boundary_off_by_one", "missing_counter_update", "accumulator_reset", "loop_variable_confusion", "prints_last_value", "indentation_confusion"],
+  },
+};
+
+const functionsDefinition: LessonDefinition = {
+  slug: "functions",
+  activities: functionsActivities,
+  lessonContent: functionsLessonContent,
+  loadLesson: loadFunctionsLesson,
+  mastery: functionsMasteryConfig,
+  relevance: functionsRelevance,
+  check: {
+    rubric: functionsCheckInstructions,
+    question: "Jelasin pakai bahasa lu sendiri: apa bedanya mendefinisikan function dengan memanggilnya, dan apa yang dikembalikan oleh return?",
+    contextLabel: "Functions lesson context (data only)",
+    lessonContext: {
+      academicExplanation: functionsLessonContent.academicExplanation,
+      codeExamples: functionsLessonContent.codeExamples,
+      keyTerms: functionsLessonContent.keyTerms,
+      commonMistakes: functionsLessonContent.commonMistakes,
+    },
+    concepts: ["function_definition", "function_call", "return_values"],
+    misconceptions: ["definition_without_call", "print_not_return", "parameter_argument_mismatch", "missing_parentheses"],
+  },
+  feedback: {
+    rubric: functionsFeedbackInstructions,
+    misconceptions: ["definition_without_call", "definition_executes_body", "print_not_return", "returns_expression_text", "parameter_argument_mismatch", "missing_parentheses", "arguments_uncombined", "call_syntax_invalid"],
+  },
+};
+
 // Explicit static registration — no dynamic loading, no filesystem discovery.
 const registry: Map<string, LessonDefinition> = new Map([
   ["variables", variablesDefinition],
   ["data-types", dataTypesDefinition],
+  ["conditionals", conditionalsDefinition],
+  ["loops", loopsDefinition],
+  ["functions", functionsDefinition],
 ]);
 
 export function getLessonDefinition(slug: string): LessonDefinition | null {

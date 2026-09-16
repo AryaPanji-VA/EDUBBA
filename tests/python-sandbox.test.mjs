@@ -39,11 +39,12 @@ function loadHandoff() {
   return exports;
 }
 
-test("starter registry contains the five small beginner templates", () => {
+test("starter registry contains the small beginner templates", () => {
   const { pythonStarters, getPythonStarter } = loadStarters();
-  assert.deepEqual(Array.from(pythonStarters.map((starter) => starter.id)), ["blank", "variables", "if-else", "loop", "function"]);
+  assert.deepEqual(Array.from(pythonStarters.map((starter) => starter.id)), ["blank", "variables", "data-types", "if-else", "conditionals", "loop", "while", "function", "function-return"]);
   assert.match(getPythonStarter("variables").code, /name\s*=/);
-  assert.match(getPythonStarter("loop").code, /for i in range\(5\)/);
+  assert.match(getPythonStarter("data-types").code, /type\(number\)/);
+  assert.match(getPythonStarter("loop").code, /for i in range\(1,\s*6\)/);
   assert.equal(getPythonStarter("missing"), null);
 });
 
@@ -64,7 +65,7 @@ test("reset is deterministic and returns the selected starter instead of stale e
   let current = draft.createSandboxDraft("loop", "2026-09-16T00:00:00.000Z");
   current = draft.updateSandboxDraft(current, "while True:\n    pass", "2026-09-16T00:01:00.000Z");
   const reset = draft.resetSandboxDraft(current, "2026-09-16T00:02:00.000Z");
-  assert.match(reset.code, /for i in range\(5\)/);
+  assert.match(reset.code, /for i in range\(1,\s*6\)/);
   assert.equal(reset.starterId, "loop");
   assert.equal(reset.updatedAt, "2026-09-16T00:02:00.000Z");
 });

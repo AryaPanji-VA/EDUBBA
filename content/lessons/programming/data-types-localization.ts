@@ -33,7 +33,7 @@ const indonesianActivities = [
   { title: "TRY · Identifikasi tipe 29.5", content: ["Tulis nama tipe Python (int, float, str, atau bool) untuk value 29.5."], explanation: "29.5 punya desimal, jadi tipenya float." },
   { title: "FORMALIZE · Tipe menentukan perilaku", content: ["Tipe sebuah value menentukan bagaimana Python mengartikan dan mengoperasikannya. Python dynamically typed: value punya tipe, dan sebuah nama bisa di-bind ke value dengan tipe berbeda.", "type() mengembalikan tipe dari sebuah value. String seperti \"42\" itu teks, bukan angka — nggak bisa dipakai aritmatika tanpa konversi. Tipe menentukan operasi mana yang valid."] },
   { title: "ROBIN CHECK · Jelasin balik", content: [dataTypesCopy.id.prompt] },
-  { title: "CONNECT · Konsep ini nyambung ke mana?", content: ["Data Types → konversi tipe → operator → conditionals → collections", "Kesadaran tipe penting saat belajar konversi (int(\"42\") → 42), logika kondisional (bool drive if), dan collections (list menampung banyak value bertipe.", "Selesai mengikuti alur bukan berarti mastery sudah dinilai. Jawaban penting dan posisi langkah disimpan supaya bisa lanjut setelah reload."] },
+  { title: "CONNECT · Konsep ini nyambung ke mana?", content: ["Data Types → konversi tipe → operator → conditionals → collections", "Kesadaran tipe penting saat belajar konversi (int(\"42\") → 42), logika kondisional (bool menggerakkan if), dan collections (list menampung banyak value bertipe).", "Selesai mengikuti alur bukan berarti mastery sudah dinilai. Jawaban penting dan posisi langkah disimpan supaya bisa lanjut setelah reload."] },
 ];
 
 export function getDataTypesActivities(language: LessonLanguage) {

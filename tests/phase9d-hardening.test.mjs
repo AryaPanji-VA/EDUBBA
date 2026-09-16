@@ -25,6 +25,18 @@ const { dataTypesActivities } = loadModule("content/lessons/programming/data-typ
 const { dataTypesLessonContent } = loadModule("content/lessons/programming/data-types");
 const { dataTypesMasteryConfig } = loadModule("content/lessons/programming/data-types-mastery", { LessonMasteryConfig: {} });
 const { dataTypesRelevance } = loadModule("content/lessons/programming/data-types-relevance");
+const { conditionalsActivities } = loadModule("content/lessons/programming/conditionals-activities");
+const { conditionalsLessonContent } = loadModule("content/lessons/programming/conditionals");
+const { conditionalsMasteryConfig } = loadModule("content/lessons/programming/conditionals-mastery", { LessonMasteryConfig: {} });
+const { conditionalsRelevance } = loadModule("content/lessons/programming/conditionals-relevance");
+const { loopsActivities } = loadModule("content/lessons/programming/loops-activities");
+const { loopsLessonContent } = loadModule("content/lessons/programming/loops");
+const { loopsMasteryConfig } = loadModule("content/lessons/programming/loops-mastery", { LessonMasteryConfig: {} });
+const { loopsRelevance } = loadModule("content/lessons/programming/loops-relevance");
+const { functionsActivities } = loadModule("content/lessons/programming/functions-activities");
+const { functionsLessonContent } = loadModule("content/lessons/programming/functions");
+const { functionsMasteryConfig } = loadModule("content/lessons/programming/functions-mastery", { LessonMasteryConfig: {} });
+const { functionsRelevance } = loadModule("content/lessons/programming/functions-relevance");
 
 const regRaw = stripTypeScriptTypes(readFileSync(new URL("../lib/lessons/registry.ts", import.meta.url), "utf8"), { mode: "transform" });
 const regNames = [...regRaw.matchAll(/export (?:async )?(?:function|const|class) (\w+)/g)].map((match) => match[1]);
@@ -45,6 +57,15 @@ vm.runInNewContext(regCode, {
   dataTypesActivities, dataTypesLessonContent, dataTypesMasteryConfig, dataTypesRelevance,
   loadDataTypesLesson: async () => ({}),
   dataTypesCheckInstructions: "dt-rubric", dataTypesFeedbackInstructions: "dt-feedback-rubric",
+  conditionalsActivities, conditionalsLessonContent, conditionalsMasteryConfig, conditionalsRelevance,
+  loadConditionalsLesson: async () => ({}),
+  conditionalsCheckInstructions: "cond-rubric", conditionalsFeedbackInstructions: "cond-feedback-rubric",
+  loopsActivities, loopsLessonContent, loopsMasteryConfig, loopsRelevance,
+  loadLoopsLesson: async () => ({}),
+  loopsCheckInstructions: "loops-rubric", loopsFeedbackInstructions: "loops-feedback-rubric",
+  functionsActivities, functionsLessonContent, functionsMasteryConfig, functionsRelevance,
+  loadFunctionsLesson: async () => ({}),
+  functionsCheckInstructions: "functions-rubric", functionsFeedbackInstructions: "functions-feedback-rubric",
 });
 const { getLessonDefinition, isRegisteredLesson } = regExports;
 
