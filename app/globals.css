@@ -592,6 +592,17 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 }
 
 /* Phase 11B: Practice Lab — small coding gym, consistent with Phase 10 tokens. */
+.practice-mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.practice-mode-card { display: flex; min-width: 0; min-height: 230px; flex-direction: column; padding: 22px; color: var(--text); text-decoration: none; }
+.practice-mode-card:hover { border-color: var(--input-focus); background: var(--hover-bg); }
+.practice-mode-card:focus-visible, .practice-mode-nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.practice-mode-card h2 { margin: 18px 0 8px; color: var(--lesson-title); font: 500 21px/1.3 var(--serif); }
+.practice-mode-card p { margin: 0; color: var(--mut); font-size: 13px; line-height: 1.65; }
+.practice-mode-cta { margin-top: auto; padding-top: 20px; color: var(--accent-text); font-size: 13px; font-weight: 650; }
+.practice-mode-nav { display: flex; width: fit-content; max-width: 100%; gap: 4px; margin: 0 0 22px; padding: 4px; border: 1px solid var(--linesoft); border-radius: 10px; background: var(--surface); }
+.practice-mode-nav a { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 13px; border: 1px solid transparent; border-radius: 7px; color: var(--mut); font-size: 12.5px; font-weight: 600; text-align: center; }
+.practice-mode-nav a:hover { color: var(--text); background: var(--hover-bg); }
+.practice-mode-nav a.active { border-color: var(--line); background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
 .practice-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; align-items: start; max-width: 100%; }
 .practice-grid > article { max-width: 720px; }
 .practice-topic-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 0 18px; flex-wrap: wrap; }
@@ -664,12 +675,53 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .sandbox-output { flex: 1; min-height: 400px; max-height: 620px; margin: 0; padding: 18px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--input-bg); color: var(--text); font: 400 13px/1.7 var(--mono); }
 .sandbox-output.has-error { color: var(--danger, #e9a1a1); }
 .sandbox-output-panel .panel-footnote { flex: none; }
+
+/* Phase 11B.4: Robin Practice Assistance — compact contextual card, stacks below the active surface. */
+.practice-assist { margin: 16px 0 0; padding: 14px 16px; border: 1px solid var(--accent); border-radius: 8px; background: var(--now-bg); }
+.practice-assist > .message-label { display: block; margin-bottom: 8px; color: var(--accent-text); }
+.practice-assist-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.practice-assist-actions button:disabled { opacity: .38; cursor: not-allowed; }
+.practice-assist-reply { margin: 12px 0 0; color: var(--text); font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.practice-assist-state { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; color: var(--mut); font-size: 12px; }
+.practice-assist-error { margin: 12px 0 0; color: var(--danger, #e9a1a1); font-size: 12px; line-height: 1.55; }
+.practice-assist .panel-footnote { margin: 10px 0 0; padding: 0; border-top: 0; }
+
+/* Phase 11B.3: Logic & Computational Thinking Lab. */
+.thinking-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; align-items: start; }
+.thinking-grid > article { min-width: 0; max-width: 720px; }
+.thinking-instruction { margin: 16px 0 10px; color: var(--text); font-size: 13px; font-weight: 600; }
+.thinking-options { display: grid; gap: 8px; border: 0; }
+.thinking-options label { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid var(--linesoft); border-radius: 8px; background: var(--input-bg); color: var(--mut); font-size: 13px; line-height: 1.5; cursor: pointer; }
+.thinking-options label:hover, .thinking-options label.selected { border-color: var(--input-focus); background: var(--hover-bg); color: var(--text); }
+.thinking-options input { flex: none; margin-top: 3px; accent-color: var(--accent); }
+.thinking-order { display: grid; gap: 8px; list-style: none; }
+.thinking-order li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--linesoft); border-radius: 8px; background: var(--input-bg); color: var(--text); font-size: 13px; }
+.thinking-order-number { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 5px; background: rgba(var(--nav-rgb), var(--nav-on)); color: var(--accent-text); font: 600 10px var(--mono); }
+.thinking-order li > div { display: flex; gap: 5px; }
+.thinking-order button { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid var(--line); border-radius: 6px; color: var(--mut); background: var(--panel); }
+.thinking-order button:hover:not(:disabled) { color: var(--text); border-color: var(--input-focus); }
+.thinking-order button:disabled { opacity: .3; cursor: not-allowed; }
+.thinking-fields { display: grid; gap: 10px; }
+.thinking-fields label { display: grid; grid-template-columns: minmax(120px, .55fr) minmax(0, 1fr); align-items: center; gap: 12px; color: var(--mut); font-size: 12.5px; }
+.thinking-fields input { min-width: 0; width: 100%; padding: 10px 12px; border: 1px solid var(--linesoft); border-radius: 8px; outline: none; background: var(--input-bg); color: var(--text); font: 400 13px var(--mono); }
+.thinking-fields input:focus { border-color: var(--input-focus); }
+.thinking-guide { padding: 20px; }
+.thinking-guide h2 { margin: 14px 0 8px; color: var(--lesson-title); font: 500 19px/1.3 var(--serif); }
+.thinking-guide p { color: var(--mut); font-size: 12.5px; line-height: 1.65; }
+.thinking-guide ul { display: grid; gap: 8px; margin: 16px 0; padding-left: 18px; color: var(--text); font-size: 12.5px; }
+.thinking-guide-note { padding-top: 14px; border-top: 1px solid var(--linesoft); font-family: var(--mono); font-size: 10px !important; }
 @media (max-width: 1120px) {
   .practice-grid { grid-template-columns: minmax(0, 1fr); }
   .sandbox-grid { grid-template-columns: minmax(0, 1fr); }
+  .thinking-grid { grid-template-columns: minmax(0, 1fr); }
+  .thinking-grid > article { max-width: none; }
   .sandbox-editor, .sandbox-output { min-height: 300px; }
 }
 @media (max-width: 600px) {
+  .practice-mode-grid { grid-template-columns: minmax(0, 1fr); }
+  .practice-mode-card, .practice-mode-card:last-child { grid-column: auto; min-height: 190px; }
+  .practice-mode-nav { width: 100%; }
+  .practice-mode-nav a { flex: 1 1 0; min-width: 0; padding-inline: 8px; font-size: 11px; }
   .practice-session { padding: 16px; }
   .practice-nav { align-items: stretch; flex-direction: column; }
   .sandbox-header { align-items: start; }
@@ -682,4 +734,9 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .sandbox-stdin { margin: 0 14px 14px; }
   .sandbox-stdin > div { flex-direction: column; }
   .sandbox-stdin .button { width: 100%; }
+  .thinking-fields label { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .thinking-order li { grid-template-columns: 24px minmax(0, 1fr); }
+  .thinking-order li > div { grid-column: 1 / -1; justify-content: flex-end; }
+  .practice-exercise-row { align-items: flex-start; flex-wrap: wrap; }
+  .practice-exercise-type { width: 100%; margin-left: 19px; }
 }

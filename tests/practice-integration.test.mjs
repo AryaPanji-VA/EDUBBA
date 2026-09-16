@@ -139,7 +139,7 @@ test("practice routes and the nav entry fit the existing shell", () => {
   const landing = readFileSync(new URL("../app/practice/page.tsx", import.meta.url), "utf8");
   assert.match(landing, /Guided Practice/);
   assert.match(landing, /Python Sandbox/);
-  assert.match(landing, /Logic &amp; Computational Thinking/);
+  assert.match(landing, /Logic &amp; Thinking/);
   // The shell keeps its existing nav architecture: no extra state, plain links.
   assert.doesNotMatch(shell, /useState|useEffect/);
 });

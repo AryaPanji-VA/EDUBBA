@@ -1,5 +1,5 @@
 import { requireLocalPractice, practiceResponse, practiceFailure, loadPracticeProgress, savePracticeProgress, validatePracticeProgressInput } from "@/lib/practice/server";
-import { getPracticeTrack } from "@/lib/practice/registry";
+import { getPracticeProgressDefinition } from "@/lib/practice/progress-registry";
 
 export const runtime = "nodejs";
 
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   try {
     requireLocalPractice(request);
     const track = new URL(request.url).searchParams.get("track") ?? "";
-    if (!getPracticeTrack(track)) return practiceResponse({ error: "Practice track not registered." }, 400);
+    if (!getPracticeProgressDefinition(track)) return practiceResponse({ error: "Practice track not registered." }, 400);
     const progress = await loadPracticeProgress(track);
     return practiceResponse({ progress });
   } catch (error) {
@@ -37,9 +37,9 @@ export async function POST(request: Request) {
     try { body = JSON.parse(text + decoder.decode()); } catch { return practiceResponse({ error: "JSON tidak valid." }, 400); }
     const input = validatePracticeProgressInput(body);
     if (!input) return practiceResponse({ error: "Data progress tidak valid. Butuh courseSlug." }, 400);
-    const track = getPracticeTrack(input.courseSlug);
+    const track = getPracticeProgressDefinition(input.courseSlug);
     if (!track) return practiceResponse({ error: "Practice track tidak terdaftar." }, 400);
-    const exerciseIds = new Set(track.topics.flatMap((topic) => topic.exercises.map((exercise) => exercise.id)));
+    const exerciseIds = new Set(track.activityIds);
     if ((input.currentExerciseId && !exerciseIds.has(input.currentExerciseId)) ||
         input.completedExerciseIds?.some((id) => !exerciseIds.has(id)) ||
         Object.keys(input.progressState?.attempts ?? {}).some((id) => !exerciseIds.has(id))) {

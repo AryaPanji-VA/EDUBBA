@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
 import { ProgressBar } from "@/components/progress-bar";
+import { PracticeModeNav } from "@/components/practice-mode-nav";
+import { PracticeAssist } from "@/components/practice-assist";
 import { RobinCompanion } from "@/components/robin-companion";
 import { LearningLogOffer } from "@/components/learning-log-offer";
 import { checkPracticeExercise } from "@/lib/practice/check";
@@ -202,6 +204,8 @@ export function PracticeLab() {
           </div>
         </header>
 
+        <PracticeModeNav active="guided" />
+
         <div className="practice-topic-bar">
           <div className="switcher" role="group" aria-label="Practice topic">
             {(track?.topics ?? []).map((item) => (
@@ -210,7 +214,6 @@ export function PracticeLab() {
           </div>
           <div className="practice-topic-actions">
             <span className="practice-count">{completedCount} of {topicExercises.length} complete</span>
-            <Link className="practice-ghost" href="/practice/python/sandbox">Sandbox →</Link>
           </div>
         </div>
 
@@ -251,6 +254,17 @@ export function PracticeLab() {
                 </p>}
                 {!result && attempt && <p className="practice-restored" role="status">Attempt dipulihkan: {attempt.status}. Retake bebas — check lagi untuk attempt baru.</p>}
                 {checkError && <p className="robin-error" role="alert">{checkError}</p>}
+
+                <PracticeAssist
+                  mode="guided"
+                  resetKey={exercise.id}
+                  payload={{ exerciseId: exercise.id, learnerAnswer: submission.trim() || undefined }}
+                  actions={[
+                    { action: "hint", label: "Give me a hint" },
+                    { action: "explain-result", label: "Explain why this is wrong", disabled: !result || result.status === "correct" },
+                  ]}
+                  note="Hint Robin bertahap — dia nggak langsung nyerahin jawaban. Hint deterministic di atas tetap jalan tanpa AI."
+                />
 
                 <div className="practice-nav">
                   <button className="button button-primary" disabled={!nextId} onClick={next}>Next exercise →</button>

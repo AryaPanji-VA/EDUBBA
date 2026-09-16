@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PersistedPracticeAttempt, PracticeLogStatus } from "@/lib/practice/types";
-import { getPracticeTrack } from "@/lib/practice/registry";
+import { getPracticeProgressDefinition } from "@/lib/practice/progress-registry";
 import {
   completePracticeSession, decidePracticeLog, freshPracticeState, hydratePracticeState,
   movePracticeExercise, offerPracticeLog, recordPracticeAttempt, type RuntimePracticeState,
@@ -12,10 +12,9 @@ import {
 // Persists only meaningful state (current exercise, completed exercises,
 // checked attempts, Learning Log decisions); UI state stays transient.
 export function usePractice(trackSlug: string) {
-  // The registry returns the same static track object, so these are stable.
-  const track = getPracticeTrack(trackSlug);
-  const ids = useMemo(() => track?.topics.flatMap((topic) => topic.exercises.map((exercise) => exercise.id)) ?? [], [track]);
-  const topicByLesson = useMemo(() => track?.topics.map((topic) => ({ lessonSlug: topic.lessonSlug, exerciseIds: topic.exercises.map((exercise) => exercise.id) })) ?? [], [track]);
+  const definition = useMemo(() => getPracticeProgressDefinition(trackSlug), [trackSlug]);
+  const ids = useMemo(() => definition?.activityIds ?? [], [definition]);
+  const topicByLesson = useMemo(() => definition?.logGroups ?? [], [definition]);
   const [state, setState] = useState<RuntimePracticeState>(() => freshPracticeState());
   const stateRef = useRef<RuntimePracticeState>(freshPracticeState());
   const saveQueue = useRef<Promise<unknown>>(Promise.resolve());

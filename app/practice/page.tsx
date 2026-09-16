@@ -18,37 +18,26 @@ export default function PracticePage() {
           </div>
         </header>
 
-        <div className="grid">
-          <div className="col">
-            <section className="panel cut continue" aria-label="Python practice track">
-              <div className="continue-in">
-                <div>
-                  <span className="tag acc">Guided Practice · Live · {exerciseCount} exercises</span>
-                  <h2 className="lesson-title">Python coding gym</h2>
-                  <p className="lesson-meta">{track?.topics.map((topic) => topic.title).join(" · ")}</p>
-                  <p className="lesson-x">Predict output, perbaiki kode, tulis kode. <em>check-nya deterministic, Robin nemenin.</em></p>
-                </div>
-                <div className="continue-actions">
-                  <Link className="btn-p" href="/practice/python">Open the gym →</Link>
-                  <Link className="btn-g" href="/courses/programming">Back to course →</Link>
-                </div>
-              </div>
-            </section>
-          </div>
-          <div className="col side-col">
-            <section className="panel practice-coming" aria-label="Python Sandbox">
-              <span className="tag acc">Available</span>
-              <h2>Python Sandbox</h2>
-              <p>Tempat eksperimen kecil dengan Run, Reset, starter snippets, dan output yang ramah pemula.</p>
-              <Link className="btn-g practice-mode-link" href="/practice/python/sandbox">Open Sandbox →</Link>
-            </section>
-            <section className="panel practice-coming" aria-label="Logic and Computational Thinking coming later">
-              <span className="tag">Coming later</span>
-              <h2>Logic &amp; Computational Thinking</h2>
-              <p>Latihan tracing, decomposition, pattern recognition, dan debugging reasoning. Belum aktif di fase ini.</p>
-            </section>
-          </div>
-        </div>
+        <section className="practice-mode-grid" aria-label="Practice modes">
+          <Link className="panel practice-mode-card" href="/practice/python">
+            <span className="tag acc">Live · {exerciseCount} exercises</span>
+            <h2>Guided Practice</h2>
+            <p>Latihan terstruktur dari lesson dengan feedback langsung yang jelas dan deterministic.</p>
+            <span className="practice-mode-cta">Open Guided Practice →</span>
+          </Link>
+          <Link className="panel practice-mode-card" href="/practice/python/sandbox">
+            <span className="tag acc">Available</span>
+            <h2>Python Sandbox</h2>
+            <p>Coba Python pemula dengan bebas, lalu lihat langsung apa yang dilakukan kode lu.</p>
+            <span className="practice-mode-cta">Open Sandbox →</span>
+          </Link>
+          <Link className="panel practice-mode-card" href="/practice/thinking">
+            <span className="tag acc">12 activities</span>
+            <h2>Logic &amp; Thinking</h2>
+            <p>Latih tracing, decomposition, pseudocode, dan cara menyusun algoritma tanpa tes IQ.</p>
+            <span className="practice-mode-cta">Open Thinking Lab →</span>
+          </Link>
+        </section>
       </div>
     </AppShell>
   );

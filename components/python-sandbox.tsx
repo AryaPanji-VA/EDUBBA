@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
+import { PracticeModeNav } from "@/components/practice-mode-nav";
+import { PracticeAssist } from "@/components/practice-assist";
 import { pythonStarters } from "@/content/sandbox/python-starters";
 import {
   createSandboxDraft, deserializeSandboxDraft, resetSandboxDraft,
@@ -239,8 +241,9 @@ export function PythonSandbox() {
             <h1>Coba sendiri. Rusak dikit nggak apa.</h1>
             <p>Tempat kecil buat eksperimen Python dasar. Semuanya jalan di browser—nggak ada server yang mengeksekusi kode lu.</p>
           </div>
-          <Link className="btn-g" href="/practice/python">Guided Practice →</Link>
         </header>
+
+        <PracticeModeNav active="sandbox" />
 
         <section className="sandbox-starters" aria-label="Starter snippets">
           <span className="practice-count">Start from</span>
@@ -288,6 +291,18 @@ export function PythonSandbox() {
             <p className="panel-footnote">Runs stop after 5 seconds. Imports, packages, network tools, shell, and files are disabled in this beginner sandbox.</p>
           </section>
         </div>
+
+        <PracticeAssist
+          mode="sandbox"
+          resetKey="sandbox"
+          payload={{ sandboxCode: draft.code, sandboxError: result?.error || result?.stderr || undefined }}
+          actions={[
+            { action: "explain-code", label: "Explain my code", disabled: !draft.code.trim() },
+            { action: "explain-error", label: "Explain this error", disabled: !(result && (result.error || result.stderr)) },
+            { action: "next-step", label: "What should I try next?", disabled: !draft.code.trim() },
+          ]}
+          note="Bantuan Robin bersifat opsional. Run, Reset, dan draft lu tetap jalan tanpa dia."
+        />
       </div>
     </AppShell>
   );
