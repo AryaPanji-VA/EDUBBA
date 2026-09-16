@@ -36,10 +36,11 @@ export default function PracticePage() {
             </section>
           </div>
           <div className="col side-col">
-            <section className="panel practice-coming" aria-label="Python Sandbox coming next">
-              <span className="tag">Coming next</span>
+            <section className="panel practice-coming" aria-label="Python Sandbox">
+              <span className="tag acc">Available</span>
               <h2>Python Sandbox</h2>
-              <p>Tempat eksperimen kecil dengan Run, Reset, dan output yang ramah pemula. Belum aktif di fase ini.</p>
+              <p>Tempat eksperimen kecil dengan Run, Reset, starter snippets, dan output yang ramah pemula.</p>
+              <Link className="btn-g practice-mode-link" href="/practice/python/sandbox">Open Sandbox →</Link>
             </section>
             <section className="panel practice-coming" aria-label="Logic and Computational Thinking coming later">
               <span className="tag">Coming later</span>

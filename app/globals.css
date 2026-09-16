@@ -595,6 +595,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .practice-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; align-items: start; max-width: 100%; }
 .practice-grid > article { max-width: 720px; }
 .practice-topic-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 4px 0 18px; flex-wrap: wrap; }
+.practice-topic-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .practice-count { font: 500 11px var(--mono); letter-spacing: .08em; color: var(--dim); text-transform: uppercase; }
 .practice-session { position: relative; margin: 18px 0; padding: 22px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
 .practice-session .eyebrow { color: var(--accent-text); }
@@ -627,10 +628,58 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .practice-coming { padding: 18px 20px; box-shadow: none; }
 .practice-coming h2 { margin: 12px 0 6px; font: 500 18px/1.3 var(--serif); color: var(--lesson-title); }
 .practice-coming p { margin: 0; color: var(--mut); font-size: 13px; line-height: 1.65; }
+.practice-mode-link { display: inline-flex; margin-top: 14px; }
+
+/* Phase 11B.2: beginner Python Sandbox. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.sandbox-header { align-items: end; }
+.sandbox-header > .btn-g { flex: none; }
+.sandbox-starters { display: flex; align-items: center; gap: 14px; margin: 2px 0 18px; flex-wrap: wrap; }
+.sandbox-starter-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.sandbox-starter-list button { padding: 8px 12px; border: 1px solid var(--line-bright); border-radius: 999px; background: var(--surface); color: var(--mut); font: 600 11px var(--sans); }
+.sandbox-starter-list button:hover, .sandbox-starter-list button.on { border-color: var(--accent); color: var(--text); background: var(--hover-bg); }
+.sandbox-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 18px; align-items: stretch; }
+.sandbox-panel { min-width: 0; overflow: hidden; }
+.sandbox-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 65px; padding: 14px 16px; border-bottom: 1px solid var(--linesoft); }
+.sandbox-panel-head > div { display: grid; gap: 5px; }
+.sandbox-panel-head strong { font: 500 13px var(--mono); color: var(--text); }
+.sandbox-editor { display: block; width: 100%; min-height: 400px; resize: vertical; padding: 18px; border: 0; border-radius: 0; outline: none; background: var(--input-bg); color: var(--text); font: 400 13px/1.7 var(--mono); tab-size: 4; }
+.sandbox-editor:focus { box-shadow: inset 0 0 0 1px var(--input-focus); }
+.sandbox-actions { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--linesoft); flex-wrap: wrap; }
+.sandbox-actions .button { width: auto; }
+.sandbox-actions button:disabled { opacity: .48; cursor: not-allowed; }
+.sandbox-save-state { margin-left: auto; color: var(--dim); font: 400 10px var(--mono); letter-spacing: .05em; }
+.sandbox-stdin { display: grid; gap: 8px; margin: 0 16px 16px; padding: 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--hover-bg); }
+.sandbox-stdin label { color: var(--text); font: 500 13px/1.5 var(--sans); }
+.sandbox-stdin > div { display: flex; align-items: stretch; gap: 8px; }
+.sandbox-stdin input { min-width: 0; flex: 1; padding: 10px 12px; border: 1px solid var(--line-bright); border-radius: 7px; outline: none; background: var(--input-bg); color: var(--text); font: 400 13px var(--mono); }
+.sandbox-stdin input:focus { border-color: var(--input-focus); box-shadow: 0 0 0 2px rgba(var(--nav-rgb), .1); }
+.sandbox-stdin .button { width: auto; flex: none; }
+.sandbox-stdin p { margin: 0; color: var(--dim); font: 400 10px/1.5 var(--mono); }
+.sandbox-runtime-status { color: var(--dim); font: 500 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.sandbox-runtime-status.is-ready { color: var(--success); }
+.sandbox-runtime-status.is-loading, .sandbox-runtime-status.is-running { color: var(--accent-text); }
+.sandbox-runtime-status.is-error { color: var(--danger, #e18080); }
+.sandbox-output-panel { display: flex; min-height: 100%; flex-direction: column; }
+.sandbox-output { flex: 1; min-height: 400px; max-height: 620px; margin: 0; padding: 18px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--input-bg); color: var(--text); font: 400 13px/1.7 var(--mono); }
+.sandbox-output.has-error { color: var(--danger, #e9a1a1); }
+.sandbox-output-panel .panel-footnote { flex: none; }
 @media (max-width: 1120px) {
   .practice-grid { grid-template-columns: minmax(0, 1fr); }
+  .sandbox-grid { grid-template-columns: minmax(0, 1fr); }
+  .sandbox-editor, .sandbox-output { min-height: 300px; }
 }
 @media (max-width: 600px) {
   .practice-session { padding: 16px; }
   .practice-nav { align-items: stretch; flex-direction: column; }
+  .sandbox-header { align-items: start; }
+  .sandbox-starters { align-items: flex-start; flex-direction: column; }
+  .sandbox-starter-list { width: 100%; }
+  .sandbox-starter-list button { flex: 1 1 auto; }
+  .sandbox-editor, .sandbox-output { min-height: 260px; padding: 14px; font-size: 12px; }
+  .sandbox-actions { align-items: stretch; }
+  .sandbox-save-state { width: 100%; margin-left: 0; }
+  .sandbox-stdin { margin: 0 14px 14px; }
+  .sandbox-stdin > div { flex-direction: column; }
+  .sandbox-stdin .button { width: 100%; }
 }

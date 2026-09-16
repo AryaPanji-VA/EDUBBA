@@ -9,6 +9,7 @@ import { RobinCompanion } from "@/components/robin-companion";
 import { LearningLogOffer } from "@/components/learning-log-offer";
 import { checkPracticeExercise } from "@/lib/practice/check";
 import { getPracticeTrack } from "@/lib/practice/registry";
+import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
 import type { PracticeCheckResult, PracticeExerciseType } from "@/content/practice/types";
 import type { RobinState } from "@/lib/robin/types";
@@ -178,6 +179,17 @@ export function PracticeLab() {
     jumpTo(nextId);
   }
 
+  function prepareSandbox() {
+    if (!exercise) return;
+    const handoff = createSandboxHandoff(exercise);
+    if (!handoff) return;
+    try { window.sessionStorage.setItem(SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff(handoff)); } catch {
+      // Navigation still works; the Sandbox falls back to its saved draft.
+    }
+  }
+
+  const canOpenInSandbox = Boolean(exercise?.starterCode?.trim() || exercise?.code?.trim());
+
   return (
     <AppShell active="practice" signalMode={robinState === "error" ? "error" : robinState === "thinking" ? "active" : "calm"} signalPulse={signalPulse}>
       <TopBar breadcrumb={<><Link href="/practice">Practice</Link><span className="sep">/</span><b>Python Fundamentals</b></>} />
@@ -196,7 +208,10 @@ export function PracticeLab() {
               <button key={item.lessonSlug} type="button" aria-pressed={item.lessonSlug === topicSlug} className={item.lessonSlug === topicSlug ? "on" : ""} onClick={() => switchTopic(item.lessonSlug)}>{item.title}</button>
             ))}
           </div>
-          <span className="practice-count">{completedCount} of {topicExercises.length} complete</span>
+          <div className="practice-topic-actions">
+            <span className="practice-count">{completedCount} of {topicExercises.length} complete</span>
+            <Link className="practice-ghost" href="/practice/python/sandbox">Sandbox →</Link>
+          </div>
         </div>
 
         <div className="practice-grid">
@@ -224,6 +239,7 @@ export function PracticeLab() {
                   <div className="practice-actions">
                     <button className="button button-primary" type="submit" disabled={checking || !submission.trim()}>{checking ? "Menyusun…" : "Check"}</button>
                     <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? "Hide hint" : "Hint"}</button>
+                    {canOpenInSandbox && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>Open in Sandbox</Link>}
                   </div>
                 </form>
 
