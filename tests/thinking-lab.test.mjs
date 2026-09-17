@@ -48,17 +48,18 @@ function correctSubmission(activity) {
   return { kind: "fields", values: Object.fromEntries(interaction.fields.map((field) => [field.id, field.expected])) };
 }
 
-test("Thinking registry ships twenty-four unique beginner activities across all seven modes", () => {
-  assert.equal(activities.length, 24);
-  assert.equal(new Set(activities.map((activity) => activity.id)).size, 24);
+test("Thinking registry ships twenty-eight unique beginner activities across all seven modes", () => {
+  assert.equal(activities.length, 28);
+  assert.equal(new Set(activities.map((activity) => activity.id)).size, 28);
   assert.deepEqual([...new Set(activities.map((activity) => activity.type))].sort(), [
     "abstraction", "algorithm-ordering", "debug-reasoning", "decomposition",
     "pattern-recognition", "pseudocode", "trace-program",
   ]);
-  const allowedLessons = new Set(["variables", "data-types", "conditionals", "loops", "functions"]);
+  const allowedLessons = new Set(["variables", "data-types", "operators", "conditionals", "loops", "functions"]);
   const allowedMastery = {
     variables: new Set(["variable", "assignment", "reassignment", "expression", "name_binding", "identifier_naming"]),
     "data-types": new Set(["data_type", "integer", "float", "string", "boolean", "type_inspection"]),
+    operators: new Set(["arithmetic_operations", "comparison_operators", "logical_operators", "operator_precedence"]),
     conditionals: new Set(["conditional_flow", "comparison_expression", "branch_selection", "input_conversion"]),
     loops: new Set(["loop_iteration", "range_boundaries", "while_condition", "counter_accumulator"]),
     functions: new Set(["function_definition", "function_call", "parameters_arguments", "return_values"]),
@@ -137,7 +138,8 @@ test("Thinking progress reuses stable practice attempts and does not replay grad
   assert.match(component, /usePractice\("thinking"\)/);
   assert.match(component, /deserializeThinkingSubmission\(practice\.attempts/);
   assert.match(component, /setResult\(restored \? checkThinkingActivity/);
-  assert.match(component, /const attemptId = crypto\.randomUUID\(\)/);
+  assert.match(component, /resolvePracticeAttemptId\(/);
+  assert.match(component, /previousAttempt\?\.attemptId === attemptId/);
   assert.match(component, /practice\.recordAttempt\(activity\.id/);
   assert.match(route, /recordEvidence\(mapping\.lessonSlug, mapping\.concept, evidenceType, attemptId\)/);
   assert.match(progressRoute, /getPracticeProgressDefinition/);

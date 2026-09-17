@@ -25,6 +25,10 @@ const { dataTypesActivities } = loadModule("content/lessons/programming/data-typ
 const { dataTypesLessonContent } = loadModule("content/lessons/programming/data-types");
 const { dataTypesMasteryConfig } = loadModule("content/lessons/programming/data-types-mastery", { LessonMasteryConfig: {} });
 const { dataTypesRelevance } = loadModule("content/lessons/programming/data-types-relevance");
+const { operatorsActivities } = loadModule("content/lessons/programming/operators-activities");
+const { operatorsLessonContent } = loadModule("content/lessons/programming/operators");
+const { operatorsMasteryConfig } = loadModule("content/lessons/programming/operators-mastery", { LessonMasteryConfig: {} });
+const { operatorsRelevance } = loadModule("content/lessons/programming/operators-relevance");
 const { conditionalsActivities } = loadModule("content/lessons/programming/conditionals-activities");
 const { conditionalsLessonContent } = loadModule("content/lessons/programming/conditionals");
 const { conditionalsMasteryConfig } = loadModule("content/lessons/programming/conditionals-mastery", { LessonMasteryConfig: {} });
@@ -57,6 +61,9 @@ vm.runInNewContext(regCode, {
   dataTypesActivities, dataTypesLessonContent, dataTypesMasteryConfig, dataTypesRelevance,
   loadDataTypesLesson: async () => ({}),
   dataTypesCheckInstructions: "dt-rubric", dataTypesFeedbackInstructions: "dt-feedback-rubric",
+  operatorsActivities, operatorsLessonContent, operatorsMasteryConfig, operatorsRelevance,
+  loadOperatorsLesson: async () => ({}),
+  operatorsCheckInstructions: "operators-rubric", operatorsFeedbackInstructions: "operators-feedback-rubric",
   conditionalsActivities, conditionalsLessonContent, conditionalsMasteryConfig, conditionalsRelevance,
   loadConditionalsLesson: async () => ({}),
   conditionalsCheckInstructions: "cond-rubric", conditionalsFeedbackInstructions: "cond-feedback-rubric",

@@ -13,13 +13,13 @@ The curriculum order remains:
 
 Variables, Data Types, Conditionals, Loops, and Functions are complete vertical slices. Operators keeps its third position because arithmetic and comparison expressions logically bridge values/types into decision-making.
 
-## Operators decision
+## Operators decision at the time of Phase 12.4
 
 Operators currently exists only as seeded curriculum metadata. It has no page, API route, lesson registry entry, activity flow, localization, mastery configuration, relevance mapping, Guided Practice topic, or persisted lesson progress.
 
 Building those pieces would be a content expansion comparable to Conditionals, Loops, or Functions, not a consolidation fix. Phase 12.4 therefore keeps Operators visible and intentionally locked. Existing lessons provide small prerequisite bridges: Data Types demonstrates how `+` behaves across types, Variables distinguishes `=` from `==`, and Conditionals explicitly teaches comparison operators.
 
-If a dedicated Operators lesson is desired, it should be a scoped Phase 12.4.1 vertical slice. It should avoid duplicating Conditionals and focus on arithmetic, comparison, boolean operators, precedence, and beginner misconceptions.
+Phase 12.4 recommended a scoped vertical slice instead of exposing a partial page. Phase 12.4.1 has since implemented that complete slice; see `docs/phase12-4-1-operators.md`.
 
 ## Consolidation changes
 

@@ -72,11 +72,12 @@ test("Functions is the fifth registered Guided Practice topic", () => {
     require: (name) => name.includes("functions-exercises") ? { functionsPracticeExercises: exercises }
       : name.includes("variables-exercises") ? { variablesPracticeExercises: [] }
       : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: [] }
+      : name.includes("operators-exercises") ? { operatorsPracticeExercises: [] }
       : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: [] }
       : name.includes("loops-exercises") ? { loopsPracticeExercises: [] }
       : (() => { throw new Error(name); })(),
   });
-  assert.deepEqual(Array.from(registry.getPracticeTrack("python").topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "conditionals", "loops", "functions"]);
+  assert.deepEqual(Array.from(registry.getPracticeTrack("python").topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "operators", "conditionals", "loops", "functions"]);
   assert.equal(registry.getPracticeExercise("functions-write-2").lessonSlug, "functions");
 });
 
@@ -110,6 +111,7 @@ test("Functions progress and Learning Log reuse the existing registries", () => 
     require: (name) => name.includes("functions-exercises") ? { functionsPracticeExercises: exercises }
       : name.includes("variables-exercises") ? { variablesPracticeExercises: [] }
       : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: [] }
+      : name.includes("operators-exercises") ? { operatorsPracticeExercises: [] }
       : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: [] }
       : name.includes("loops-exercises") ? { loopsPracticeExercises: [] }
       : (() => { throw new Error(name); })(),
@@ -147,7 +149,7 @@ test("Functions integrates into the course sequence and generic Practice Assista
   const client = readFileSync(new URL("../components/programming-course-client.tsx", import.meta.url), "utf8");
   const assist = readFileSync(new URL("../app/api/practice/robin/route.ts", import.meta.url), "utf8");
   assert.match(courses, /loops: "completed"/);
-  assert.match(courses, /functions: "current"/);
+  assert.match(courses, /functions: "completed"/);
   assert.match(courses, /implementedProgrammingLessonSlugs[\s\S]*"functions"/);
   assert.match(client, /state !== "locked"/);
   assert.match(client, /slug: "functions", label: "Functions"/);

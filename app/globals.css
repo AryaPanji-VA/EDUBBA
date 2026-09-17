@@ -341,6 +341,14 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .status { width: max-content; border-left: 2px solid var(--line-bright); padding-left: 8px; color: #89949a; font: .59rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; }.status-in-progress { color: var(--cyan); border-color: var(--cyan); }.status-up-next { color: #a99fff; border-color: var(--violet); }.course-progress > strong { display: block; margin-bottom: 8px; text-align: right; font: .75rem ui-monospace, monospace; }.row-arrow { color: var(--cyan); transition: transform .18s; }.course-row:hover .row-arrow { transform: translateX(3px); }.quiet-note { margin: 22px 0; color: #4e585e; font: .65rem ui-monospace, monospace; }
 .course-request-state { min-height: 220px; margin-top: 30px; display: grid; place-content: center; justify-items: center; gap: 12px; border-block: 1px solid var(--line); color: var(--cyan); text-align: center; }.course-request-state strong { font: .72rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .1em; }.course-request-state small { color: var(--muted); }.course-request-state.is-error { color: var(--danger); }.course-request-state .button { margin-top: 8px; border: 1px solid var(--line-bright); color: var(--text); background: var(--surface); }
 
+/* ── semester-aware course shelf (Phase 13.2) ───────────── */
+.switcher.semester-nav { margin-top: 26px; max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+.semester-nav button { flex: none; }
+.semester-empty { margin-top: 30px; padding: 64px 24px; border-block: 1px solid var(--line); text-align: center; }
+.semester-empty strong { display: block; margin-bottom: 10px; color: var(--text); font: 500 1.05rem var(--serif); }
+.semester-empty small { color: var(--mut); font-size: .8rem; line-height: 1.5; }
+.data-notice { margin: 18px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-left: 2px solid var(--danger); color: var(--mut); font: .7rem ui-monospace, monospace; }
+
 /* Course detail (old production CSS removed — replaced by Kimi .cmap-* classes in Phase 10D) */
 /* Lesson reading surface (Phase 10E: typography + theme-aware) */
 .lesson-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 36px; align-items: start; max-width: 100%; }

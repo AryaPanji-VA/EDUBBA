@@ -41,9 +41,11 @@ function loadHandoff() {
 
 test("starter registry contains the small beginner templates", () => {
   const { pythonStarters, getPythonStarter } = loadStarters();
-  assert.deepEqual(Array.from(pythonStarters.map((starter) => starter.id)), ["blank", "variables", "data-types", "if-else", "conditionals", "loop", "while", "function", "function-return"]);
+  assert.deepEqual(Array.from(pythonStarters.map((starter) => starter.id)), ["blank", "variables", "data-types", "operators-arithmetic", "operators-comparison", "if-else", "conditionals", "loop", "while", "function", "function-return"]);
   assert.match(getPythonStarter("variables").code, /name\s*=/);
   assert.match(getPythonStarter("data-types").code, /type\(number\)/);
+  assert.match(getPythonStarter("operators-arithmetic").code, /x % y/);
+  assert.match(getPythonStarter("operators-comparison").code, /age == 18/);
   assert.match(getPythonStarter("loop").code, /for i in range\(1,\s*6\)/);
   assert.equal(getPythonStarter("missing"), null);
 });

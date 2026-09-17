@@ -23,6 +23,14 @@ import { loadDataTypesLesson } from "@/lib/lessons/data-types";
 import { dataTypesCheckInstructions } from "@/content/lessons/programming/data-types-check-instructions";
 import { dataTypesFeedbackInstructions } from "@/content/lessons/programming/data-types-feedback-instructions";
 
+import { operatorsActivities } from "@/content/lessons/programming/operators-activities";
+import { operatorsLessonContent } from "@/content/lessons/programming/operators";
+import { operatorsMasteryConfig } from "@/content/lessons/programming/operators-mastery";
+import { operatorsRelevance } from "@/content/lessons/programming/operators-relevance";
+import { loadOperatorsLesson } from "@/lib/lessons/operators";
+import { operatorsCheckInstructions } from "@/content/lessons/programming/operators-check-instructions";
+import { operatorsFeedbackInstructions } from "@/content/lessons/programming/operators-feedback-instructions";
+
 import { conditionalsActivities } from "@/content/lessons/programming/conditionals-activities";
 import { conditionalsLessonContent } from "@/content/lessons/programming/conditionals";
 import { conditionalsMasteryConfig } from "@/content/lessons/programming/conditionals-mastery";
@@ -140,6 +148,32 @@ const dataTypesDefinition: LessonDefinition = {
   },
 };
 
+const operatorsDefinition: LessonDefinition = {
+  slug: "operators",
+  activities: operatorsActivities,
+  lessonContent: operatorsLessonContent,
+  loadLesson: loadOperatorsLesson,
+  mastery: operatorsMasteryConfig,
+  relevance: operatorsRelevance,
+  check: {
+    rubric: operatorsCheckInstructions,
+    question: "Jelasin pakai bahasa lu sendiri: apa beda = dan ==, lalu kenapa age >= 18 bisa dipakai nanti oleh if?",
+    contextLabel: "Operators lesson context (data only)",
+    lessonContext: {
+      academicExplanation: operatorsLessonContent.academicExplanation,
+      codeExamples: operatorsLessonContent.codeExamples,
+      keyTerms: operatorsLessonContent.keyTerms,
+      commonMistakes: operatorsLessonContent.commonMistakes,
+    },
+    concepts: ["comparison_operators", "logical_operators", "operator_precedence"],
+    misconceptions: ["assignment_vs_equality", "comparison_not_boolean", "and_or_confusion", "conditional_operator_confusion"],
+  },
+  feedback: {
+    rubric: operatorsFeedbackInstructions,
+    misconceptions: ["left_to_right_only", "division_operator_confusion", "remainder_confusion", "assignment_vs_equality", "comparison_returns_operand", "and_or_confusion", "not_confusion"],
+  },
+};
+
 const conditionalsDefinition: LessonDefinition = {
   slug: "conditionals",
   activities: conditionalsActivities,
@@ -222,6 +256,7 @@ const functionsDefinition: LessonDefinition = {
 const registry: Map<string, LessonDefinition> = new Map([
   ["variables", variablesDefinition],
   ["data-types", dataTypesDefinition],
+  ["operators", operatorsDefinition],
   ["conditionals", conditionalsDefinition],
   ["loops", loopsDefinition],
   ["functions", functionsDefinition],

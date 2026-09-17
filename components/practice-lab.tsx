@@ -11,6 +11,7 @@ import { RobinCompanion } from "@/components/robin-companion";
 import { LearningLogOffer } from "@/components/learning-log-offer";
 import { checkPracticeExercise } from "@/lib/practice/check";
 import { getPracticeTrack } from "@/lib/practice/registry";
+import { resolvePracticeAttemptId } from "@/lib/practice/state";
 import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
 import type { PracticeCheckResult, PracticeExerciseType } from "@/content/practice/types";
@@ -150,7 +151,17 @@ export function PracticeLab() {
 
   async function check() {
     if (!exercise || checking || !submission.trim()) return;
-    const attemptId = crypto.randomUUID();
+    const previousAttempt = practice.attempts[exercise.id];
+    const attemptId = resolvePracticeAttemptId(
+      previousAttempt,
+      submission,
+      () => crypto.randomUUID(),
+    );
+    if (previousAttempt?.attemptId === attemptId) {
+      setResult(checkPracticeExercise(exercise, submission));
+      setCheckError(null);
+      return;
+    }
     setChecking(true);
     setCheckError(null);
     try {

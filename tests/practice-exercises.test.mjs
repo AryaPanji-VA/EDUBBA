@@ -31,12 +31,14 @@ function loadExerciseSet(path, exportName) {
 function loadRegistry() {
   const variables = loadExerciseSet("../content/practice/python/variables-exercises.ts", "variablesPracticeExercises");
   const dataTypes = loadExerciseSet("../content/practice/python/data-types-exercises.ts", "dataTypesPracticeExercises");
+  const operators = loadExerciseSet("../content/practice/python/operators-exercises.ts", "operatorsPracticeExercises");
   const conditionals = loadExerciseSet("../content/practice/python/conditionals-exercises.ts", "conditionalsPracticeExercises");
   const loops = loadExerciseSet("../content/practice/python/loops-exercises.ts", "loopsPracticeExercises");
   const functions = loadExerciseSet("../content/practice/python/functions-exercises.ts", "functionsPracticeExercises");
   return loadModule("../lib/practice/registry.ts", ["getPracticeTrack", "getPracticeExercise", "isRegisteredPracticeTrack"], {
     "@/content/practice/python/variables-exercises": { variablesPracticeExercises: variables },
     "@/content/practice/python/data-types-exercises": { dataTypesPracticeExercises: dataTypes },
+    "@/content/practice/python/operators-exercises": { operatorsPracticeExercises: operators },
     "@/content/practice/python/conditionals-exercises": { conditionalsPracticeExercises: conditionals },
     "@/content/practice/python/loops-exercises": { loopsPracticeExercises: loops },
     "@/content/practice/python/functions-exercises": { functionsPracticeExercises: functions },
@@ -47,6 +49,7 @@ function loadRegistry() {
 const masteryByLesson = {
   variables: loadExerciseSet("../content/lessons/programming/variables-mastery.ts", "variablesMasteryConfig").concepts,
   "data-types": loadExerciseSet("../content/lessons/programming/data-types-mastery.ts", "dataTypesMasteryConfig").concepts,
+  operators: loadExerciseSet("../content/lessons/programming/operators-mastery.ts", "operatorsMasteryConfig").concepts,
   conditionals: loadExerciseSet("../content/lessons/programming/conditionals-mastery.ts", "conditionalsMasteryConfig").concepts,
   loops: loadExerciseSet("../content/lessons/programming/loops-mastery.ts", "loopsMasteryConfig").concepts,
   functions: loadExerciseSet("../content/lessons/programming/functions-mastery.ts", "functionsMasteryConfig").concepts,
@@ -62,12 +65,13 @@ test("registry exposes the python track with all lesson topics and finds exercis
   assert.equal(registry.isRegisteredPracticeTrack("python"), true);
   assert.equal(registry.isRegisteredPracticeTrack("rust"), false);
   const track = registry.getPracticeTrack("python");
-  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "conditionals", "loops", "functions"]);
+  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "operators", "conditionals", "loops", "functions"]);
   assert.equal(track.topics[0].exercises.length, 6);
   assert.equal(track.topics[1].exercises.length, 6);
   assert.equal(track.topics[2].exercises.length, 6);
   assert.equal(track.topics[3].exercises.length, 6);
   assert.equal(track.topics[4].exercises.length, 6);
+  assert.equal(track.topics[5].exercises.length, 6);
   for (const topic of track.topics) {
     for (const exercise of topic.exercises) {
       // Cross-realm vm objects: compare by identity of the id, not deep reference.
@@ -82,7 +86,7 @@ test("exercise definitions are complete, unique, and type-consistent", () => {
   const ids = new Set(exercises.map((exercise) => exercise.id));
   assert.equal(ids.size, exercises.length);
   for (const exercise of exercises) {
-    assert.match(exercise.id, /^(variables|data-types|conditionals|loops|functions)-(predict|fix|write)-\d$/);
+    assert.match(exercise.id, /^(variables|data-types|operators|conditionals|loops|functions)-(predict|fix|write)-\d$/);
     assert.ok(["predict_output", "fix_code", "write_code"].includes(exercise.type));
     assert.equal(exercise.language, "python");
     assert.ok(exercise.prompt.trim(), `${exercise.id} needs a prompt`);
@@ -147,7 +151,7 @@ test("misconception vocabulary never tags a correct answer", () => {
 
 test("the set covers all three exercise types for every topic", () => {
   const exercises = allExercises();
-  for (const lessonSlug of ["variables", "data-types", "conditionals", "loops", "functions"]) {
+  for (const lessonSlug of ["variables", "data-types", "operators", "conditionals", "loops", "functions"]) {
     const set = exercises.filter((exercise) => exercise.lessonSlug === lessonSlug);
     for (const type of ["predict_output", "fix_code", "write_code"]) {
       assert.equal(set.filter((exercise) => exercise.type === type).length, 2, `${lessonSlug} needs 2 ${type}`);

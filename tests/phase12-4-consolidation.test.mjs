@@ -17,7 +17,7 @@ function loadExport(path, exportName, deps = {}) {
   return exports[exportName];
 }
 
-const implemented = ["variables", "data-types", "conditionals", "loops", "functions"];
+const implemented = ["variables", "data-types", "operators", "conditionals", "loops", "functions"];
 
 test("curriculum keeps the coherent six-lesson order with Operators third", () => {
   const seed = read("database/phase4-seed.sql");
@@ -29,15 +29,14 @@ test("curriculum keeps the coherent six-lesson order with Operators third", () =
   ]);
 });
 
-test("Operators remains an explicit locked placeholder instead of a partial active lesson", () => {
+test("Operators is a complete registered lesson in the intended third position", () => {
   const courseData = read("data/courses.ts");
   const registry = read("lib/lessons/registry.ts");
   const implementedBlock = courseData.match(/implementedProgrammingLessonSlugs\s*=\s*\[([\s\S]*?)\]\s*as const/)?.[1] ?? "";
-  assert.match(courseData, /operators:\s*"locked"/);
-  assert.doesNotMatch(implementedBlock, /"operators"/);
-  assert.doesNotMatch(registry, /\["operators",\s*operatorsDefinition\]/);
-  assert.equal(existsSync(new URL("app/courses/programming/operators/page.tsx", root)), false);
-  assert.equal(existsSync(new URL("app/api/lessons/operators/route.ts", root)), false);
+  assert.match(implementedBlock, /"operators"/);
+  assert.match(registry, /\["operators",\s*operatorsDefinition\]/);
+  assert.equal(existsSync(new URL("app/courses/programming/operators/page.tsx", root)), true);
+  assert.equal(existsSync(new URL("app/api/lessons/operators/route.ts", root)), true);
 });
 
 test("every implemented lesson has a page, API route, registry entry, and persistence-compatible activities", () => {
@@ -92,7 +91,7 @@ test("Sandbox starter order is minimal, unique, and covers the active beginner c
   const starters = loadExport("content/sandbox/python-starters.ts", "pythonStarters");
   assert.equal(new Set(starters.map((starter) => starter.id)).size, starters.length);
   assert.deepEqual(Array.from(starters.map((starter) => starter.id)), [
-    "blank", "variables", "data-types", "if-else", "conditionals",
+    "blank", "variables", "data-types", "operators-arithmetic", "operators-comparison", "if-else", "conditionals",
     "loop", "while", "function", "function-return",
   ]);
   assert.equal(starters.find((starter) => starter.id === "if-else").label, "Simple if / else");

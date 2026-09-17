@@ -33,6 +33,7 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + ["getPracticeTrack", "
   exports: registry,
   require: (name) => name.includes("variables-exercises") ? { variablesPracticeExercises: [] }
     : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: [] }
+    : name.includes("operators-exercises") ? { operatorsPracticeExercises: [] }
     : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: [] }
     : name.includes("loops-exercises") ? { loopsPracticeExercises: loopsExercises }
     : name.includes("functions-exercises") ? { functionsPracticeExercises: [] }
@@ -113,7 +114,7 @@ test("loops exercises grade deterministically through the real checker", () => {
 
 test("loops exercises are registered in the python track after conditionals", () => {
   const track = registry.getPracticeTrack("python");
-  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "conditionals", "loops", "functions"]);
+  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "operators", "conditionals", "loops", "functions"]);
   assert.equal(registry.getPracticeExercise("loops-write-2")?.id, "loops-write-2");
 });
 
@@ -221,7 +222,7 @@ test("thinking hint for a loops activity carries choice labels only", async () =
 test("course overview marks loops complete and Functions current in sequence", () => {
   const courses = readFileSync(new URL("../data/courses.ts", import.meta.url), "utf8");
   assert.match(courses, /loops: "completed"/);
-  assert.match(courses, /functions: "current"/);
+  assert.match(courses, /functions: "completed"/);
   assert.match(courses, /conditionals: "completed"/);
   const client = readFileSync(new URL("../components/programming-course-client.tsx", import.meta.url), "utf8");
   assert.match(courses, /implementedProgrammingLessonSlugs[\s\S]*"loops"[\s\S]*"functions"/);

@@ -86,12 +86,17 @@ export function ProgrammingCourseClient() {
         ));
         const nextStates = { ...programmingLessonStateBySlug };
         const currentSlug = currentData?.current?.lessonSlug;
+        for (const slug of implementedProgrammingLessonSlugs) nextStates[slug] = "locked";
         implementedProgrammingLessonSlugs.forEach((slug, index) => {
           const progress = persisted[index]?.progress;
           if (progress?.completed_at) nextStates[slug] = "completed";
-          else if (slug === currentSlug) nextStates[slug] = "current";
-          else if (nextStates[slug] === "current" && currentSlug) nextStates[slug] = "locked";
         });
+        const currentIndex = implementedProgrammingLessonSlugs.findIndex((slug) => slug === currentSlug);
+        const currentProgress = currentIndex >= 0 ? persisted[currentIndex]?.progress : null;
+        const activeSlug = currentIndex >= 0 && !currentProgress?.completed_at
+          ? implementedProgrammingLessonSlugs[currentIndex]
+          : implementedProgrammingLessonSlugs.find((slug) => nextStates[slug] !== "completed");
+        if (activeSlug && implementedProgrammingLessonSlugs.some((slug) => slug === activeSlug)) nextStates[activeSlug] = "current";
         setLessonStates(nextStates);
       } catch {
         // Keep the static curriculum fallback when progress is unavailable.
@@ -132,6 +137,7 @@ export function ProgrammingCourseClient() {
   const masteryRows = [
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
+    { slug: "operators", label: "Operators", segments: 4 },
     { slug: "conditionals", label: "Conditionals", segments: 4 },
     { slug: "loops", label: "Loops", segments: 4 },
     { slug: "functions", label: "Functions", segments: 4 },

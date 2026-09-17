@@ -16,6 +16,7 @@ import {
 import { getThinkingActivities, thinkingTypeLabels } from "@/lib/practice/thinking-registry";
 import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
+import { resolvePracticeAttemptId } from "@/lib/practice/state";
 
 const statusLabels: Record<PracticeCheckResult["status"], string> = {
   correct: "Reasoning-nya pas",
@@ -97,7 +98,7 @@ export function ThinkingLab() {
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all(["variables", "data-types"].map(async (lesson) => {
+    Promise.all(["variables", "data-types", "operators", "conditionals", "loops", "functions"].map(async (lesson) => {
       const response = await fetch(`/api/learning/mastery?lesson=${lesson}`, { signal: controller.signal });
       if (!response.ok) return [];
       const data = await response.json();
@@ -143,7 +144,18 @@ export function ThinkingLab() {
 
   async function check() {
     if (checking || !isThinkingSubmissionComplete(activity, submission)) return;
-    const attemptId = crypto.randomUUID();
+    const serializedSubmission = serializeThinkingSubmission(submission);
+    const previousAttempt = practice.attempts[activity.id];
+    const attemptId = resolvePracticeAttemptId(
+      previousAttempt,
+      serializedSubmission,
+      () => crypto.randomUUID(),
+    );
+    if (previousAttempt?.attemptId === attemptId) {
+      setResult(checkThinkingActivity(activity, submission));
+      setCheckError(null);
+      return;
+    }
     setChecking(true);
     setCheckError(null);
     try {
@@ -156,7 +168,7 @@ export function ThinkingLab() {
       setResult(data.result as PracticeCheckResult);
       practice.recordAttempt(activity.id, {
         attemptId, status: data.result.status, misconception: data.result.misconception ?? null,
-        answer: serializeThinkingSubmission(submission),
+        answer: serializedSubmission,
       });
     } catch (error) {
       setCheckError(error instanceof Error ? error.message : "Check belum tersedia.");

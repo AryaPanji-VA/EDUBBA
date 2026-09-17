@@ -30,11 +30,10 @@ export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "pro
 export type LessonPresentationState = "completed" | "current" | "locked";
 
 // Implemented lesson routes, in the intended beginner learning order.
-// Operators stays in the curriculum between Data Types and Conditionals, but it
-// is deliberately absent here until it has a complete lesson vertical slice.
 export const implementedProgrammingLessonSlugs = [
   "variables",
   "data-types",
+  "operators",
   "conditionals",
   "loops",
   "functions",
@@ -49,8 +48,8 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   "source-code-to-program-execution": "locked",
   variables: "completed",
   "data-types": "completed",
-  operators: "locked",
+  operators: "current",
   conditionals: "completed",
   loops: "completed",
-  functions: "current",
+  functions: "completed",
 };

@@ -20,6 +20,7 @@ function loadExerciseSet(path, exportName) {
 
 const variablesExercises = loadExerciseSet("../content/practice/python/variables-exercises.ts", "variablesPracticeExercises");
 const dataTypesExercises = loadExerciseSet("../content/practice/python/data-types-exercises.ts", "dataTypesPracticeExercises");
+const operatorsExercises = loadExerciseSet("../content/practice/python/operators-exercises.ts", "operatorsPracticeExercises");
 const conditionalsExercises = loadExerciseSet("../content/practice/python/conditionals-exercises.ts", "conditionalsPracticeExercises");
 const loopsExercises = loadExerciseSet("../content/practice/python/loops-exercises.ts", "loopsPracticeExercises");
 const functionsExercises = loadExerciseSet("../content/practice/python/functions-exercises.ts", "functionsPracticeExercises");
@@ -28,6 +29,7 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + "\nexports.getPractice
   exports: registry,
   require: (name) => name.includes("variables-exercises") ? { variablesPracticeExercises: variablesExercises }
     : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: dataTypesExercises }
+    : name.includes("operators-exercises") ? { operatorsPracticeExercises: operatorsExercises }
     : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: conditionalsExercises }
     : name.includes("loops-exercises") ? { loopsPracticeExercises: loopsExercises }
     : name.includes("functions-exercises") ? { functionsPracticeExercises: functionsExercises }
@@ -121,6 +123,8 @@ test("practice sessions resume from persisted progress and reuse the Learning Lo
   assert.match(lab, /practice\.markLog\(topicSlug, decision\)/, "Save/Skip records the decision through the practice hook");
   assert.match(lab, /practice\.setCurrent\(exerciseId\)/, "Exercise navigation persists the current exercise");
   assert.match(lab, /answer: submission/, "The checked answer is persisted for refresh resume");
+  assert.match(lab, /resolvePracticeAttemptId\(/, "An unchanged answer reuses its stable attempt id");
+  assert.match(lab, /previousAttempt\?\.attemptId === attemptId/, "An unchanged checked answer does not replay mastery evidence");
   assert.match(hook, /fetch\("\/api\/practice\/progress"/);
   // Skip is a decision only — the existing /api/learning/logs endpoint stays the single writer.
   const offer = readFileSync(new URL("../components/learning-log-offer.tsx", import.meta.url), "utf8");

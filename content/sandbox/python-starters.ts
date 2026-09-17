@@ -1,5 +1,5 @@
 export type PythonStarter = {
-  id: "blank" | "variables" | "data-types" | "if-else" | "conditionals" | "loop" | "while" | "function" | "function-return";
+  id: "blank" | "variables" | "data-types" | "operators-arithmetic" | "operators-comparison" | "if-else" | "conditionals" | "loop" | "while" | "function" | "function-return";
   label: string;
   description: string;
   code: string;
@@ -23,6 +23,18 @@ export const pythonStarters: PythonStarter[] = [
     label: "Data types",
     description: "Bandingkan angka dan teks yang terlihat sama.",
     code: 'number = 42\ntext = "42"\n\nprint(type(number))\nprint(type(text))',
+  },
+  {
+    id: "operators-arithmetic",
+    label: "Operators · arithmetic",
+    description: "Eksperimen dengan hitung dan remainder.",
+    code: "x = 10\ny = 3\n\nprint(x + y)\nprint(x * y)\nprint(x % y)",
+  },
+  {
+    id: "operators-comparison",
+    label: "Operators · comparison",
+    description: "Bandingkan value dan lihat hasil boolean.",
+    code: "age = 18\n\nprint(age >= 18)\nprint(age == 18)",
   },
   {
     id: "if-else",

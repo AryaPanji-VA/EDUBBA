@@ -21,7 +21,7 @@ function loadTypes() {
 function loadState() {
   const types = loadTypes();
   const exports = {};
-  vm.runInNewContext(transformed("../lib/practice/state.ts") + ["freshPracticeState", "hydratePracticeState", "recordPracticeAttempt", "movePracticeExercise", "offerPracticeLog", "decidePracticeLog", "completePracticeSession"].map((name) => `\nexports.${name}=${name};`).join(""), {
+  vm.runInNewContext(transformed("../lib/practice/state.ts") + ["freshPracticeState", "hydratePracticeState", "resolvePracticeAttemptId", "recordPracticeAttempt", "movePracticeExercise", "offerPracticeLog", "decidePracticeLog", "completePracticeSession"].map((name) => `\nexports.${name}=${name};`).join(""), {
     exports,
     require: (name) => name === "./types" ? types : (() => { throw new Error(name); })(),
   });
@@ -74,6 +74,17 @@ test("saved current exercise, attempts, and log decisions hydrate after refresh"
   assert.equal(resumed.attempts["variables-predict-1"].answer, "60");
   assert.equal(resumed.logStatus.variables, "pending");
   assert.equal(resumed.isLoaded, true);
+});
+
+test("an unchanged practice answer reuses its stable attempt id", () => {
+  const { resolvePracticeAttemptId } = loadState();
+  const previous = { attemptId: "attempt-1", status: "correct", misconception: null, answer: "14" };
+  let created = 0;
+  const createAttemptId = () => `attempt-new-${++created}`;
+
+  assert.equal(resolvePracticeAttemptId(previous, "14", createAttemptId), "attempt-1");
+  assert.equal(created, 0);
+  assert.equal(resolvePracticeAttemptId(previous, "20", createAttemptId), "attempt-new-1");
 });
 
 test("only a correct attempt completes an exercise; every attempt is recorded for the resume trail", () => {

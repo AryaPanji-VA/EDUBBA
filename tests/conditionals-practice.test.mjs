@@ -35,6 +35,7 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + ["getPracticeTrack", "
   exports: registry,
   require: (name) => name.includes("variables-exercises") ? { variablesPracticeExercises: variablesExercises }
     : name.includes("data-types-exercises") ? { dataTypesPracticeExercises: dataTypesExercises }
+    : name.includes("operators-exercises") ? { operatorsPracticeExercises: [] }
     : name.includes("conditionals-exercises") ? { conditionalsPracticeExercises: conditionalsExercises }
     : name.includes("loops-exercises") ? { loopsPracticeExercises: [] }
     : name.includes("functions-exercises") ? { functionsPracticeExercises: [] }
@@ -105,7 +106,7 @@ test("conditionals exercises grade deterministically through the real checker", 
 
 test("conditionals exercises are registered in the python track after the existing topics", () => {
   const track = registry.getPracticeTrack("python");
-  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "conditionals", "loops", "functions"]);
+  assert.deepEqual(Array.from(track.topics.map((topic) => topic.lessonSlug)), ["variables", "data-types", "operators", "conditionals", "loops", "functions"]);
   const conditionalsTopic = track.topics.find((topic) => topic.lessonSlug === "conditionals");
   assert.equal(conditionalsTopic.title, "Conditionals");
   assert.equal(conditionalsTopic.exercises.length, 6);

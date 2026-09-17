@@ -42,6 +42,14 @@ export function hydratePracticeState(saved: SavedPracticeState | null): RuntimeP
   };
 }
 
+export function resolvePracticeAttemptId(
+  previousAttempt: PersistedPracticeAttempt | undefined,
+  answer: string,
+  createAttemptId: () => string,
+): string {
+  return previousAttempt?.answer === answer ? previousAttempt.attemptId : createAttemptId();
+}
+
 // Record one checked attempt. Only a correct attempt completes an exercise;
 // the attempt id is stable so refreshed sessions never duplicate evidence.
 export function recordPracticeAttempt(
