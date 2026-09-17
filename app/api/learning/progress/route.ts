@@ -12,8 +12,11 @@ export async function GET(request: Request) {
       const current = await loadCurrentLesson();
       return progressResponse({ current });
     }
-    if (!getLessonDefinition(lesson)) return progressResponse({ error: "Lesson not registered." }, 400);
-    const progress = await loadProgress("programming", lesson);
+    // Trusted course resolution: the registry owns each lesson's course.
+    // Client input never decides which course a lesson belongs to.
+    const definition = getLessonDefinition(lesson);
+    if (!definition) return progressResponse({ error: "Lesson not registered." }, 400);
+    const progress = await loadProgress(definition.courseSlug, lesson);
     return progressResponse({ progress });
   } catch (error) {
     return progressFailure(error);
@@ -43,7 +46,9 @@ export async function POST(request: Request) {
     const input = validateProgressInput(body);
     if (!input) return progressResponse({ error: "Data progress tidak valid. Butuh courseSlug, lessonSlug." }, 400);
     const definition = getLessonDefinition(input.lessonSlug);
-    if (!definition || input.courseSlug !== "programming") return progressResponse({ error: "Lesson tidak terdaftar." }, 400);
+    // The registry's courseSlug is the trusted ownership. A client-supplied
+    // courseSlug may only match it, never override it.
+    if (!definition || input.courseSlug !== definition.courseSlug) return progressResponse({ error: "Lesson tidak terdaftar." }, 400);
     const activityIds = new Set(definition.activities.map((activity) => activity.id));
     if ((input.currentActivityId && !activityIds.has(input.currentActivityId)) ||
         input.completedActivityIds?.some((id) => !activityIds.has(id)) ||

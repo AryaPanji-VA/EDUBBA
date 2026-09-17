@@ -86,6 +86,13 @@ vm.runInNewContext(strip("../lib/lessons/registry.ts") + ["getLessonDefinition",
       "lib/lessons/functions": { loadFunctionsLesson: async () => ({}) },
       "functions-check-instructions": { functionsCheckInstructions: "functions rubric" },
       "functions-feedback-instructions": { functionsFeedbackInstructions: "functions feedback" },
+      "propositions-activities": { propositionsActivities: [] },
+      "discrete-math/propositions": { propositionsLessonContent: { academicExplanation: [], codeExamples: [], keyTerms: [], commonMistakes: [] } },
+      "propositions-mastery": { propositionsMasteryConfig: { concepts: [] } },
+      "propositions-relevance": { propositionsRelevance: {} },
+      "lib/lessons/propositions": { loadPropositionsLesson: async () => ({}) },
+      "propositions-check-instructions": { propositionsCheckInstructions: "propositions rubric" },
+      "propositions-feedback-instructions": { propositionsFeedbackInstructions: "propositions feedback" },
       "lib/robin/check": { checkConcepts: [], checkMisconceptions: [] },
     };
     const match = Object.keys(map).find((key) => name.endsWith(key));

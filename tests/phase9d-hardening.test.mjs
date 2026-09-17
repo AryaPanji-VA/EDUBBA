@@ -41,6 +41,10 @@ const { functionsActivities } = loadModule("content/lessons/programming/function
 const { functionsLessonContent } = loadModule("content/lessons/programming/functions");
 const { functionsMasteryConfig } = loadModule("content/lessons/programming/functions-mastery", { LessonMasteryConfig: {} });
 const { functionsRelevance } = loadModule("content/lessons/programming/functions-relevance");
+const { propositionsActivities } = loadModule("content/lessons/discrete-math/propositions-activities");
+const { propositionsLessonContent } = loadModule("content/lessons/discrete-math/propositions");
+const { propositionsMasteryConfig } = loadModule("content/lessons/discrete-math/propositions-mastery", { LessonMasteryConfig: {} });
+const { propositionsRelevance } = loadModule("content/lessons/discrete-math/propositions-relevance");
 
 const regRaw = stripTypeScriptTypes(readFileSync(new URL("../lib/lessons/registry.ts", import.meta.url), "utf8"), { mode: "transform" });
 const regNames = [...regRaw.matchAll(/export (?:async )?(?:function|const|class) (\w+)/g)].map((match) => match[1]);
@@ -73,6 +77,9 @@ vm.runInNewContext(regCode, {
   functionsActivities, functionsLessonContent, functionsMasteryConfig, functionsRelevance,
   loadFunctionsLesson: async () => ({}),
   functionsCheckInstructions: "functions-rubric", functionsFeedbackInstructions: "functions-feedback-rubric",
+  propositionsActivities, propositionsLessonContent, propositionsMasteryConfig, propositionsRelevance,
+  loadPropositionsLesson: async () => ({}),
+  propositionsCheckInstructions: "propositions-rubric", propositionsFeedbackInstructions: "propositions-feedback-rubric",
 });
 const { getLessonDefinition, isRegisteredLesson } = regExports;
 

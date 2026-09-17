@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { ProgressBar } from "@/components/progress-bar";
-import type { Course } from "@/data/courses";
+import { courseOverviewRouteBySlug, type Course } from "@/data/courses";
 
 type SemesterGroup = {
   number: number;
@@ -112,12 +112,13 @@ export function CoursesClient() {
         ) : (
           <>
             <section className="courses-list" aria-label={`Semester ${selectedSemester} courses`}>
-              {courses.map((course, index) => {
-                const isProgramming = course.slug === "programming";
-                const learningState = course.progress > 0 ? "LEARNING" : "NOT STARTED";
+        {courses.map((course, index) => {
+          const isProgramming = course.slug === "programming";
+          const learningState = course.progress > 0 ? "LEARNING" : "NOT STARTED";
+          const overviewHref = courseOverviewRouteBySlug[course.slug] ?? "/courses";
 
-                return (
-                  <Link className={`course-row ${isProgramming ? "featured" : ""}`} href={isProgramming ? "/courses/programming" : "/courses"} key={course.slug} aria-label={`${course.title}, ${course.progress}% complete`}>
+          return (
+            <Link className={`course-row ${isProgramming ? "featured" : ""}`} href={overviewHref} key={course.slug} aria-label={`${course.title}, ${course.progress}% complete`}>
                     <span className="course-index">{String(index + 1).padStart(2, "0")}</span>
                     <span className="course-main"><span className="course-code">{course.code}</span><strong>{course.title}</strong><small>{course.description}</small></span>
                     <span className="course-stats"><span>{course.lessons} lessons</span><span className={`status status-${course.status.toLowerCase().replaceAll(" ", "-")}`}>{learningState}</span></span>

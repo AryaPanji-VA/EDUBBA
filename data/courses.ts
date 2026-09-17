@@ -27,6 +27,13 @@ export const coursePresentationBySlug: Record<string, Pick<Course, "code" | "pro
     courses.map(({ slug, code, progress, status }) => [slug, { code, progress, status }]),
   );
 
+// Courses with an implemented overview page, keyed by course slug. Courses
+// without an entry have no dedicated course page yet and link back to /courses.
+export const courseOverviewRouteBySlug: Record<string, string> = {
+  programming: "/courses/programming",
+  "discrete-math": "/courses/discrete-math",
+};
+
 export type LessonPresentationState = "completed" | "current" | "locked";
 
 // Implemented lesson routes, in the intended beginner learning order.
@@ -37,6 +44,11 @@ export const implementedProgrammingLessonSlugs = [
   "conditionals",
   "loops",
   "functions",
+] as const;
+
+// Implemented Discrete Mathematics lesson routes (Phase 14B golden lesson).
+export const implementedDiscreteMathLessonSlugs = [
+  "propositions",
 ] as const;
 
 // Static curriculum fallback used when the local progress API is unavailable.

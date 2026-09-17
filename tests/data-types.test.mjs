@@ -86,6 +86,13 @@ vm.runInNewContext(regCode, {
   loadFunctionsLesson: async () => ({}),
   functionsCheckInstructions: "functions-rubric",
   functionsFeedbackInstructions: "functions-feedback-rubric",
+  propositionsActivities: loadModule("content/lessons/discrete-math/propositions-activities").propositionsActivities,
+  propositionsLessonContent: loadModule("content/lessons/discrete-math/propositions").propositionsLessonContent,
+  propositionsMasteryConfig: loadModule("content/lessons/discrete-math/propositions-mastery", { LessonMasteryConfig: {} }).propositionsMasteryConfig,
+  propositionsRelevance: loadModule("content/lessons/discrete-math/propositions-relevance").propositionsRelevance,
+  loadPropositionsLesson: async () => ({}),
+  propositionsCheckInstructions: "propositions-rubric",
+  propositionsFeedbackInstructions: "propositions-feedback-rubric",
 });
 const { getLessonDefinition, isRegisteredLesson } = regExports;
 

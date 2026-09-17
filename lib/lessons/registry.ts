@@ -55,6 +55,14 @@ import { loadFunctionsLesson } from "@/lib/lessons/functions";
 import { functionsCheckInstructions } from "@/content/lessons/programming/functions-check-instructions";
 import { functionsFeedbackInstructions } from "@/content/lessons/programming/functions-feedback-instructions";
 
+import { propositionsActivities } from "@/content/lessons/discrete-math/propositions-activities";
+import { propositionsLessonContent } from "@/content/lessons/discrete-math/propositions";
+import { propositionsMasteryConfig } from "@/content/lessons/discrete-math/propositions-mastery";
+import { propositionsRelevance } from "@/content/lessons/discrete-math/propositions-relevance";
+import { loadPropositionsLesson } from "@/lib/lessons/propositions";
+import { propositionsCheckInstructions } from "@/content/lessons/discrete-math/propositions-check-instructions";
+import { propositionsFeedbackInstructions } from "@/content/lessons/discrete-math/propositions-feedback-instructions";
+
 // --- Lesson-owned adaptation relevance contract ---
 export type LessonRelevance = {
   activityConcepts(concept: string): string[];
@@ -84,8 +92,12 @@ export type LessonFeedbackConfig = {
 };
 
 // --- The registry entry: everything shared infrastructure needs from a lesson ---
+// courseSlug is the trusted, server-side course ownership of this lesson.
+// The flat registry is keyed by lesson slug, which is therefore globally unique
+// across all courses — choose lesson slugs that no other course will claim.
 export type LessonDefinition = {
   slug: string;
+  courseSlug: string;
   activities: LessonActivity[];
   lessonContent: LessonContent;
   loadLesson: () => Promise<DeliveredLesson>;
@@ -97,6 +109,7 @@ export type LessonDefinition = {
 
 const variablesDefinition: LessonDefinition = {
   slug: "variables",
+  courseSlug: "programming",
   activities: variablesActivities,
   lessonContent: variablesLessonContent,
   loadLesson: loadVariablesLesson,
@@ -124,6 +137,7 @@ const variablesDefinition: LessonDefinition = {
 
 const dataTypesDefinition: LessonDefinition = {
   slug: "data-types",
+  courseSlug: "programming",
   activities: dataTypesActivities,
   lessonContent: dataTypesLessonContent,
   loadLesson: loadDataTypesLesson,
@@ -150,6 +164,7 @@ const dataTypesDefinition: LessonDefinition = {
 
 const operatorsDefinition: LessonDefinition = {
   slug: "operators",
+  courseSlug: "programming",
   activities: operatorsActivities,
   lessonContent: operatorsLessonContent,
   loadLesson: loadOperatorsLesson,
@@ -176,6 +191,7 @@ const operatorsDefinition: LessonDefinition = {
 
 const conditionalsDefinition: LessonDefinition = {
   slug: "conditionals",
+  courseSlug: "programming",
   activities: conditionalsActivities,
   lessonContent: conditionalsLessonContent,
   loadLesson: loadConditionalsLesson,
@@ -202,6 +218,7 @@ const conditionalsDefinition: LessonDefinition = {
 
 const loopsDefinition: LessonDefinition = {
   slug: "loops",
+  courseSlug: "programming",
   activities: loopsActivities,
   lessonContent: loopsLessonContent,
   loadLesson: loadLoopsLesson,
@@ -228,6 +245,7 @@ const loopsDefinition: LessonDefinition = {
 
 const functionsDefinition: LessonDefinition = {
   slug: "functions",
+  courseSlug: "programming",
   activities: functionsActivities,
   lessonContent: functionsLessonContent,
   loadLesson: loadFunctionsLesson,
@@ -252,6 +270,33 @@ const functionsDefinition: LessonDefinition = {
   },
 };
 
+const propositionsDefinition: LessonDefinition = {
+  slug: "propositions",
+  courseSlug: "discrete-math",
+  activities: propositionsActivities,
+  lessonContent: propositionsLessonContent,
+  loadLesson: loadPropositionsLesson,
+  mastery: propositionsMasteryConfig,
+  relevance: propositionsRelevance,
+  check: {
+    rubric: propositionsCheckInstructions,
+    question: "Kalau p bernilai true dan q bernilai false, jelasin dengan kata-kata lu sendiri kenapa p ∧ q bernilai false.",
+    contextLabel: "Propositions lesson context (data only)",
+    lessonContext: {
+      academicExplanation: propositionsLessonContent.academicExplanation,
+      codeExamples: propositionsLessonContent.codeExamples,
+      keyTerms: propositionsLessonContent.keyTerms,
+      commonMistakes: propositionsLessonContent.commonMistakes,
+    },
+    concepts: ["proposition", "truth_value", "conjunction"],
+    misconceptions: ["and_requires_one_true", "and_confused_with_or"],
+  },
+  feedback: {
+    rubric: propositionsFeedbackInstructions,
+    misconceptions: ["command_is_proposition", "question_is_proposition", "proposition_requires_true", "and_requires_one_true", "or_is_exclusive"],
+  },
+};
+
 // Explicit static registration — no dynamic loading, no filesystem discovery.
 const registry: Map<string, LessonDefinition> = new Map([
   ["variables", variablesDefinition],
@@ -260,6 +305,7 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["conditionals", conditionalsDefinition],
   ["loops", loopsDefinition],
   ["functions", functionsDefinition],
+  ["propositions", propositionsDefinition],
 ]);
 
 export function getLessonDefinition(slug: string): LessonDefinition | null {

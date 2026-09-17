@@ -81,7 +81,7 @@ export function LessonActivityRenderer({ activities, lessonSlug, language, copy,
     <section className="learning-activity" aria-labelledby="activity-title">
       <h2 id="activity-title" ref={heading} tabIndex={-1}>{activity.title}</h2>
       {activity.type !== "robin_check" && activity.content.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-      {activity.code && <div className="code-block"><div className="code-head"><span>{activity.type === "example" ? copy.diagram : "python"}</span><button type="button" onClick={async () => {
+      {activity.code && <div className="code-block"><div className="code-head"><span>{activity.type === "example" ? copy.diagram : copy.codeLabel ?? "python"}</span><button type="button" onClick={async () => {
         try { await navigator.clipboard.writeText(activity.code!); setCopied(true); } catch { setCopied(false); }
       }}>{copied ? copy.copied : copy.copy}</button></div><pre><code>{activity.code}</code></pre></div>}
       {interactive && <form onSubmit={(event) => { event.preventDefault(); if (answer.value.trim()) updateAnswer(answer.value, true); }}>

@@ -42,6 +42,11 @@ const { functionsLessonContent } = loadModule("content/lessons/programming/funct
 const { functionsMasteryConfig } = loadModule("content/lessons/programming/functions-mastery", { LessonMasteryConfig: {} });
 const { functionsRelevance } = loadModule("content/lessons/programming/functions-relevance");
 
+const { propositionsActivities } = loadModule("content/lessons/discrete-math/propositions-activities");
+const { propositionsLessonContent } = loadModule("content/lessons/discrete-math/propositions");
+const { propositionsMasteryConfig } = loadModule("content/lessons/discrete-math/propositions-mastery", { LessonMasteryConfig: {} });
+const { propositionsRelevance } = loadModule("content/lessons/discrete-math/propositions-relevance");
+
 // Load the registry with all its dependencies provided.
 const registryRaw = stripTypeScriptTypes(readFileSync(new URL("../lib/lessons/registry.ts", import.meta.url), "utf8"), { mode: "transform" });
 const registryNames = [...registryRaw.matchAll(/export (?:async )?(?:function|const|class) (\w+)/g)].map((match) => match[1]);
@@ -100,6 +105,13 @@ vm.runInNewContext(registryCode, {
   loadFunctionsLesson: async () => ({}),
   functionsCheckInstructions: "functions-rubric",
   functionsFeedbackInstructions: "functions-feedback-rubric",
+  propositionsActivities,
+  propositionsLessonContent,
+  propositionsMasteryConfig,
+  propositionsRelevance,
+  loadPropositionsLesson: async () => ({}),
+  propositionsCheckInstructions: "propositions-rubric",
+  propositionsFeedbackInstructions: "propositions-feedback-rubric",
   require(name) {
     throw new Error(`Unexpected require after inlining: ${name}`);
   },
@@ -140,6 +152,21 @@ test("registry rejects unknown lesson slugs", () => {
   assert.equal(isRegisteredLesson("nonexistent"), false);
   assert.equal(isRegisteredLesson("variables"), true);
   assert.equal(isRegisteredLesson("data-types"), true);
+  assert.equal(isRegisteredLesson("propositions"), true);
+});
+
+// === 2b. Trusted course ownership comes from the registry ===
+test("each lesson resolves to its trusted course slug from the registry", () => {
+  for (const slug of ["variables", "data-types", "operators", "conditionals", "loops", "functions"]) {
+    const def = getLessonDefinition(slug);
+    assert.ok(def, `${slug} must resolve`);
+    assert.equal(def.courseSlug, "programming", `${slug} must belong to programming`);
+  }
+  const propositions = getLessonDefinition("propositions");
+  assert.ok(propositions);
+  assert.equal(propositions.courseSlug, "discrete-math");
+  assert.equal(propositions.slug, "propositions");
+  assert.equal(propositions.activities, propositionsActivities);
 });
 
 // === 3. Request types accept non-Variables lesson slugs ===

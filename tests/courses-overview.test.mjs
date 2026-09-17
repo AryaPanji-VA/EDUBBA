@@ -167,9 +167,11 @@ test("unassigned courses surface as a visible data notice in the client", () => 
 });
 
 // === 11. Course cards, slugs, and navigation remain unchanged ===
-test("course card markup, programming navigation, and slugs stay unchanged", () => {
+test("course card markup, slugs, and navigation stay data-driven", () => {
   const source = read("components/courses-client.tsx");
-  assert.match(source, /href=\{isProgramming \? "\/courses\/programming" : "\/courses"\}/);
+  // Deep links resolve through the trusted overview-route map, never hardcoded per course.
+  assert.match(source, /courseOverviewRouteBySlug\[course\.slug\] \?\? "\/courses"/);
+  assert.match(source, /import \{ courseOverviewRouteBySlug, type Course \} from "@\/data\/courses"/);
   assert.match(source, /course-row/);
   assert.match(source, /course-index/);
   assert.match(source, /course-main/);
@@ -179,6 +181,10 @@ test("course card markup, programming navigation, and slugs stay unchanged", () 
   assert.match(source, /role="status"/);
   assert.match(source, /course-request-state is-error/);
   assert.match(source, /coba lagi/);
+  // Only courses with implemented overview pages are deep-linked.
+  const courseData = read("data/courses.ts");
+  assert.match(courseData, /programming: "\/courses\/programming"/);
+  assert.match(courseData, /"discrete-math": "\/courses\/discrete-math"/);
 });
 
 // === 12. The page still mounts the client inside the app shell ===
