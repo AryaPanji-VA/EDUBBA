@@ -841,3 +841,67 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .main { padding: 0 0 calc(112px + env(safe-area-inset-bottom, 0px)); }
   .mobile-nav { display: block; }
 }
+
+/* ── Phase 16.5: EDUBBA platform brand (theme-aware assets) ──
+   Each theme ships its own pre-colored logo; the component only picks the
+   URL. No filters, no recoloring — the supplied palettes render as-is. */
+.edubba-brand { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 2px 8px 0; color: inherit; }
+.edubba-brand:hover { color: inherit; }
+.edubba-logo { display: block; width: 148px; height: auto; }
+.edubba-mark { display: none; width: 32px; height: auto; }
+.edubba-tag { display: grid; min-width: 0; }
+/* Standalone compact mark (mobile topbar). Hidden on desktop where the
+   sidebar already carries the full wordmark. */
+.edubba-mark-only { display: none; align-items: center; flex: none; }
+.edubba-mark-only img { display: block; width: 22px; height: auto; }
+@media (max-width: 1120px) {
+  /* Tablet icon rail: wordmark + tagline hide, compact mark shows. */
+  .edubba-logo, .edubba-tag { display: none; }
+  .edubba-mark { display: block; }
+}
+@media (max-width: 430px) {
+  /* Phone: the sidebar is hidden (FAB navigation), so the topbar mark is
+     the visible EDUBBA identity. It shares the first row with the
+     breadcrumb; the switcher grid wraps below. */
+  .edubba-mark-only { display: inline-flex; }
+  .topbar { align-items: center; }
+  .crumb { flex: 1 1 auto; }
+}
+
+/* ── Phase 17: local-only learner profile ────────────────── */
+.profile-summary { width: 100%; border-radius: 7px; color: var(--text); }
+.profile-summary:hover { background: rgba(var(--nav-rgb), var(--nav-hov)); }
+.profile-summary-copy { display: grid; min-width: 0; }
+.profile-summary-copy > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-page { max-width: 940px; }
+.profile-header { align-items: start; }
+.profile-header .eyebrow { color: var(--accent-text); font: 600 10.5px/1.5 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+.profile-form { margin-top: 28px; padding: 24px; }
+.profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.profile-fields label { display: grid; gap: 7px; min-width: 0; color: var(--mut); font-size: 12.5px; font-weight: 500; }
+.profile-fields label > span { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.profile-fields small { color: var(--dim); font: 400 10px/1.5 var(--mono); }
+.profile-fields input,
+.profile-fields select,
+.profile-fields textarea {
+  width: 100%; min-width: 0; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 8px; outline: none;
+  background: var(--input-bg); color: var(--text); font: 400 13px/1.5 var(--sans);
+}
+.profile-fields select { cursor: pointer; }
+.profile-fields textarea { resize: vertical; }
+.profile-fields input:focus,
+.profile-fields select:focus,
+.profile-fields textarea:focus { border-color: var(--input-focus); box-shadow: 0 0 0 2px rgba(var(--nav-rgb), .1); }
+.profile-bio { grid-column: 1 / -1; }
+.profile-bio > small { justify-self: end; }
+.profile-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.profile-status { margin-top: 14px; color: var(--accent-text); font: 500 11px/1.5 var(--mono); }
+.profile-local-note { margin-top: 18px; padding: 16px 18px; border: 1px solid var(--linesoft); border-radius: 10px; background: var(--hover-bg); }
+.profile-local-note strong { color: var(--accent-text); font: 600 10px/1.5 var(--mono); letter-spacing: .14em; }
+.profile-local-note p { margin-top: 6px; color: var(--mut); font-size: 12.5px; line-height: 1.65; }
+@media (max-width: 700px) {
+  .profile-fields { grid-template-columns: minmax(0, 1fr); }
+  .profile-bio { grid-column: auto; }
+  .profile-form { padding: 18px; }
+}

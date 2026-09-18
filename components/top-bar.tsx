@@ -1,5 +1,6 @@
 "use client";
 
+import { EdubbaBrand } from "@/components/edubba-brand";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import type { ReactNode } from "react";
 
@@ -16,6 +17,8 @@ export function TopBar({ breadcrumb, contextual }: TopBarProps) {
     <div className="mast">
       <div className="mast-inner">
         <div className="topbar">
+          {/* Compact EDUBBA mark — phones only (sidebar hidden there). */}
+          <EdubbaBrand variant="mark" />
           <div className="crumb">{breadcrumb}</div>
           <div className="top-right">
             <ThemeSwitcher />

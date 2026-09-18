@@ -1,0 +1,51 @@
+{
+  "geometry": "Approved comfy option 02, unchanged",
+  "moduleOrder": [
+    "top bar",
+    "upper dot",
+    "middle bar",
+    "lower dot",
+    "bottom bar"
+  ],
+  "themes": {
+    "after-dark": {
+      "label": "After Dark",
+      "modules": [
+        "#F59E0B",
+        "#FBBF24",
+        "#3B82F6",
+        "#7DABEB",
+        "#A7C7F7"
+      ],
+      "wordmark": "#F8F6F1",
+      "surface": "#0B1220",
+      "source": "Approved original palette"
+    },
+    "signal": {
+      "label": "Signal",
+      "modules": [
+        "#79C7E2",
+        "#D8E3F2",
+        "#7FA8E8",
+        "#8A9BBD",
+        "#E6EEF8"
+      ],
+      "wordmark": "#E6EEF8",
+      "surface": "#121C30",
+      "source": "Sampled from screenshot 002721; module assignment designed for this logo"
+    },
+    "deep-space": {
+      "label": "Deep Space",
+      "modules": [
+        "#93C6E4",
+        "#D7E0EF",
+        "#8DA6D9",
+        "#8997B6",
+        "#E5EAF4"
+      ],
+      "wordmark": "#E5EAF4",
+      "surface": "#101827",
+      "source": "Sampled from screenshot 002732; module assignment designed for this logo"
+    }
+  }
+}

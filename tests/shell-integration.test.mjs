@@ -179,5 +179,5 @@ test("app-shell sidebar does not render ThemeSwitcher (moved to topbar)", () => 
   const source = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(source, /ThemeSwitcher/, "Sidebar must not import/render ThemeSwitcher");
   assert.match(source, /BrandTagline/, "Must still render BrandTagline");
-  assert.match(source, /LearnerLabel/, "Must still render LearnerLabel");
+  assert.match(source, /LocalProfileSummary/, "Must render the focused local profile island");
 });

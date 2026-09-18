@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, LogPreview, RobinReply, RobinState } from "@/lib/robin/types";
+import { toRobinProfileContext } from "@/lib/profile/local-profile";
+import { useLocalProfile } from "@/lib/profile/use-local-profile";
 
 const shortcuts = {
   "jelasin lebih goblok": "bin, jelasin yang ini lebih simpel dong. mulai dari intinya dulu.",
@@ -20,6 +22,7 @@ type Props = {
 };
 
 export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props) {
+  const { profile } = useLocalProfile();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [state, setState] = useState<RobinState>("idle");
@@ -62,6 +65,7 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
         body: JSON.stringify({
           lessonSlug, message: message.trim(),
           history: messages.slice(-8).map(({ role, content }) => ({ role, content })),
+          profileContext: toRobinProfileContext(profile),
         }),
         signal: requestController.signal,
       });
@@ -139,7 +143,7 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
         {!messages.length && <div className="robin-message"><span className="message-label">ROBIN // ONLINE</span><p>bagian mana yang bikin nyangkut? gas, tanya aja.</p></div>}
         {messages.map((message, index) => (
           <div className={`robin-message chat-${message.role}`} key={index}>
-            <span className="message-label">{message.role === "user" ? "Arya" : "Robin"}</span>
+            <span className="message-label">{message.role === "user" ? profile.preferredName : "Robin"}</span>
             <p>{message.content}</p>
             {message.result && <div className={`grounding-badge ${message.result.grounding.status}`}>
               <span>{message.result.grounding.status === "grounded" ? "GROUNDED IN LESSON" : "GENERAL AI KNOWLEDGE"}</span>

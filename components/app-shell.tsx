@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { CurrentLessonLink } from "@/components/current-lesson-link";
+import { EdubbaBrand } from "@/components/edubba-brand";
 import { EnvironmentLayer } from "@/components/environment-layer";
 import { MobileNav } from "@/components/mobile-nav";
-import { BrandTagline, LearnerLabel } from "@/components/theme-switcher";
+import { LocalProfileSummary } from "@/components/local-profile-summary";
+import { BrandTagline } from "@/components/theme-switcher";
 import type { ReactNode } from "react";
 
 type AppShellProps = {
   children: ReactNode;
-  active?: "dashboard" | "courses" | "lesson" | "practice";
+  active?: "dashboard" | "courses" | "lesson" | "practice" | "profile";
   signalMode?: "calm" | "active" | "quiet" | "error";
   signalPulse?: boolean;
 };
@@ -34,29 +36,9 @@ const PracticeIcon = () => (
     <path d="M5.5 8h5" /><rect x="2" y="5.5" width="2.5" height="5" rx="0.75" /><rect x="11.5" y="5.5" width="2.5" height="5" rx="0.75" />
   </svg>
 );
-
-// Pixel-bird brand mark (exact from the Kimi mockup)
-const RobinBird = () => (
-  <svg width="18" height="18" viewBox="0 0 10 10" shapeRendering="crispEdges" aria-hidden="true">
-    <g className="b-body">
-      <rect x="4" y="0" width="2" height="1" /><rect x="3" y="1" width="4" height="1" />
-      <rect x="3" y="2" width="1" height="1" /><rect x="5" y="2" width="3" height="1" />
-      <rect x="0" y="3" width="1" height="1" /><rect x="2" y="3" width="6" height="1" />
-      <rect x="0" y="4" width="4" height="1" /><rect x="6" y="4" width="1" height="1" />
-      <rect x="1" y="5" width="3" height="1" /><rect x="5" y="5" width="1" height="1" />
-      <rect x="2" y="6" width="3" height="1" />
-    </g>
-    <g className="b-wing">
-      <rect x="4" y="4" width="2" height="1" /><rect x="4" y="5" width="1" height="1" />
-      <rect x="3" y="8" width="1" height="1" /><rect x="5" y="8" width="1" height="1" />
-    </g>
-    <g className="b-breast">
-      <rect x="7" y="4" width="1" height="1" />
-      <rect x="6" y="5" width="2" height="1" />
-      <rect x="5" y="6" width="2" height="1" />
-    </g>
-    <rect className="b-beak" x="8" y="2" width="1" height="1" />
-    <rect className="b-eye" x="4" y="2" width="1" height="1" />
+const ProfileIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <circle cx="8" cy="5" r="2.5" /><path d="M3 13c.5-2.5 2.2-4 5-4s4.5 1.5 5 4" />
   </svg>
 );
 
@@ -64,12 +46,11 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
   return (
     <div className={`app mode-${signalMode}`}>
       <aside className="side">
+        {/* EDUBBA is the platform brand; Robin is the companion inside it. */}
         <div className="brand">
-          <RobinBird />
-          <div>
-            <span className="brand-name">robin</span>
+          <EdubbaBrand>
             <BrandTagline />
-          </div>
+          </EdubbaBrand>
         </div>
 
         <nav className="nav">
@@ -85,16 +66,13 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
           <CurrentLessonLink className={active === "lesson" ? "on" : ""}>
             <LessonIcon /> <span>Current lesson</span>
           </CurrentLessonLink>
+          <Link href="/profile" className={active === "profile" ? "on" : ""} aria-current={active === "profile" ? "page" : undefined}>
+            <ProfileIcon /> <span>Profile</span>
+          </Link>
         </nav>
 
         <div className="side-foot">
-          <div className="me">
-            <span className="avatar">A</span>
-            <div>
-              <div className="me-name">Arya</div>
-              <LearnerLabel />
-            </div>
-          </div>
+          <LocalProfileSummary />
         </div>
       </aside>
 

@@ -8,15 +8,18 @@ import { RecentLearning } from "@/components/recent-learning";
 import { implementedProgrammingLessonSlugs } from "@/data/courses";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 import type { CurrentLesson } from "@/lib/progress/types";
+import { toRobinProfileContext, type RobinProfileContext } from "@/lib/profile/local-profile";
+import { useLocalProfile } from "@/lib/profile/use-local-profile";
 
-function useGreeting() {
-  const [greeting, setGreeting] = useState("Good evening, Arya.");
+function useGreeting(preferredName: string) {
+  const [greeting, setGreeting] = useState(`Good evening, ${preferredName}.`);
   const [date, setDate] = useState("");
   useEffect(() => {
     const hr = new Date().getHours();
-    if (hr >= 23 || hr < 5) setGreeting("The night is yours, Arya.");
-    else if (hr < 12) setGreeting("Good morning, Arya.");
-    else if (hr < 18) setGreeting("Good afternoon, Arya.");
+    if (hr >= 23 || hr < 5) setGreeting(`The night is yours, ${preferredName}.`);
+    else if (hr < 12) setGreeting(`Good morning, ${preferredName}.`);
+    else if (hr < 18) setGreeting(`Good afternoon, ${preferredName}.`);
+    else setGreeting(`Good evening, ${preferredName}.`);
     const d = new Date();
     const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -24,7 +27,7 @@ function useGreeting() {
     const ampm = hr < 12 ? "AM" : "PM";
     const min = d.getMinutes().toString().padStart(2, "0");
     setDate(`${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()} · ${h12}:${min} ${ampm}`);
-  }, []);
+  }, [preferredName]);
   return { greeting, date };
 }
 
@@ -40,7 +43,7 @@ const AssistantAvatar = () => (
 
 type MiniMessage = { role: "user" | "assistant"; content: string };
 
-function RobinMiniChat({ currentLesson }: { currentLesson: CurrentLesson }) {
+function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: CurrentLesson; profileContext: RobinProfileContext }) {
   const [messages, setMessages] = useState<MiniMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -64,7 +67,12 @@ function RobinMiniChat({ currentLesson }: { currentLesson: CurrentLesson }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: requestController.signal,
-        body: JSON.stringify({ lessonSlug: currentLesson.lessonSlug, message: text, history: messages.slice(-4) }),
+        body: JSON.stringify({
+          lessonSlug: currentLesson.lessonSlug,
+          message: text,
+          history: messages.slice(-4),
+          profileContext,
+        }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Robin belum bisa jawab.");
@@ -144,7 +152,8 @@ function RobinMiniChat({ currentLesson }: { currentLesson: CurrentLesson }) {
 }
 
 export default function DashboardPage() {
-  const { greeting, date } = useGreeting();
+  const { profile } = useLocalProfile();
+  const { greeting, date } = useGreeting(profile.preferredName);
   const currentLesson = useCurrentLesson();
   const lessonName = currentLesson.lessonSlug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
   const activityName = currentLesson.currentActivityId
@@ -283,14 +292,14 @@ export default function DashboardPage() {
 
             <RecentLearning />
 
-            <RobinMiniChat currentLesson={currentLesson} />
+            <RobinMiniChat currentLesson={currentLesson} profileContext={toRobinProfileContext(profile)} />
           </div>
         </div>
 
         <footer className="foot">
           <div className="pxdiv" aria-hidden="true" />
           <div className="foot-row">
-            <span>robin — a place to learn computer science slowly.</span>
+            <span>edubba — a place to learn computer science slowly, with robin.</span>
           </div>
         </footer>
       </div>

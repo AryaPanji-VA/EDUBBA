@@ -12,8 +12,13 @@ const fraunces = Fraunces({ subsets: ["latin"], weight: ["400", "500", "600"], s
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "ROBIN — Arya's CS workspace",
-  description: "A personal computer science learning workspace for Arya.",
+  title: "EDUBBA — Arya's CS workspace",
+  description: "EDUBBA learning platform with Robin, the AI study companion.",
+  // App icon: the EDUBBA appicon of the app's default theme (signal).
+  // Browser chrome has no theme concept, so the default-theme variant is
+  // used; after-dark/deep-space appicons exist in the same asset pack if a
+  // theme-aware icon is ever wanted. No new asset was generated.
+  icons: { icon: "/edubba-theme-system/signal/edubba-appicon.png" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -1,0 +1,29 @@
+[data-theme="after-dark"] {
+  --edubba-module-1: #F59E0B;
+  --edubba-module-2: #FBBF24;
+  --edubba-module-3: #3B82F6;
+  --edubba-module-4: #7DABEB;
+  --edubba-module-5: #A7C7F7;
+  --edubba-wordmark: #F8F6F1;
+  --edubba-icon-surface: #0B1220;
+}
+
+[data-theme="signal"] {
+  --edubba-module-1: #79C7E2;
+  --edubba-module-2: #D8E3F2;
+  --edubba-module-3: #7FA8E8;
+  --edubba-module-4: #8A9BBD;
+  --edubba-module-5: #E6EEF8;
+  --edubba-wordmark: #E6EEF8;
+  --edubba-icon-surface: #121C30;
+}
+
+[data-theme="deep-space"] {
+  --edubba-module-1: #93C6E4;
+  --edubba-module-2: #D7E0EF;
+  --edubba-module-3: #8DA6D9;
+  --edubba-module-4: #8997B6;
+  --edubba-module-5: #E5EAF4;
+  --edubba-wordmark: #E5EAF4;
+  --edubba-icon-surface: #101827;
+}

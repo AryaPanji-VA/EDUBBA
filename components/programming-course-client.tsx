@@ -331,7 +331,7 @@ export function ProgrammingCourseClient() {
         <footer className="foot">
           <div className="pxdiv" aria-hidden="true" />
           <div className="foot-row">
-            <span>robin — a place to learn computer science slowly.</span>
+            <span>edubba — a place to learn computer science slowly, with robin.</span>
           </div>
         </footer>
       </div>

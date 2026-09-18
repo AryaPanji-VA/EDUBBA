@@ -198,6 +198,7 @@ test("chat replaces raw mastery with relevant guidance and keeps memory separate
     "lib/learning-log/server": { loadLogContext: async () => "" },
     "lib/learning-log/commands": { parseLogIntent: () => ({ type: "normal" }) },
     "lib/progress/server": { loadCurrentLesson: async () => ({ courseSlug: "programming", lessonSlug: "variables" }) },
+    "lib/profile/local-profile": { validateRobinProfileContext: () => null },
     "lib/ai/server": { getAIConfig: () => ({ configured: true, model: "test" }), createServerAIClient: () => ({ chat: { completions: { create: async (body) => {
       payload = body;
       return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ grounding: "general", reply: "One example." }) } }] };
