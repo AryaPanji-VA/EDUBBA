@@ -211,7 +211,7 @@ test("the lesson is AI-independent: definitions, notation, truth tables, and det
 // === 12. Cross-course generalization: trusted course resolution ===
 test("the progress API resolves course ownership from the registry, never from hardcoded values", () => {
   const route = read("app/api/learning/progress/route.ts");
-  assert.match(route, /loadProgress\(definition\.courseSlug, lesson\)/);
+  assert.match(route, /loadProgress\(localUserId, definition\.courseSlug, lesson\)/);
   assert.match(route, /input\.courseSlug !== definition\.courseSlug/);
   assert.doesNotMatch(route, /loadProgress\("programming"/);
   assert.doesNotMatch(route, /courseSlug !== "programming"/);

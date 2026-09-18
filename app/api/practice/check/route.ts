@@ -1,6 +1,7 @@
 import { getPracticeExercise } from "@/lib/practice/registry";
 import { checkPracticeExercise } from "@/lib/practice/check";
 import { recordEvidence } from "@/lib/mastery/server";
+import { requireLocalUserId } from "@/lib/local-user/server";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,8 @@ function fail(error: string, status: number) {
 // recorded best-effort (same convention as Robin Feedback) keyed by the
 // learner's stable attempt id, so a refreshed session never duplicates it.
 export async function POST(request: Request) {
+  let localUserId: string;
+  try { localUserId = requireLocalUserId(request); } catch { return fail("Pilih local user dulu.", 401); }
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
     return fail("Kirim request sebagai JSON.", 415);
   }
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
 
   const evidenceType = result.status === "correct" ? "correct_practice" : "incorrect_practice";
   for (const concept of exercise.masteryConcepts) {
-    try { await recordEvidence(exercise.lessonSlug, concept, evidenceType, attemptId); } catch {
+    try { await recordEvidence(localUserId, exercise.lessonSlug, concept, evidenceType, attemptId); } catch {
       console.warn("[ROBIN MASTERY] Evidence recording unavailable; continuing practice.");
     }
   }

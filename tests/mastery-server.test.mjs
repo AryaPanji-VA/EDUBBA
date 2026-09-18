@@ -28,14 +28,15 @@ test("mastery read and write errors are safely logged; a failed read never overw
         if (name === "./engine") return { applyEvidence: (current, lessonSlug, concept) => ({ lesson_slug: lessonSlug, concept_key: concept, state: "developing", evidence_count: 1, success_count: 1, struggle_count: 0, last_evidence_type: "correct_prediction", last_evidence_at: "now", last_attempt_id: "attempt" }) };
         if (name === "./types") return {};
         if (name.includes("lessons/registry")) return { getLessonDefinition: () => ({ mastery: { concepts: ["variable"] } }) };
+        if (name.includes("local-user/server")) return { requireLocalUserId: () => "00000000-0000-4000-8000-000000000001" };
         throw new Error(name);
       },
     });
-    await exports.recordEvidence("variables", "variable", "correct_prediction", "attempt");
+    await exports.recordEvidence("33333333-3333-4333-8333-333333333333", "variables", "variable", "correct_prediction", "attempt");
     assert.equal(writes.length, failAt === "read" ? 0 : 1);
     assert.deepEqual(warnings, ["[ROBIN MASTERY] Evidence recording unavailable; learning continues."]);
     // loadMasterySummary returns concepts from the registry; with no DB rows it returns all unseen.
-    const summary = await exports.loadMasterySummary("variables");
+    const summary = await exports.loadMasterySummary("33333333-3333-4333-8333-333333333333", "variables");
     assert.equal(summary.lesson, "variables");
     assert.ok(summary.concepts.length > 0);
   }
@@ -46,7 +47,7 @@ test("mastery GET returns the summary without caching and safely rejects unsuppo
   vm.runInNewContext(source("../app/api/learning/mastery/route.ts", ["GET"]), {
     exports, URL, Response,
     require(name) {
-      if (name.includes("mastery/server")) return { requireLocalMastery() {}, loadMasterySummary: async (lesson) => ({ lesson, concepts: [] }) };
+      if (name.includes("mastery/server")) return { requireLocalMastery: () => "33333333-3333-4333-8333-333333333333", loadMasterySummary: async (_user, lesson) => ({ lesson, concepts: [] }) };
       if (name.includes("lessons/registry")) return { getLessonDefinition: (slug) => slug === "variables" ? {} : null };
       throw new Error(name);
     },

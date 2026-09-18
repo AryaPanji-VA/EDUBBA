@@ -119,7 +119,7 @@ test("profile remains a focused browser island in the existing server shell", ()
   const page = read("app/profile/page.tsx");
   assert.doesNotMatch(shell, /^"use client"/m);
   assert.match(shell, /<LocalProfileSummary \/>/);
-  assert.match(hook, /window\.localStorage/);
-  assert.match(page, /cuma tinggal di browser ini—bukan akun dan bukan login/);
+  assert.match(hook, /useLocalUser/);
+  assert.match(page, /bukan authentication/);
   assert.doesNotMatch(page, /fetch\(|\/api\//);
 });

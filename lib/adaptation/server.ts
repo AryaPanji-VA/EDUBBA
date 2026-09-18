@@ -5,8 +5,8 @@ import { buildAdaptation, adaptationContext, type Adaptation } from "./policy";
 export async function loadAdaptation(request: Request, lesson: string, concepts: readonly string[], currentAnswer?: { concept: string; isCorrect: boolean }): Promise<Adaptation> {
   try {
     if (!concepts.length) return { concepts: [] };
-    requireLocalMastery(request);
-    const summary = await loadMasterySummary(lesson);
+    const localUserId = requireLocalMastery(request);
+    const summary = await loadMasterySummary(localUserId, lesson);
     if (summary.lesson !== lesson) return { concepts: [] };
     return buildAdaptation(summary.concepts, concepts, currentAnswer);
   } catch {

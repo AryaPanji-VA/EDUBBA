@@ -20,6 +20,7 @@ export type LearningLogInput = {
 export type LearningLog = {
   id: string;
   user_id: string | null;
+  local_user_id: string;
   course_slug: string;
   lesson_slug: string;
   summary: string;

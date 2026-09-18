@@ -77,8 +77,8 @@ test("storage, access and malformed-state failures are neutral; irrelevant reque
   for (const failure of ["storage", "access", "policy"]) {
     let reads = 0;
     const server = loader({ "lib/mastery/server": {
-      requireLocalMastery() { if (failure === "access") throw new Error("private"); },
-      async loadMasterySummary() { reads++; if (failure === "storage") throw new Error("private"); return { lesson: "variables", concepts: null }; },
+      requireLocalMastery() { if (failure === "access") throw new Error("private"); return "11111111-1111-4111-8111-111111111111"; },
+      async loadMasterySummary(_user, lesson) { reads++; if (failure === "storage") throw new Error("private"); return { lesson, concepts: null }; },
     } })("lib/adaptation/server");
     assert.equal(await server.loadAdaptationContext(new Request("http://localhost"), "variables", []), "");
     assert.equal(reads, 0);
@@ -134,9 +134,10 @@ function registryStub(state) {
 function routeEnvironment(state, { aiFails = false, storageFails = false } = {}) {
   const calls = [], evidence = [];
   const read = loader({
+    "lib/local-user/server": { requireLocalUserId: () => "11111111-1111-4111-8111-111111111111" },
     "lib/mastery/server": {
-      requireLocalMastery() {},
-      async loadMasterySummary(lesson) { if (storageFails) throw new Error("private storage"); return { lesson, concepts: states(state) }; },
+      requireLocalMastery: () => "11111111-1111-4111-8111-111111111111",
+      async loadMasterySummary(_user, lesson) { if (storageFails) throw new Error("private storage"); return { lesson, concepts: states(state) }; },
       async recordEvidence(...args) { evidence.push(args); },
     },
     "lib/lessons/registry": registryStub(state),
@@ -157,7 +158,7 @@ test("real feedback route sends scoped adaptation after recording; failures pres
     const env = routeEnvironment("strong", options);
     const response = await env.read("app/api/robin/feedback/route").POST(request({ activityId: "reassignment", lessonSlug: "variables", language: "en", learnerAnswer: "92", attemptId: "attempt" }));
     assert.equal(env.evidence.length, 1);
-    assert.equal(env.evidence[0][2], "incorrect_prediction");
+    assert.equal(env.evidence[0][3], "incorrect_prediction");
     assert.equal(env.calls.length, 1);
     assert.equal(response.status, options.aiFails ? 502 : 200);
     const prompt = JSON.stringify(env.calls[0]);
@@ -186,7 +187,7 @@ test("chat replaces raw mastery with relevant guidance and keeps memory separate
   let reads = 0, payload;
   const read = loader({
     openai: { APIError: class extends Error {}, APIConnectionTimeoutError: class extends Error {} },
-    "lib/mastery/server": { requireLocalMastery() {}, async loadMasterySummary(lesson) { reads++; return { lesson, concepts: states("shaky") }; } },
+    "lib/mastery/server": { requireLocalMastery: () => "11111111-1111-4111-8111-111111111111", async loadMasterySummary(_user, lesson) { reads++; return { lesson, concepts: states("shaky") }; } },
     "lib/lessons/registry": {
       getLessonDefinition(slug) {
         if (slug !== "variables") return null;
@@ -199,6 +200,7 @@ test("chat replaces raw mastery with relevant guidance and keeps memory separate
     "lib/learning-log/commands": { parseLogIntent: () => ({ type: "normal" }) },
     "lib/progress/server": { loadCurrentLesson: async () => ({ courseSlug: "programming", lessonSlug: "variables" }) },
     "lib/profile/local-profile": { validateRobinProfileContext: () => null },
+    "lib/local-user/server": { requireLocalUserId: () => "11111111-1111-4111-8111-111111111111" },
     "lib/ai/server": { getAIConfig: () => ({ configured: true, model: "test" }), createServerAIClient: () => ({ chat: { completions: { create: async (body) => {
       payload = body;
       return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ grounding: "general", reply: "One example." }) } }] };

@@ -27,6 +27,7 @@ export const emptyPersistedPracticeState: PersistedPracticeState = {
 export type PracticeProgress = {
   id: string;
   user_id: string | null;
+  local_user_id: string;
   course_slug: string;
   current_exercise_id: string | null;
   completed_exercise_ids: string[];

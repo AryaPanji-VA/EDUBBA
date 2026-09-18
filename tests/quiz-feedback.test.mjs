@@ -49,6 +49,7 @@ function route({ configured = true, recordEvidence = async () => {}, provider = 
     },
     "@/lib/robin/quiz-feedback": { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult },
     "@/lib/mastery/server": { recordEvidence },
+    "@/lib/local-user/server": { requireLocalUserId: () => "55555555-5555-4555-8555-555555555555" },
     "@/lib/adaptation/server": { loadAdaptationContext: async () => "" },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/feedback/route.ts", import.meta.url), "utf8"), { mode: "transform" })
@@ -85,7 +86,7 @@ test("route rejects an unregistered lesson slug without touching the provider", 
 test("grading records evidence before inference, and inference failure preserves evidence", async () => {
   const events = [];
   const post = route({
-    recordEvidence: async (...args) => { events.push("mastery"); assert.deepEqual(args, ["variables", "reassignment", "incorrect_prediction", validRequest.attemptId]); },
+    recordEvidence: async (...args) => { events.push("mastery"); assert.deepEqual(args, ["55555555-5555-4555-8555-555555555555", "variables", "reassignment", "incorrect_prediction", validRequest.attemptId]); },
     provider: async () => { events.push("ai"); throw new Error("private error"); },
   });
   assert.equal((await post(request(validRequest))).status, 502);

@@ -5,18 +5,18 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    requireLocalProgress(request);
+    const localUserId = requireLocalProgress(request);
     const lesson = new URL(request.url).searchParams.get("lesson");
     if (!lesson) {
       // No lesson param: return the current/last lesson from persisted progress.
-      const current = await loadCurrentLesson();
+      const current = await loadCurrentLesson(localUserId);
       return progressResponse({ current });
     }
     // Trusted course resolution: the registry owns each lesson's course.
     // Client input never decides which course a lesson belongs to.
     const definition = getLessonDefinition(lesson);
     if (!definition) return progressResponse({ error: "Lesson not registered." }, 400);
-    const progress = await loadProgress(definition.courseSlug, lesson);
+    const progress = await loadProgress(localUserId, definition.courseSlug, lesson);
     return progressResponse({ progress });
   } catch (error) {
     return progressFailure(error);
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    requireLocalProgress(request);
+    const localUserId = requireLocalProgress(request);
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
       return progressResponse({ error: "Kirim request sebagai JSON." }, 415);
     }
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         Object.keys(input.progressState?.answers ?? {}).some((id) => !activityIds.has(id))) {
       return progressResponse({ error: "Activity progress tidak valid." }, 400);
     }
-    return progressResponse(await saveProgress(input));
+    return progressResponse(await saveProgress(localUserId, input));
   } catch (error) {
     return progressFailure(error);
   }

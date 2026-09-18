@@ -1,4 +1,5 @@
 import { recordEvidence } from "@/lib/mastery/server";
+import { requireLocalUserId } from "@/lib/local-user/server";
 import { checkThinkingActivity, isThinkingSubmissionFor } from "@/lib/practice/thinking-check";
 import { getThinkingActivity } from "@/lib/practice/thinking-registry";
 
@@ -9,6 +10,8 @@ function fail(error: string, status: number) {
 }
 
 export async function POST(request: Request) {
+  let localUserId: string;
+  try { localUserId = requireLocalUserId(request); } catch { return fail("Pilih local user dulu.", 401); }
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
     return fail("Kirim request sebagai JSON.", 415);
   }
@@ -40,9 +43,8 @@ export async function POST(request: Request) {
   const result = checkThinkingActivity(activity, answer);
   const evidenceType = result.status === "correct" ? "correct_practice" : "incorrect_practice";
   for (const mapping of activity.masteryEvidence) {
-    await recordEvidence(mapping.lessonSlug, mapping.concept, evidenceType, attemptId);
+    await recordEvidence(localUserId, mapping.lessonSlug, mapping.concept, evidenceType, attemptId);
   }
 
   return Response.json({ result }, { headers: { "Cache-Control": "no-store" } });
 }
-

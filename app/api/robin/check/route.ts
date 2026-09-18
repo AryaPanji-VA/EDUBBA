@@ -2,6 +2,7 @@ import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { parseCheckEvaluation, validateCheckRequest } from "@/lib/robin/check";
 import { recordEvidence } from "@/lib/mastery/server";
+import { requireLocalUserId } from "@/lib/local-user/server";
 import { loadAdaptation } from "@/lib/adaptation/server";
 
 export const runtime = "nodejs";
@@ -12,6 +13,8 @@ function fail(status: number) {
 }
 
 export async function POST(request: Request) {
+  let localUserId: string;
+  try { localUserId = requireLocalUserId(request); } catch { return fail(401); }
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") return fail(415);
   let body: unknown;
   try {
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
     const { evidenceType, concepts } = definition.mastery.robinCheckSignalToEvidence(evaluation.signal);
     const attemptId = crypto.randomUUID();
     for (const concept of concepts) {
-      try { await recordEvidence(input.lessonSlug, concept, evidenceType, attemptId); } catch { /* best-effort */ }
+      try { await recordEvidence(localUserId, input.lessonSlug, concept, evidenceType, attemptId); } catch { /* best-effort */ }
     }
     // Adapt only after the original signal has been validated and used for unchanged evidence weights.
     let supportedEvaluation = evaluation;

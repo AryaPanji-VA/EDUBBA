@@ -5,9 +5,11 @@ import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
 import { useLocalProfile } from "@/lib/profile/use-local-profile";
 import type { LocalProfileDraft } from "@/lib/profile/local-profile";
+import { useLocalUser } from "@/lib/local-user/local-user-provider";
 
 export default function ProfilePage() {
   const { profile, isLoaded, save, reset } = useLocalProfile();
+  const { activeUser, switchUser } = useLocalUser();
   const [draft, setDraft] = useState<LocalProfileDraft>(() => ({
     displayName: profile.displayName,
     preferredName: profile.preferredName,
@@ -79,13 +81,14 @@ export default function ProfilePage() {
           <div className="profile-actions">
             <button className="btn-p" type="submit">Save profile</button>
             <button className="btn-g" type="button" onClick={restoreDefault}>Reset to default</button>
+            <button className="btn-g" type="button" onClick={() => void switchUser()}>Logout / switch user</button>
           </div>
           {status && <p className="profile-status" role="status">{status}</p>}
         </form>
 
         <aside className="profile-local-note">
           <strong>LOCAL ONLY</strong>
-          <p>Browser lain akan punya profile lokalnya sendiri. Progress, mastery, dan Learning Log belum diikat ke profile ini; pemisahan user yang sebenarnya menunggu auth di fase berikutnya.</p>
+          <p>Local user ID: <code>{activeUser.localUserId}</code>. Progress, mastery, Practice, dan Learning Log terpisah untuk identity ini. Ini tetap bukan authentication; keamanan multi-user publik menunggu auth sungguhan.</p>
         </aside>
       </div>
     </AppShell>

@@ -2,6 +2,7 @@ import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { gradeActivity, parseQuizFeedbackResult, validateQuizFeedbackRequest } from "@/lib/robin/quiz-feedback";
 import { recordEvidence } from "@/lib/mastery/server";
+import { requireLocalUserId } from "@/lib/local-user/server";
 import { loadAdaptationContext } from "@/lib/adaptation/server";
 
 export const runtime = "nodejs";
@@ -11,6 +12,8 @@ function fail(status: number) {
 }
 
 export async function POST(request: Request) {
+  let localUserId: string;
+  try { localUserId = requireLocalUserId(request); } catch { return fail(401); }
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") return fail(415);
   let body: unknown;
   try {
@@ -46,7 +49,7 @@ export async function POST(request: Request) {
     const evidenceType = grading.activityType === "predict"
       ? grading.isCorrect ? "correct_prediction" : "incorrect_prediction"
       : grading.isCorrect ? "correct_practice" : "incorrect_practice";
-    try { await recordEvidence(input.lessonSlug, masteryConcept, evidenceType, input.attemptId); } catch {
+    try { await recordEvidence(localUserId, input.lessonSlug, masteryConcept, evidenceType, input.attemptId); } catch {
       console.warn("[ROBIN MASTERY] Evidence recording unavailable; continuing feedback.");
     }
   }

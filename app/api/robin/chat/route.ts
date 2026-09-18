@@ -12,6 +12,7 @@ import { loadLogContext } from "@/lib/learning-log/server";
 import { loadMasterySummary } from "@/lib/mastery/server";
 import { loadCurrentLesson } from "@/lib/progress/server";
 import { validateRobinProfileContext } from "@/lib/profile/local-profile";
+import { requireLocalUserId } from "@/lib/local-user/server";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,8 @@ export async function POST(request: Request) {
     return fail("Request JSON tidak valid.", 400);
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Request tidak valid.", 400);
+  let localUserId: string;
+  try { localUserId = requireLocalUserId(request); } catch { return fail("Pilih local user dulu.", 401); }
   const { lessonSlug, message, history = [], profileContext } = body as Record<string, unknown>;
   if (typeof lessonSlug !== "string" || !lessonSlug.trim()) return fail("Lesson slug diperlukan.", 400);
   const definition = getLessonDefinition(lessonSlug);
@@ -134,7 +137,7 @@ export async function POST(request: Request) {
   let logContext = "";
   if (logIntent.type !== "normal") {
     // Resolve current lesson from persisted progress — never hardcode "variables".
-    const currentLesson = await loadCurrentLesson();
+    const currentLesson = await loadCurrentLesson(localUserId);
     const currentSlug = currentLesson.lessonSlug;
     if (logIntent.type === "continue_learning") {
       return Response.json({
@@ -176,7 +179,7 @@ export async function POST(request: Request) {
   const memoryContext = await loadMemoryContext(request);
   const teachingContext = await loadAdaptationContext(request, lessonSlug, definition.relevance.chatConcepts(message));
   // For save_log/recall_log intents, load mastery summary so the AI can summarize or locate weak concepts.
-  const masteryForLog = logIntent.type === "save_log" || logIntent.type === "recall_log" ? await loadMasterySummary(lessonSlug) : null;
+  const masteryForLog = logIntent.type === "save_log" || logIntent.type === "recall_log" ? await loadMasterySummary(localUserId, lessonSlug) : null;
   try {
     const client = createServerAIClient();
     const systemMessages = [

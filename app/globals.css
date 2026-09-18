@@ -905,3 +905,31 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .profile-bio { grid-column: auto; }
   .profile-form { padding: 18px; }
 }
+
+/* ── Phase 17.1: local identity gate ─────────────────────── */
+.local-login { min-height: 100vh; display: grid; place-items: center; padding: 28px; }
+.local-login-card { width: min(100%, 560px); padding: 28px; }
+.local-login-card .eyebrow { color: var(--accent-text); font: 600 10px/1.5 var(--mono); letter-spacing: .15em; }
+.local-login-card h1 { margin-top: 12px; color: var(--hero-h1); font: 500 32px/1.15 var(--serif); }
+.local-login-card > p { margin-top: 10px; color: var(--mut); font-size: 13.5px; line-height: 1.65; }
+.local-user-list { display: grid; gap: 8px; margin-top: 22px; }
+.local-user-list button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 1px solid var(--linesoft); border-radius: 9px; background: var(--input-bg); text-align: left; }
+.local-user-list button:hover { border-color: var(--input-focus); background: var(--hover-bg); }
+.local-user-list button > span:not(.avatar) { display: grid; min-width: 0; }
+.local-user-list strong { color: var(--text); font-size: 13.5px; }
+.local-user-list small { overflow: hidden; color: var(--dim); font: 400 10.5px/1.5 var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.local-user-list i { color: var(--accent-text); font: 500 11px var(--mono); font-style: normal; }
+.local-user-create { display: grid; gap: 8px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--linesoft); }
+.local-user-create label { color: var(--mut); font-size: 12px; font-weight: 500; }
+.local-user-create > div { display: flex; gap: 8px; }
+.local-user-create input { min-width: 0; flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: var(--input-bg); color: var(--text); }
+.local-user-create input:focus { border-color: var(--input-focus); }
+.local-login-card .local-login-note { color: var(--dim); font: 400 10px/1.6 var(--mono); }
+.profile-local-note code { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  .local-login { padding: 16px; }
+  .local-login-card { padding: 20px; }
+  .local-login-card h1 { font-size: 27px; }
+  .local-user-create > div { align-items: stretch; flex-direction: column; }
+  .local-user-list i { display: none; }
+}

@@ -5,10 +5,10 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    requireLocalPractice(request);
+    const localUserId = requireLocalPractice(request);
     const track = new URL(request.url).searchParams.get("track") ?? "";
     if (!getPracticeProgressDefinition(track)) return practiceResponse({ error: "Practice track not registered." }, 400);
-    const progress = await loadPracticeProgress(track);
+    const progress = await loadPracticeProgress(localUserId, track);
     return practiceResponse({ progress });
   } catch (error) {
     return practiceFailure(error);
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    requireLocalPractice(request);
+    const localUserId = requireLocalPractice(request);
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
       return practiceResponse({ error: "Kirim request sebagai JSON." }, 415);
     }
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         Object.keys(input.progressState?.attempts ?? {}).some((id) => !exerciseIds.has(id))) {
       return practiceResponse({ error: "Exercise progress tidak valid." }, 400);
     }
-    return practiceResponse(await savePracticeProgress(input));
+    return practiceResponse(await savePracticeProgress(localUserId, input));
   } catch (error) {
     return practiceFailure(error);
   }

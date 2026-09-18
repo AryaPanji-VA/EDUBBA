@@ -18,6 +18,7 @@ export const emptyPersistedProgressState: PersistedProgressState = {
 export type LessonProgress = {
   id: string;
   user_id: string | null;
+  local_user_id: string;
   course_slug: string;
   lesson_slug: string;
   current_activity_id: string | null;

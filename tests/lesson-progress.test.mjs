@@ -101,14 +101,16 @@ test("server merge never regresses completion, completed activities, or submitte
       if (name === "./types") return types;
       if (name.includes("data/courses")) return { programmingLessonStateBySlug: { variables: "current" } };
       if (name.includes("lessons/registry")) return { getLessonDefinition: () => ({ activities: [{ id: "why" }] }) };
+      if (name.includes("local-user/server")) return { requireLocalUserId: () => "00000000-0000-4000-8000-000000000001" };
       throw new Error(name);
     },
   });
-  const result = await exports.saveProgress({
+  const result = await exports.saveProgress("11111111-1111-4111-8111-111111111111", {
     courseSlug: "programming", lessonSlug: "variables", currentActivityId: "connect", completedActivityIds: ["connect"], completedAt: null,
     progressState: { answers: {}, robinCheckComplete: false, learningLogStatus: "saved" },
   });
-  assert.equal(conflict, "course_slug,lesson_slug");
+  assert.equal(conflict, "local_user_id,course_slug,lesson_slug");
+  assert.equal(written.local_user_id, "11111111-1111-4111-8111-111111111111");
   assert.equal(written.completed_at, existing.completed_at);
   assert.deepEqual([...written.completed_activity_ids], ["why", "predict", "connect"]);
   assert.equal(written.progress_state.answers.predict.attemptId, "attempt-1");
@@ -134,15 +136,14 @@ test("completion reuses the existing Learning Log endpoint and Skip only records
   assert.doesNotMatch(skipBody, /fetch\(/);
 });
 
-test("migration is RLS-on, server-only, and uses a valid PostgREST conflict constraint", () => {
-  const sql = readFileSync(new URL("../database/phase11a5-lesson-progress.sql", import.meta.url), "utf8");
+test("local-user migration keeps RLS and uses a per-user PostgREST conflict constraint", () => {
+  const sql = readFileSync(new URL("../database/phase17-1-local-user-isolation.sql", import.meta.url), "utf8");
   const server = readFileSync(new URL("../lib/progress/server.ts", import.meta.url), "utf8");
-  assert.match(sql, /progress_state jsonb/);
-  assert.match(sql, /unique \(course_slug, lesson_slug\)/);
+  assert.match(sql, /unique \(local_user_id, course_slug, lesson_slug\)/);
   assert.match(sql, /enable row level security/);
-  assert.match(sql, /revoke all.*from public, anon, authenticated/);
   assert.match(server, /import "server-only"/);
-  assert.match(server, /onConflict: "course_slug,lesson_slug"/);
+  assert.match(server, /onConflict: "local_user_id,course_slug,lesson_slug"/);
+  assert.match(server, /\.eq\("local_user_id", localUserId\)/);
 });
 
 test("Dashboard, navigation, and Robin resolve persisted current lesson instead of a fixed lesson route", () => {
@@ -152,6 +153,6 @@ test("Dashboard, navigation, and Robin resolve persisted current lesson instead 
   assert.match(dashboard, /useCurrentLesson\(\)/);
   assert.match(dashboard, /currentLesson\.lessonSlug/);
   assert.match(shell, /CurrentLessonLink/);
-  assert.match(chat, /loadCurrentLesson\(\)/);
+  assert.match(chat, /loadCurrentLesson\(localUserId\)/);
   assert.doesNotMatch(chat, /\/courses\/programming\/\$\{currentSlug\}/);
 });

@@ -147,10 +147,11 @@ test("server merge never regresses completed exercises, attempts, or log decisio
     require(name) {
       if (name.includes("memory-server")) return { createMemorySupabaseClient: () => ({ from: () => query }) };
       if (name === "./types") return types;
+      if (name.includes("local-user/server")) return { requireLocalUserId: () => "00000000-0000-4000-8000-000000000001" };
       throw new Error(name);
     },
   });
-  const result = await exports.savePracticeProgress({
+  const result = await exports.savePracticeProgress("22222222-2222-4222-8222-222222222222", {
     courseSlug: "python",
     currentExerciseId: "variables-fix-1",
     completedExerciseIds: ["variables-predict-2"],
@@ -160,7 +161,8 @@ test("server merge never regresses completed exercises, attempts, or log decisio
     },
     completedAt: null,
   });
-  assert.equal(conflict, "course_slug");
+  assert.equal(conflict, "local_user_id,course_slug");
+  assert.equal(written.local_user_id, "22222222-2222-4222-8222-222222222222");
   assert.deepEqual([...written.completed_exercise_ids], ["variables-predict-1", "variables-predict-2"]);
   assert.equal(written.progress_state.attempts["variables-predict-1"].attemptId, "attempt-1");
   assert.equal(written.progress_state.attempts["variables-predict-2"].attemptId, "attempt-2");
@@ -169,17 +171,14 @@ test("server merge never regresses completed exercises, attempts, or log decisio
   assert.equal(result.newlyCompleted, false);
 });
 
-test("migration is RLS-on, server-only, single-row per track, and has no public policies", () => {
-  const sql = readFileSync(new URL("../database/phase11b-practice-progress.sql", import.meta.url), "utf8");
+test("local-user migration is RLS-on, server-only, and single-row per user and track", () => {
+  const sql = readFileSync(new URL("../database/phase17-1-local-user-isolation.sql", import.meta.url), "utf8");
   const server = readFileSync(new URL("../lib/practice/server.ts", import.meta.url), "utf8");
-  assert.match(sql, /progress_state jsonb/);
-  assert.match(sql, /unique \(course_slug\)/);
-  assert.match(sql, /user_id uuid/);
+  assert.match(sql, /unique \(local_user_id, course_slug\)/);
   assert.match(sql, /enable row level security/);
-  assert.match(sql, /revoke all.*from public, anon, authenticated/);
-  assert.match(sql, /grant select, insert, update, delete.*service_role/);
   assert.match(sql, /must have no public policies/);
   assert.match(server, /import "server-only"/);
-  assert.match(server, /onConflict: "course_slug"/);
+  assert.match(server, /onConflict: "local_user_id,course_slug"/);
+  assert.match(server, /\.eq\("local_user_id", localUserId\)/);
   assert.match(server, /createMemorySupabaseClient/);
 });

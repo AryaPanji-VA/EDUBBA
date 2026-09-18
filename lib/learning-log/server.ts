@@ -1,8 +1,9 @@
 import "server-only";
 import { createMemorySupabaseClient } from "@/lib/supabase/memory-server";
 import { validateLearningLog, type LearningLog, type LearningLogInput, type LearningLogSummary } from "./types";
+import { requireLocalUserId } from "@/lib/local-user/server";
 
-const columns = "id,user_id,course_slug,lesson_slug,summary,concepts_learned,weak_concepts,misconceptions,next_step,mastery_snapshot,created_at,updated_at";
+const columns = "id,user_id,local_user_id,course_slug,lesson_slug,summary,concepts_learned,weak_concepts,misconceptions,next_step,mastery_snapshot,created_at,updated_at";
 
 export class LogError extends Error {
   constructor(message: string, public status = 503) { super(message); }
@@ -18,6 +19,8 @@ export function requireLocalLog(request: Request) {
       ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) {
     throw new LogError("Learning Log hanya tersedia di development lokal. Belum ada authentication.", 403);
   }
+  try { return requireLocalUserId(request); }
+  catch { throw new LogError("Pilih local user dulu.", 401); }
 }
 
 export function logResponse(data: unknown, status = 200) {
@@ -31,9 +34,10 @@ export function logFailure(error: unknown) {
   );
 }
 
-export async function createLog(input: LearningLogInput): Promise<LearningLog> {
+export async function createLog(localUserId: string, input: LearningLogInput): Promise<LearningLog> {
   const client = createMemorySupabaseClient();
   const { data, error } = await client.from("learning_logs").insert({
+    local_user_id: localUserId,
     course_slug: input.courseSlug,
     lesson_slug: input.lessonSlug,
     summary: input.summary,
@@ -47,10 +51,11 @@ export async function createLog(input: LearningLogInput): Promise<LearningLog> {
   return data as LearningLog;
 }
 
-export async function listRecentLogs(limit = 5): Promise<LearningLogSummary[]> {
+export async function listRecentLogs(localUserId: string, limit = 5): Promise<LearningLogSummary[]> {
   const client = createMemorySupabaseClient();
   const { data, error } = await client.from("learning_logs")
     .select("id,lesson_slug,summary,concepts_learned,weak_concepts,next_step,created_at")
+    .eq("local_user_id", localUserId)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new Error("Learning Log read unavailable.");
@@ -65,7 +70,7 @@ export async function listRecentLogs(limit = 5): Promise<LearningLogSummary[]> {
   }));
 }
 
-export async function updateLogSummary(id: string, summary: string): Promise<void> {
+export async function updateLogSummary(localUserId: string, id: string, summary: string): Promise<void> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
     throw new LogError("Log ID tidak valid.", 400);
   }
@@ -75,24 +80,24 @@ export async function updateLogSummary(id: string, summary: string): Promise<voi
   const client = createMemorySupabaseClient();
   const { error } = await client.from("learning_logs")
     .update({ summary: summary.trim() })
-    .eq("id", id);
+    .eq("local_user_id", localUserId).eq("id", id);
   if (error) throw new Error("Learning Log update unavailable.");
 }
 
-export async function deleteLog(id: string): Promise<void> {
+export async function deleteLog(localUserId: string, id: string): Promise<void> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
     throw new LogError("Log ID tidak valid.", 400);
   }
   const client = createMemorySupabaseClient();
-  const { error } = await client.from("learning_logs").delete().eq("id", id);
+  const { error } = await client.from("learning_logs").delete().eq("local_user_id", localUserId).eq("id", id);
   if (error) throw new Error("Learning Log delete unavailable.");
 }
 
 // Compact context for Robin chat — best-effort, never blocks chat.
 export async function loadLogContext(request: Request): Promise<string> {
   try {
-    requireLocalLog(request);
-    const logs = await listRecentLogs(3);
+    const localUserId = requireLocalLog(request);
+    const logs = await listRecentLogs(localUserId, 3);
     if (!logs.length) return "";
     return "RECENT LEARNING LOGS:\n" + logs.map((log) =>
       `${log.lesson_slug} (${new Date(log.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}) — ${log.summary.substring(0, 120)}`

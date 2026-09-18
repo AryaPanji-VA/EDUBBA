@@ -3,8 +3,9 @@ import { createMemorySupabaseClient } from "@/lib/supabase/memory-server";
 import { defaultCurrentLesson } from "@/data/courses";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { emptyPersistedProgressState, validateProgressInput, type CurrentLesson, type LessonProgress, type LessonProgressInput, type PersistedProgressState } from "./types";
+import { requireLocalUserId } from "@/lib/local-user/server";
 
-const columns = "id,user_id,course_slug,lesson_slug,current_activity_id,completed_activity_ids,progress_state,completed_at,created_at,updated_at";
+const columns = "id,user_id,local_user_id,course_slug,lesson_slug,current_activity_id,completed_activity_ids,progress_state,completed_at,created_at,updated_at";
 
 export class ProgressError extends Error {
   constructor(message: string, public status = 503) { super(message); }
@@ -20,6 +21,8 @@ export function requireLocalProgress(request: Request) {
       ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) {
     throw new ProgressError("Lesson progress hanya tersedia di development lokal. Belum ada authentication.", 403);
   }
+  try { return requireLocalUserId(request); }
+  catch { throw new ProgressError("Pilih local user dulu.", 401); }
 }
 
 export function progressResponse(data: unknown, status = 200) {
@@ -33,11 +36,11 @@ export function progressFailure(error: unknown) {
   );
 }
 
-export async function loadProgress(courseSlug: string, lessonSlug: string): Promise<LessonProgress | null> {
+export async function loadProgress(localUserId: string, courseSlug: string, lessonSlug: string): Promise<LessonProgress | null> {
   const client = createMemorySupabaseClient();
   const { data, error } = await client.from("lesson_progress")
     .select(columns)
-    .eq("course_slug", courseSlug).eq("lesson_slug", lessonSlug)
+    .eq("local_user_id", localUserId).eq("course_slug", courseSlug).eq("lesson_slug", lessonSlug)
     .maybeSingle();
   if (error) throw new Error("Progress read unavailable.");
   return (data ?? null) as LessonProgress | null;
@@ -53,10 +56,11 @@ function mergeState(existing: PersistedProgressState | undefined, incoming: Pers
   };
 }
 
-export async function saveProgress(input: LessonProgressInput): Promise<{ progress: LessonProgress; newlyCompleted: boolean }> {
+export async function saveProgress(localUserId: string, input: LessonProgressInput): Promise<{ progress: LessonProgress; newlyCompleted: boolean }> {
   const client = createMemorySupabaseClient();
-  const existing = await loadProgress(input.courseSlug, input.lessonSlug);
+  const existing = await loadProgress(localUserId, input.courseSlug, input.lessonSlug);
   const payload = {
+    local_user_id: localUserId,
     course_slug: input.courseSlug,
     lesson_slug: input.lessonSlug,
     current_activity_id: input.currentActivityId ?? null,
@@ -65,7 +69,7 @@ export async function saveProgress(input: LessonProgressInput): Promise<{ progre
     completed_at: existing?.completed_at ?? input.completedAt ?? null,
   };
   const { data, error } = await client.from("lesson_progress")
-    .upsert(payload, { onConflict: "course_slug,lesson_slug" })
+    .upsert(payload, { onConflict: "local_user_id,course_slug,lesson_slug" })
     .select(columns).single();
   if (error) throw new Error("Progress write unavailable.");
   const progress = data as LessonProgress;
@@ -74,11 +78,12 @@ export async function saveProgress(input: LessonProgressInput): Promise<{ progre
 
 // Resolve the current/last lesson from persisted progress.
 // Falls back to the static curriculum map when Supabase is unavailable.
-export async function loadCurrentLesson(): Promise<CurrentLesson> {
+export async function loadCurrentLesson(localUserId: string): Promise<CurrentLesson> {
   try {
     const client = createMemorySupabaseClient();
     const { data, error } = await client.from("lesson_progress")
       .select("course_slug,lesson_slug,current_activity_id,completed_activity_ids,completed_at,updated_at")
+      .eq("local_user_id", localUserId)
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -109,10 +114,11 @@ export async function loadCurrentLesson(): Promise<CurrentLesson> {
 // as the progress API; any failure returns empty counts (honest neutral state).
 export async function loadCompletedLessonCountsByCourse(request: Request): Promise<Record<string, number>> {
   try {
-    requireLocalProgress(request);
+    const localUserId = requireLocalProgress(request);
     const client = createMemorySupabaseClient();
     const { data, error } = await client.from("lesson_progress")
       .select("course_slug")
+      .eq("local_user_id", localUserId)
       .not("completed_at", "is", null);
     if (error) return {};
     const counts: Record<string, number> = {};

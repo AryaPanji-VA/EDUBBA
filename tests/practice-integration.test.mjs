@@ -49,6 +49,7 @@ function route({ recordEvidence = async () => {} } = {}) {
     "@/lib/practice/registry": { getPracticeExercise: registry.getPracticeExercise },
     "@/lib/practice/check": { checkPracticeExercise: checker.checkPracticeExercise },
     "@/lib/mastery/server": { recordEvidence },
+    "@/lib/local-user/server": { requireLocalUserId: () => "44444444-4444-4444-8444-444444444444" },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/practice/check/route.ts", import.meta.url), "utf8"), { mode: "transform" })
     .replace(/import \{([^}]+)\} from "([^"]+)";/g, 'const {$1} = require("$2");')
@@ -68,7 +69,7 @@ test("check route grades deterministically and records correct_practice evidence
   assert.equal(response.status, 200);
   const data = await response.json();
   assert.equal(data.result.status, "correct");
-  assert.deepEqual(evidence, [["variables", "assignment", "correct_practice", "practice-attempt-1"]]);
+  assert.deepEqual(evidence, [["44444444-4444-4444-8444-444444444444", "variables", "assignment", "correct_practice", "practice-attempt-1"]]);
 });
 
 test("incorrect submissions record incorrect_practice evidence for every mastery concept", async () => {
@@ -77,8 +78,8 @@ test("incorrect submissions record incorrect_practice evidence for every mastery
   // variables-write-2 carries two mastery concepts (reassignment, expression).
   await post(request({ exerciseId: "variables-write-2", answer: "score = 7\nscore = 12\nprint(score)", attemptId: "practice-attempt-2" }));
   assert.deepEqual(evidence, [
-    ["variables", "reassignment", "incorrect_practice", "practice-attempt-2"],
-    ["variables", "expression", "incorrect_practice", "practice-attempt-2"],
+    ["44444444-4444-4444-8444-444444444444", "variables", "reassignment", "incorrect_practice", "practice-attempt-2"],
+    ["44444444-4444-4444-8444-444444444444", "variables", "expression", "incorrect_practice", "practice-attempt-2"],
   ]);
 });
 

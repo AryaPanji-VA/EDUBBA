@@ -141,7 +141,7 @@ test("Thinking progress reuses stable practice attempts and does not replay grad
   assert.match(component, /resolvePracticeAttemptId\(/);
   assert.match(component, /previousAttempt\?\.attemptId === attemptId/);
   assert.match(component, /practice\.recordAttempt\(activity\.id/);
-  assert.match(route, /recordEvidence\(mapping\.lessonSlug, mapping\.concept, evidenceType, attemptId\)/);
+  assert.match(route, /recordEvidence\(localUserId, mapping\.lessonSlug, mapping\.concept, evidenceType, attemptId\)/);
   assert.match(progressRoute, /getPracticeProgressDefinition/);
 });
 

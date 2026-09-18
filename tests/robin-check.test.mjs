@@ -29,6 +29,7 @@ function route({ configured = true, provider = async () => ({ choices: [{ finish
     },
     "@/lib/robin/check": { parseCheckEvaluation, validateCheckRequest },
     "@/lib/mastery/server": { recordEvidence: async () => {} },
+    "@/lib/local-user/server": { requireLocalUserId: () => "66666666-6666-4666-8666-666666666666" },
     "@/lib/adaptation/server": { loadAdaptation: async () => ({ concepts: [] }) },
   };
   const code = stripTypeScriptTypes(readFileSync(new URL("../app/api/robin/check/route.ts", import.meta.url), "utf8"), { mode: "transform" })
