@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
+import { standardLessonStubs } from "./helpers/standard-lessons.mjs";
 
 // Load the registry from real source.
 function loadModule(file, deps = {}) {
@@ -80,6 +81,7 @@ vm.runInNewContext(regCode, {
   propositionsActivities, propositionsLessonContent, propositionsMasteryConfig, propositionsRelevance,
   loadPropositionsLesson: async () => ({}),
   propositionsCheckInstructions: "propositions-rubric", propositionsFeedbackInstructions: "propositions-feedback-rubric",
+  ...standardLessonStubs(),
 });
 const { getLessonDefinition, isRegisteredLesson } = regExports;
 

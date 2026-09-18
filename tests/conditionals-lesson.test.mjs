@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
+import { requireMapForStandardLessons } from "./helpers/standard-lessons.mjs";
 
 // Phase 12.1 — Conditionals lesson: registry, content availability, mastery and
 // adaptation mapping, and the Robin Check / Smart Feedback instruction contract.
@@ -93,6 +94,7 @@ vm.runInNewContext(strip("../lib/lessons/registry.ts") + ["getLessonDefinition",
       "lib/lessons/propositions": { loadPropositionsLesson: async () => ({}) },
       "propositions-check-instructions": { propositionsCheckInstructions: "propositions rubric" },
       "propositions-feedback-instructions": { propositionsFeedbackInstructions: "propositions feedback" },
+      ...requireMapForStandardLessons(),
       "lib/robin/check": { checkConcepts: [], checkMisconceptions: [] },
     };
     const match = Object.keys(map).find((key) => name.endsWith(key));

@@ -110,11 +110,11 @@ button:disabled { cursor: wait; opacity: .72; }
 /* ── masthead / topbar / hero ────────────────────────────── */
 .mast { position: relative; flex: none; }
 .mast-inner { position: relative; max-width: 1180px; margin: 0 auto; padding: 0 32px; width: 100%; }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 16px; }
-.crumb { font-size: 13px; color: var(--mut); white-space: nowrap; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; padding-top: 16px; }
+.crumb { font-size: 13px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
 .crumb b { font-weight: 500; color: var(--text); }
 .crumb .sep { margin: 0 8px; color: var(--dim); }
-.top-right { display: flex; align-items: center; gap: 10px; }
+.top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .hero {
   /* Resolve font roles below the body where next/font supplies its variables. */
   --serif: var(--font-fraunces, "Fraunces"), Georgia, serif;
@@ -259,6 +259,11 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .page-desc em { font-family: var(--serif); color: var(--bright); }
 .course-progress { display: flex; align-items: center; gap: 18px; margin-top: 20px; flex-wrap: wrap; }
 .course-progress .pxbar { flex: 1; min-width: 180px; max-width: 340px; margin-top: 0; }
+/* Base segmented progress bar (Phase 16): without this the <i> segments
+   render as empty inline elements and the bar is invisible. */
+.pxbar { display: flex; gap: 2px; min-width: 0; }
+.pxbar i { flex: 1 1 0; min-width: 2px; height: 6px; border-radius: 2px; background: var(--track, #1a2025); }
+.pxbar i.f { background: var(--bar, var(--cyan)); box-shadow: 0 0 6px rgba(98,230,255,.35); }
 .course-progress-meta { font: 400 11.5px var(--mono); color: var(--mut); white-space: nowrap; }
 
 /* curriculum signal map */
@@ -523,7 +528,9 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .side { padding: 22px 8px 8px; align-items: center; }
   .brand > div, .nav a span, .side-foot { display: none; }
   .nav a { justify-content: center; padding: 11px; }
-  .main { padding: 22px 24px 66px; }
+  /* Vertical padding only — .content/.mast-inner already carry horizontal
+     padding, so adding it here would double-inset the whole page. */
+  .main { padding: 0 0 66px; }
   .cockpit-grid { grid-template-columns: minmax(0,1.35fr) minmax(250px,.65fr); gap: 32px; }
   .course-row { grid-template-columns: 40px 1fr 130px 22px; }
   .course-stats { display: none; }
@@ -537,16 +544,53 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .side { position: fixed; inset: auto 0 0; z-index: 20; width: 100%; height: 68px; padding: 9px 12px; border-right: 0; border-top: 1px solid var(--line); flex-direction: row; }
   .brand, .side-foot { display: none; }
   .nav { width: 100%; display: flex; justify-content: space-around; }
-  .nav a { min-width: 76px; flex-direction: column; gap: 2px; padding: 5px 10px; font-size: .58rem; }
+  .nav a { min-width: 64px; flex-direction: column; gap: 2px; padding: 6px 8px; font-size: .58rem; }
   .nav a span { display: block; }
   .nav a.on::before { left: 50%; top: -10px; width: 28px; height: 1px; transform: translateX(-50%); }
-  .main { padding: 22px 18px 96px; }
+  /* Bottom padding clears the fixed bottom nav; horizontal padding stays on
+     .content/.mast-inner so the page isn't double-inset on phones. */
+  .main { padding: 0 0 96px; }
   .topbar { margin-bottom: 24px; }
   .cockpit-grid { display: block; padding-top: 8px; }.greeting { margin-bottom: 28px; }.greeting h1 { font-size: 2.65rem; }.recommendation { padding-left: 18px; }.recommendation h2 { font-size: 2.45rem; }.dashboard-progress { margin-left: 18px; grid-template-columns: 105px 1fr; }.dashboard-robin { min-height: 300px; margin-top: 42px; }.course-strip { grid-template-columns: 1fr; }.course-mini { border-right: 0; border-bottom: 1px solid var(--line); }.course-mini:last-child { border-bottom: 0; }.lower-grid { grid-template-columns: 1fr; gap: 34px; }
-  .page-header { display: block; padding-top: 38px; }.semester-stamp { width: 94px; height: 94px; margin-top: 28px; }.course-row { grid-template-columns: 38px 1fr 18px; gap: 9px; padding-right: 3px; }.course-main small { display: none; }
+  .page-header { display: block; padding-top: 38px; }.semester-stamp { width: 94px; height: 94px; margin-top: 28px; }
+  /* Course cards on phones: index + main on row one, honest progress bar on
+     row two. The old 3-column grid squeezed .course-progress into 18px. */
+  .course-row { grid-template-columns: 38px minmax(0, 1fr); gap: 10px 12px; padding: 14px 4px 14px 0; }
+  .course-row .row-arrow { display: none; }
+  .course-row .course-progress { grid-column: 2; justify-content: flex-start; }
+  .course-row .course-progress > strong { display: none; }
+  .course-main small { display: none; }
   .lesson-title { padding-top: 28px; } .lesson-section { grid-template-columns: 1fr; gap: 6px; padding: 28px 0; } .two-column-section { grid-template-columns: 1fr; } .lesson-box + .lesson-box { padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--line); } .answer-options { grid-template-columns: 1fr; } .quick-check { padding: 16px; } .bin-check { padding: 16px; } .form-footer { align-items: stretch; flex-direction: column; }
   .lab-page { padding: 25px 18px 44px; }.lab-version { display: none; }.lab-header { padding-top: 70px; }.architecture-flow { grid-template-columns: 1fr; }.architecture-flow > b, .architecture-flow > b:nth-of-type(3), .architecture-flow > b:nth-of-type(4) { display: block; transform: rotate(90deg); text-align: center; }.file-tree { grid-template-columns: 1fr; }.file-tree code { padding-bottom: 4px; border-bottom: 0; }.file-tree span { padding-top: 0; }.lab-footer { flex-direction: column; }.signal-field { height: 380px; opacity: .13; }.request-monitor, .endpoint-row { align-items: flex-start; grid-template-columns: 1fr; flex-direction: column; }
   .relationship-map { grid-template-columns: 1fr; gap: 26px; }.relationship-table b { top: auto; right: 50%; bottom: -22px; transform: none; }
+}
+@media (max-width: 600px) {
+  /* Comfortable phone gutters for both page containers. */
+  .mast-inner, .content { padding-inline: 18px; }
+  /* Lesson topbar: breadcrumb truncates, switcher groups form a 2×2 grid
+     with full-width touch-friendly controls. */
+  .topbar { align-items: stretch; }
+  .crumb { flex: 1 1 100%; }
+  .top-right { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .top-right .switcher { width: 100%; }
+  .top-right .switcher button { flex: 1 1 0; justify-content: center; }
+  /* Continue panel stacks: content first, actions below at full width. */
+  .continue-in { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px 18px 18px; }
+  .continue-actions { min-width: 0; flex-direction: row; }
+  .continue-actions .btn-p, .continue-actions .btn-g { flex: 1 1 0; }
+}
+/* Touch targets: bump small controls on coarse pointers only — desktop
+   click precision is untouched. */
+@media (pointer: coarse) {
+  .switcher button { min-height: 36px; padding-block: 8px; }
+  .code-head button { min-height: 36px; min-width: 44px; padding: 4px 10px; }
+  .a-send { width: 44px; height: 44px; }
+  .thinking-order button { width: 40px; height: 40px; }
+  .sandbox-starter-list button { min-height: 38px; padding: 10px 14px; }
+  .companion-actions a, .companion-actions button { min-height: 40px; }
+  .answer-options button { min-height: 44px; }
+  .quick-check .answer-options button { min-height: 44px; }
+  .practice-exercise-row { min-height: 44px; }
 }
 @media (max-width: 760px) {
   .knowledge-tables,
@@ -747,4 +791,53 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .thinking-order li > div { grid-column: 1 / -1; justify-content: flex-end; }
   .practice-exercise-row { align-items: flex-start; flex-wrap: wrap; }
   .practice-exercise-type { width: 100%; margin-left: 19px; }
+}
+
+/* ── Phase 16.1: mobile floating navigation (≤430px only) ──
+   One circular FAB, bottom-right, expands a vertical stack upward.
+   Outside the phone media query the wrapper is display:none, so tablet
+   and desktop rendering are completely untouched. */
+.mobile-nav { display: none; }
+.mobile-fab {
+  position: fixed; right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 40; width: 54px; height: 54px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--btn-ink);
+  box-shadow: 0 4px 18px rgba(0,0,0,.35), 0 0 0 1px rgba(98,230,255,.18);
+  transition: transform .16s, background .16s;
+}
+.mobile-fab:hover { background: var(--btn-hover); }
+.mobile-fab:active { transform: scale(.96); }
+.mobile-fab svg { width: 20px; height: 20px; }
+.mobile-menu {
+  position: fixed; right: 16px;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 40; display: flex; flex-direction: column; gap: 6px;
+  min-width: 0; max-width: calc(100vw - 32px);
+  animation: mobile-menu-in .18s ease-out;
+}
+.mobile-menu a {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 46px; padding: 10px 16px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); color: var(--mut);
+  font-size: 13.5px; font-weight: 500; box-shadow: var(--shadow);
+  transition: color .16s, border-color .16s, background .16s;
+}
+.mobile-menu a::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: transparent; flex: none; }
+.mobile-menu a:hover { color: var(--text); border-color: var(--ghost-bd-h); }
+.mobile-menu a svg { flex: none; opacity: .85; }
+.mobile-menu a.on { color: var(--text); background: rgba(var(--nav-rgb), var(--nav-on)); border-color: var(--accent); }
+.mobile-menu a.on::before { background: var(--accent); }
+.mobile-menu a.on svg { opacity: 1; color: var(--blue); }
+@keyframes mobile-menu-in { from { opacity: 0; transform: translateY(10px); } }
+
+@media (max-width: 430px) {
+  /* The old bottom nav is replaced by the FAB on phones. */
+  .side { display: none; }
+  /* Bottom padding clears the FAB (and the open menu's transient overlay)
+     including device safe areas. */
+  .main { padding: 0 0 calc(112px + env(safe-area-inset-bottom, 0px)); }
+  .mobile-nav { display: block; }
 }

@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
+import { standardLessonStubs } from "./helpers/standard-lessons.mjs";
 
 // Load real content modules.
 function loadModule(file, deps = {}) {
@@ -93,6 +94,7 @@ vm.runInNewContext(regCode, {
   loadPropositionsLesson: async () => ({}),
   propositionsCheckInstructions: "propositions-rubric",
   propositionsFeedbackInstructions: "propositions-feedback-rubric",
+  ...standardLessonStubs(),
 });
 const { getLessonDefinition, isRegisteredLesson } = regExports;
 

@@ -1,6 +1,6 @@
 import "server-only";
 import { createMemorySupabaseClient } from "@/lib/supabase/memory-server";
-import { programmingLessonStateBySlug } from "@/data/courses";
+import { defaultCurrentLesson } from "@/data/courses";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { emptyPersistedProgressState, validateProgressInput, type CurrentLesson, type LessonProgress, type LessonProgressInput, type PersistedProgressState } from "./types";
 
@@ -98,9 +98,31 @@ export async function loadCurrentLesson(): Promise<CurrentLesson> {
   } catch {
     // Fall through to static fallback.
   }
-  // Static fallback: use the curriculum map.
-  const staticCurrent = Object.entries(programmingLessonStateBySlug).find(([, s]) => s === "current")?.[0] ?? "variables";
-  return { courseSlug: "programming", lessonSlug: staticCurrent, currentActivityId: null, completedActivityIds: [], totalActivities: getLessonDefinition(staticCurrent)?.activities.length ?? 0, completedAt: null, updatedAt: new Date().toISOString() };
+  // Static fallback: derived from the implemented-lesson map, never a
+  // hardcoded course. Programming is simply the first course with lessons.
+  const { courseSlug, lessonSlug } = defaultCurrentLesson;
+  return { courseSlug, lessonSlug, currentActivityId: null, completedActivityIds: [], totalActivities: getLessonDefinition(lessonSlug)?.activities.length ?? 0, completedAt: null, updatedAt: new Date().toISOString() };
+}
+
+// Best-effort real course progress (Phase 15): completed lesson counts per
+// course from persisted progress. Only served under the same local-dev guard
+// as the progress API; any failure returns empty counts (honest neutral state).
+export async function loadCompletedLessonCountsByCourse(request: Request): Promise<Record<string, number>> {
+  try {
+    requireLocalProgress(request);
+    const client = createMemorySupabaseClient();
+    const { data, error } = await client.from("lesson_progress")
+      .select("course_slug")
+      .not("completed_at", "is", null);
+    if (error) return {};
+    const counts: Record<string, number> = {};
+    for (const row of (data ?? []) as { course_slug: string }[]) {
+      counts[row.course_slug] = (counts[row.course_slug] ?? 0) + 1;
+    }
+    return counts;
+  } catch {
+    return {};
+  }
 }
 
 export { validateProgressInput };

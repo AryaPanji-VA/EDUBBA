@@ -106,22 +106,30 @@ test("manifest programming modules and lessons mirror database/phase4-seed.sql",
   }
 });
 
-// === 5. No manufactured modules for courses without database structure ===
+// === 5. Non-programming structure is genuinely declared, never manufactured ===
 test("non-programming courses carry only genuinely declared learning structure", () => {
   const semester1 = currentCurriculumManifest.semesters[0];
   for (const course of semester1.courses) {
     if (course.slug === "programming") continue;
-    if (course.slug === "discrete-math") {
-      // Phase 14B: the ROBIN-provenance Logic Foundations module is declared.
-      assert.equal(course.modules.length, 1);
-      assert.equal(course.modules[0].slug, "logic-foundations");
-      assert.equal(course.modules[0].provenance.sourceType, "robin");
-      assert.equal(course.modules[0].lessons.length, 1);
-      assert.equal(course.modules[0].lessons[0].slug, "propositions");
-      assert.equal(course.modules[0].lessons[0].provenance.sourceType, "robin");
-    } else {
-      assert.deepEqual(Array.from(course.modules), [], `${course.slug} must not have manufactured modules`);
+    // Phase 15: every course has declared ROBIN-provenance modules.
+    assert.ok(course.modules.length >= 1, `${course.slug} must declare its structure`);
+    for (const module of course.modules) {
+      assert.equal(module.provenance.sourceType, "robin", `${course.slug}/${module.slug} must be robin-provenance`);
+      assert.ok(module.lessons.length >= 1, `${course.slug}/${module.slug} must declare lessons`);
+      for (const lesson of module.lessons) {
+        assert.equal(lesson.provenance.sourceType, "robin", `${course.slug}/${module.slug}/${lesson.slug} must be robin-provenance`);
+      }
     }
+    // The course record itself stays official.
+    assert.equal(course.provenance.sourceType, "official");
+  }
+  // The declared structure per course matches the Phase 15 plan.
+  const expectedModules = {
+    "discrete-math": 2, "design-thinking": 1, hci: 1, algorithms: 1, parallel: 1, networking: 1,
+  };
+  for (const [slug, count] of Object.entries(expectedModules)) {
+    const course = semester1.courses.find((item) => item.slug === slug);
+    assert.equal(course.modules.length, count, `${slug} must declare ${count} module(s)`);
   }
 });
 
@@ -266,9 +274,9 @@ test("diffing the current manifest against itself yields only unchanged entries"
   assert.equal(diff.summary.add, 0);
   assert.equal(diff.summary.conflict, 0);
   assert.equal(diff.summary.missing, 0);
-  // 8 semesters + 7 courses + 4 modules (3 programming + 1 discrete-math)
-  // + 12 lessons (11 programming + 1 propositions)
-  assert.equal(diff.summary.unchanged, 31);
+  // 8 semesters + 7 courses + 10 modules (3 programming + 7 others)
+  // + 28 lessons (11 programming + 17 others)
+  assert.equal(diff.summary.unchanged, 53);
 });
 
 // === 15. New records are recognized as ADD ===

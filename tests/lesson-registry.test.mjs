@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
+import { standardLessonStubs, standardLessons } from "./helpers/standard-lessons.mjs";
 
 // Load real content modules that the registry imports.
 function loadModule(file, deps = {}) {
@@ -112,6 +113,7 @@ vm.runInNewContext(registryCode, {
   loadPropositionsLesson: async () => ({}),
   propositionsCheckInstructions: "propositions-rubric",
   propositionsFeedbackInstructions: "propositions-feedback-rubric",
+  ...standardLessonStubs(),
   require(name) {
     throw new Error(`Unexpected require after inlining: ${name}`);
   },
@@ -167,6 +169,19 @@ test("each lesson resolves to its trusted course slug from the registry", () => 
   assert.equal(propositions.courseSlug, "discrete-math");
   assert.equal(propositions.slug, "propositions");
   assert.equal(propositions.activities, propositionsActivities);
+});
+
+// === 2c. Every Phase 15 standard lesson resolves with trusted ownership ===
+test("all Phase 15 standard lessons resolve with their trusted course slugs", () => {
+  for (const [slug, courseSlug] of standardLessons) {
+    const def = getLessonDefinition(slug);
+    assert.ok(def, `${slug} must resolve`);
+    assert.equal(def.courseSlug, courseSlug, `${slug} must belong to ${courseSlug}`);
+    assert.ok(Array.isArray(def.activities), `${slug} needs activities`);
+    assert.equal(typeof def.loadLesson, "function", `${slug} needs a loader`);
+    assert.equal(typeof def.check.rubric, "string", `${slug} needs a check rubric`);
+    assert.equal(typeof def.feedback.rubric, "string", `${slug} needs a feedback rubric`);
+  }
 });
 
 // === 3. Request types accept non-Variables lesson slugs ===

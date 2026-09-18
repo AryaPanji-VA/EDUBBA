@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { programmingLessonStateBySlug } from "@/data/courses";
+import { defaultCurrentLesson } from "@/data/courses";
 import type { CurrentLesson } from "./types";
 
-const fallbackSlug = Object.entries(programmingLessonStateBySlug).find(([, state]) => state === "current")?.[0] ?? "variables";
+// Multi-course fallback (Phase 15): derived from the implemented-lesson map,
+// not a hardcoded course. Persisted progress always wins once it loads.
 const fallback: CurrentLesson = {
-  courseSlug: "programming",
-  lessonSlug: fallbackSlug,
+  courseSlug: defaultCurrentLesson.courseSlug,
+  lessonSlug: defaultCurrentLesson.lessonSlug,
   currentActivityId: null,
   completedActivityIds: [],
   totalActivities: 0,

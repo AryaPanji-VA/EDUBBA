@@ -1,6 +1,7 @@
 import type { Course } from "@/data/courses";
 import { coursePresentationBySlug } from "@/data/courses";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { loadCompletedLessonCountsByCourse } from "@/lib/progress/server";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ type DatabaseSemester = {
 };
 
 type DatabaseCourse = {
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -24,17 +26,22 @@ export type SemesterCourseGroup = {
   courses: Course[];
 };
 
-function toCourse(course: DatabaseCourse): Course {
+function toCourse(course: DatabaseCourse, lessonCount: number, completedCount: number): Course {
   const presentation = coursePresentationBySlug[course.slug];
+  // Real lesson count from seeded structure; the DB total_lessons column is
+  // curriculum metadata, not a claim about what exists today.
+  const lessons = Math.max(0, lessonCount);
+  // Real progress from persisted lesson completion; honest 0 when unknown.
+  const progress = lessons > 0 ? Math.min(100, Math.round((completedCount / lessons) * 100)) : 0;
 
   return {
     slug: course.slug,
     title: course.title,
     description: course.description,
-    lessons: course.total_lessons,
+    lessons,
     code: presentation?.code ?? "CS",
-    progress: presentation?.progress ?? 0,
-    status: presentation?.status ?? "Not started",
+    progress,
+    status: completedCount > 0 ? "In progress" : "Not started",
   };
 }
 
@@ -44,6 +51,8 @@ function toCourse(course: DatabaseCourse): Course {
 export function groupCoursesBySemester(
   semesterRows: DatabaseSemester[],
   courseRows: DatabaseCourse[],
+  lessonCountsByCourse: Record<string, number> = {},
+  completedCountsByCourse: Record<string, number> = {},
 ): { semesters: SemesterCourseGroup[]; unassignedCourses: Course[] } {
   const groupsById = new Map<string, SemesterCourseGroup>();
   const semesters = [...semesterRows]
@@ -55,7 +64,7 @@ export function groupCoursesBySemester(
     });
   const unassignedCourses: Course[] = [];
   for (const row of courseRows) {
-    const course = toCourse(row);
+    const course = toCourse(row, lessonCountsByCourse[row.slug] ?? 0, completedCountsByCourse[row.slug] ?? 0);
     const group = row.semester_id ? groupsById.get(row.semester_id) : undefined;
     if (group) group.courses.push(course);
     else unassignedCourses.push(course);
@@ -63,7 +72,7 @@ export function groupCoursesBySemester(
   return { semesters, unassignedCourses };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = createServerSupabaseClient();
 
@@ -88,7 +97,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("courses")
-      .select("slug, title, description, total_lessons, semester_id")
+      .select("id, slug, title, description, total_lessons, semester_id")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -106,13 +115,40 @@ export async function GET() {
     }
 
     const courseRows = data as DatabaseCourse[];
+
+    // Real lesson counts per course from the seeded structure. Best-effort:
+    // unreadable tables fall back to 0, which is honest.
+    const lessonCounts: Record<string, number> = {};
+    try {
+      const { data: moduleRows } = await supabase.from("modules").select("id, course_id");
+      const { data: lessonRows } = await supabase.from("lessons").select("module_id");
+      if (moduleRows && lessonRows) {
+        const lessonsPerModule = new Map<string, number>();
+        for (const row of (lessonRows as { module_id: string }[])) {
+          lessonsPerModule.set(row.module_id, (lessonsPerModule.get(row.module_id) ?? 0) + 1);
+        }
+        const slugByCourseId = new Map(courseRows.map((row) => [row.id, row.slug]));
+        for (const row of (moduleRows as { id: string; course_id: string }[])) {
+          const slug = slugByCourseId.get(row.course_id);
+          if (slug) lessonCounts[slug] = (lessonCounts[slug] ?? 0) + (lessonsPerModule.get(row.id) ?? 0);
+        }
+      }
+    } catch { /* Honest fallback: zero lessons. */ }
+
+    // Real completed-lesson counts from persisted progress (local-dev guarded).
+    const completedCounts = await loadCompletedLessonCountsByCourse(request);
+
     const { semesters, unassignedCourses } = groupCoursesBySemester(
       semesterData as DatabaseSemester[],
       courseRows,
+      lessonCounts,
+      completedCounts,
     );
 
     // Flat legacy list preserved in the original database order.
-    const courses: Course[] = courseRows.map(toCourse);
+    const courses: Course[] = courseRows.map((row) =>
+      toCourse(row, lessonCounts[row.slug] ?? 0, completedCounts[row.slug] ?? 0),
+    );
 
     return Response.json({ courses, count: courses.length, semesters, unassignedCourses });
   } catch {

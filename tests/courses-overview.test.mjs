@@ -103,27 +103,38 @@ test("an unknown semester_id is reported as unassigned instead of crashing or gu
 });
 
 // === 5. Presentation fallbacks are applied to grouped courses ===
-test("grouped courses keep the existing presentation fallback data", () => {
+test("grouped courses use neutral presentation fallbacks with honest zero progress", () => {
   const { groupCoursesBySemester } = loadRoute();
   const { semesters } = groupCoursesBySemester(semesterRows(), courseRows());
   const programming = semesters[0].courses.find((course) => course.slug === "programming");
   assert.equal(programming.code, "CS-101");
-  assert.equal(programming.progress, 36);
-  assert.equal(programming.status, "In progress");
-  assert.equal(programming.lessons, 11);
+  // Phase 15: no fake progress or lesson counts — unknown means honest zero.
+  assert.equal(programming.progress, 0);
+  assert.equal(programming.status, "Not started");
+  assert.equal(programming.lessons, 0);
+  // Real lesson counts derive from the seeded structure.
+  const withCounts = groupCoursesBySemester(semesterRows(), courseRows(), { programming: 11 }, { programming: 4 });
+  const withProgress = withCounts.semesters[0].courses.find((course) => course.slug === "programming");
+  assert.equal(withProgress.lessons, 11);
+  assert.equal(withProgress.progress, 36);
+  assert.equal(withProgress.status, "In progress");
   const unknown = groupCoursesBySemester(semesterRows(), [{ slug: "brand-new", title: "New", description: "d", total_lessons: 3, semester_id: "sem-1" }]);
   assert.equal(unknown.semesters[0].courses[0].code, "CS");
   assert.equal(unknown.semesters[0].courses[0].progress, 0);
 });
 
 // === 6. The API reads semester data from the database, never invents it ===
-test("the courses API reads semesters and semester_id from the database without faking data", () => {
+test("the courses API reads semesters, structure, and real progress from the database", () => {
   const source = read("app/api/courses/route.ts");
   assert.match(source, /from\("semesters"\)/);
   assert.match(source, /select\("id, number, title"\)/);
   assert.match(source, /order\("number", \{ ascending: true \}\)/);
-  assert.match(source, /select\("slug, title, description, total_lessons, semester_id"\)/);
+  assert.match(source, /select\("id, slug, title, description, total_lessons, semester_id"\)/);
   assert.match(source, /order\("created_at", \{ ascending: true \}\)/);
+  // Phase 15: real lesson counts and real persisted progress, never invented.
+  assert.match(source, /from\("modules"\)/);
+  assert.match(source, /from\("lessons"\)/);
+  assert.match(source, /loadCompletedLessonCountsByCourse/);
   // Legacy flat list is preserved for backward compatibility.
   assert.match(source, /Response\.json\(\{ courses, count: courses\.length, semesters, unassignedCourses \}\)/);
   // Empty semesters table is reported as a data problem, not faked.

@@ -134,10 +134,13 @@ test("dashboard imports and renders RecentLearning", () => {
 });
 
 // === 12. Current lesson resolution ===
-test("dashboard mini-chat resolves current lesson from persisted progress with a static fallback", () => {
+test("dashboard mini-chat resolves current lesson from persisted progress with a map-derived fallback", () => {
   const dashSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
   const hookSource = readFileSync(new URL("../lib/progress/use-current-lesson.ts", import.meta.url), "utf8");
   assert.match(dashSource, /useCurrentLesson/, "Dashboard must use current lesson progress");
   assert.match(hookSource, /fetch\("\/api\/learning\/progress"/, "Current lesson must come from the progress API");
-  assert.match(hookSource, /programmingLessonStateBySlug/, "The static curriculum remains the safe fallback");
+  // Phase 15: the fallback is derived from the implemented-lesson map, never
+  // a hardcoded course.
+  assert.match(hookSource, /defaultCurrentLesson/, "The implemented-lesson map is the safe fallback");
+  assert.doesNotMatch(hookSource, /courseSlug: "programming"/, "No hardcoded course fallback");
 });

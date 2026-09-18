@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
 import { RecentLearning } from "@/components/recent-learning";
+import { implementedProgrammingLessonSlugs } from "@/data/courses";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 import type { CurrentLesson } from "@/lib/progress/types";
 
@@ -154,6 +155,39 @@ export default function DashboardPage() {
     : Math.min(currentLesson.completedActivityIds.length + 1, currentLesson.totalActivities || 1);
   const progressPercent = currentLesson.totalActivities ? Math.round((currentLesson.completedActivityIds.length / currentLesson.totalActivities) * 100) : 0;
 
+  // Honest path states: derived from persisted progress when available.
+  // Unknown (e.g. progress API unavailable) stays a neutral "not started".
+  const [pathStates, setPathStates] = useState<Record<string, "completed" | "current" | "pending">>({});
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      const states: Record<string, "completed" | "current" | "pending"> = {};
+      try {
+        const responses = await Promise.all(
+          implementedProgrammingLessonSlugs.map((slug) =>
+            fetch(`/api/learning/progress?lesson=${encodeURIComponent(slug)}`, { signal: controller.signal })
+              .then((response) => response.ok ? response.json() as Promise<{ progress?: { completed_at: string | null } | null }> : null)
+              .catch(() => null),
+          ),
+        );
+        implementedProgrammingLessonSlugs.forEach((slug, index) => {
+          states[slug] = responses[index]?.progress?.completed_at ? "completed" : "pending";
+        });
+      } catch { /* Neutral states remain honest. */ }
+      if (!controller.signal.aborted) setPathStates(states);
+    })();
+    return () => controller.abort();
+  }, []);
+
+  const stateFor = (slug: string): "completed" | "current" | "pending" => {
+    if (pathStates[slug] === "completed") return "completed";
+    if (currentLesson.lessonSlug === slug && !currentLesson.completedAt) return "current";
+    return "pending";
+  };
+  const completedImplemented = implementedProgrammingLessonSlugs.filter((slug) => stateFor(slug) === "completed").length;
+  const implementedTotal = implementedProgrammingLessonSlugs.length;
+  const pathPercent = implementedTotal > 0 ? Math.round((completedImplemented / implementedTotal) * 100) : 0;
+
   return (
     <AppShell active="dashboard">
       <TopBar breadcrumb={<><b>Dashboard</b><span className="sep">/</span>Foundations of Programming</>} />
@@ -186,82 +220,38 @@ export default function DashboardPage() {
             <section className="path" aria-label="Learning path">
               <header className="shead">
                 <span className="tag blue">Your path — Foundations of Programming</span>
-                <span className="shead-meta">11 lessons · 3 modules</span>
+                <span className="shead-meta">{completedImplemented} of {implementedTotal} lessons · {pathPercent}%</span>
               </header>
               <ol className="mods">
-                <li className="mod done">
-                  <div className="mod-row">
-                    <span className="node" /><span className="mnum">01</span>
-                    <span className="mname">Programming Fundamentals</span>
-                    <span className="mtag master">mastered</span>
-                    <span className="mbar"><i className="f" /><i className="f" /><i className="f" /><i className="f" /><i /></span>
-                    <span className="mcount">4/4</span>
-                  </div>
-                </li>
-                <li className="mod done">
-                  <div className="mod-row">
-                    <span className="node" /><span className="mnum">02</span>
-                    <span className="mname">How Programs Run</span>
-                    <span className="mtag master">mastered</span>
-                    <span className="mbar"><i className="f" /><i className="f" /><i /></span>
-                    <span className="mcount">2/2</span>
-                  </div>
-                </li>
-                <li className="mod open">
+                <li className={`mod ${completedImplemented > 0 ? (completedImplemented === implementedTotal ? "done" : "open") : "dim"}`}>
                   <div className="mod-row">
                     <span className="node" /><span className="mnum">03</span>
                     <span className="mname">Programming Building Blocks</span>
-                    <span className="mtag now">in progress</span>
-                    <span className="mbar"><i className="f" /><i className="f" /><i /><i /><i /><i /></span>
-                    <span className="mcount">2/6</span>
+                    <span className={`mtag ${completedImplemented === implementedTotal && implementedTotal > 0 ? "master" : completedImplemented > 0 ? "now" : "lock"}`}>
+                      {completedImplemented === implementedTotal && implementedTotal > 0 ? "completed" : completedImplemented > 0 ? "in progress" : "not started"}
+                    </span>
+                    <span className="mbar">{implementedProgrammingLessonSlugs.map((slug) => <i key={slug} className={stateFor(slug) === "completed" ? "f" : ""} />)}</span>
+                    <span className="mcount">{completedImplemented}/{implementedTotal}</span>
                   </div>
                   <ul className="cmap-lessons">
-                    <li className="cmap-lesson done">
-                      <span className="lnode" />
-                      <span className="cmap-ltitle"><span className="cmap-lnum">3.1</span>Variables</span>
-                      <span className="cmap-ldur">18 min · current</span>
-                      <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
-                    </li>
-                    <li className="cmap-lesson now">
-                      <span className="lnode" />
-                      <span className="cmap-ltitle"><span className="cmap-lnum">3.2</span>Data Types</span>
-                      <span className="cmap-ldur">14 min</span>
-                    </li>
-                    <li className="cmap-lesson">
-                      <span className="lnode" />
-                      <span className="cmap-ltitle"><span className="cmap-lnum">3.3</span>Operators</span>
-                      <span className="cmap-ldur">locked</span>
-                    </li>
+                    {implementedProgrammingLessonSlugs.map((slug, index) => {
+                      const state = stateFor(slug);
+                      const label = slug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
+                      return (
+                        <li key={slug} className={`cmap-lesson ${state === "completed" ? "done" : state === "current" ? "now" : ""}`}>
+                          <span className="lnode" style={state === "completed" ? { background: "var(--ok)", borderColor: "var(--ok)" } : state === "current" ? { background: "var(--accent)", borderColor: "var(--accent)", boxShadow: "0 0 0 3px var(--now-glow)" } : undefined} />
+                          <span className="cmap-ltitle"><span className="cmap-lnum">3.{index + 1}</span>{label}</span>
+                          {state === "completed" && <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>}
+                          {state === "current" && <span className="cmap-laction">Resume →</span>}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
-                <li className="mod dim">
-                  <div className="mod-row">
-                    <span className="node" /><span className="mnum">04</span>
-                    <span className="mname">Conditionals</span>
-                    <span className="mtag lock">locked</span>
-                    <span className="mbar"><i /><i /><i /><i /></span>
-                    <span className="mcount">0/1</span>
-                  </div>
-                </li>
-                <li className="mod dim">
-                  <div className="mod-row">
-                    <span className="node" /><span className="mnum">05</span>
-                    <span className="mname">Loops</span>
-                    <span className="mtag lock">locked</span>
-                    <span className="mbar"><i /><i /><i /><i /></span>
-                    <span className="mcount">0/1</span>
-                  </div>
-                </li>
-                <li className="mod dim">
-                  <div className="mod-row">
-                    <span className="node" /><span className="mnum">06</span>
-                    <span className="mname">Functions</span>
-                    <span className="mtag lock">locked</span>
-                    <span className="mbar"><i /><i /><i /><i /></span>
-                    <span className="mcount">0/1</span>
-                  </div>
-                </li>
               </ol>
+              <p className="panel-footnote" style={{ border: 0, padding: "10px 4px 0" }}>
+                Lesson pertama dan kedua modul lain ada di <Link href="/courses/programming" style={{ color: "var(--accent-text)" }}>course map</Link>.
+              </p>
             </section>
           </div>
 
@@ -273,22 +263,20 @@ export default function DashboardPage() {
                 <span className="shead-meta">grows as you practice</span>
               </header>
               <ul className="mast-list">
-                <li className="mast-item hot">
-                  <div className="mast-top"><span className="mast-name">Variables</span><span className="mast-pct">in progress</span></div>
-                  <div className="mbar2"><i className="f" /><i /><i /><i /><i /><i /></div>
-                </li>
-                <li className="mast-item">
-                  <div className="mast-top"><span className="mast-name">Data Types</span><span className="mast-pct">next</span></div>
-                  <div className="mbar2"><i /><i /><i /><i /></div>
-                </li>
-                <li className="mast-item">
-                  <div className="mast-top"><span className="mast-name">Operators</span><span className="mast-pct">locked</span></div>
-                  <div className="mbar2"><i /><i /><i /><i /></div>
-                </li>
+                {implementedProgrammingLessonSlugs.slice(0, 4).map((slug) => {
+                  const state = stateFor(slug);
+                  const label = slug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
+                  return (
+                    <li key={slug} className={`mast-item ${state === "current" ? "hot" : ""}`}>
+                      <div className="mast-top"><span className="mast-name">{label}</span><span className="mast-pct">{state === "completed" ? "done" : state === "current" ? "in progress" : "not started"}</span></div>
+                      <div className="mbar2">{implementedProgrammingLessonSlugs.slice(0, 6).map((_, bar) => <i key={bar} className={state === "completed" || (state === "current" && bar === 0) ? "f" : ""} />)}</div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="pxdiv" aria-hidden="true" />
               <div className="mast-foot">
-                <span>2 of 11 lessons · <b>18%</b></span>
+                <span>{completedImplemented} of {implementedTotal} lessons · <b>{pathPercent}%</b></span>
                 <span className="up">keep going</span>
               </div>
             </section>

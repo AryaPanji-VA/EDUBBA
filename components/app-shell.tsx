@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CurrentLessonLink } from "@/components/current-lesson-link";
 import { EnvironmentLayer } from "@/components/environment-layer";
+import { MobileNav } from "@/components/mobile-nav";
 import { BrandTagline, LearnerLabel } from "@/components/theme-switcher";
 import type { ReactNode } from "react";
 
@@ -72,17 +73,17 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
         </div>
 
         <nav className="nav">
-          <Link href="/" className={active === "dashboard" ? "on" : ""}>
-            <DashboardIcon /> Dashboard
+          <Link href="/" className={active === "dashboard" ? "on" : ""} aria-current={active === "dashboard" ? "page" : undefined}>
+            <DashboardIcon /> <span>Dashboard</span>
           </Link>
-          <Link href="/courses" className={active === "courses" ? "on" : ""}>
-            <CoursesIcon /> Courses
+          <Link href="/courses" className={active === "courses" ? "on" : ""} aria-current={active === "courses" ? "page" : undefined}>
+            <CoursesIcon /> <span>Courses</span>
           </Link>
-          <Link href="/practice" className={active === "practice" ? "on" : ""}>
-            <PracticeIcon /> Practice
+          <Link href="/practice" className={active === "practice" ? "on" : ""} aria-current={active === "practice" ? "page" : undefined}>
+            <PracticeIcon /> <span>Practice</span>
           </Link>
           <CurrentLessonLink className={active === "lesson" ? "on" : ""}>
-            <LessonIcon /> Current lesson
+            <LessonIcon /> <span>Current lesson</span>
           </CurrentLessonLink>
         </nav>
 
@@ -100,6 +101,9 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
       <main className="main">
         {children}
       </main>
+
+      {/* Mobile-only floating navigation (≤430px); display:none elsewhere. */}
+      <MobileNav active={active} />
     </div>
   );
 }

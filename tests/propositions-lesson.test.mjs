@@ -228,26 +228,19 @@ test("Robin chat log previews use the trusted registry course, never a hardcoded
 test("the Logic Foundations structure is declared with robin provenance under discrete-math", () => {
   const manifest = loadModule("data/curriculum-manifest.ts").currentCurriculumManifest;
   const discreteMath = manifest.semesters[0].courses.find((course) => course.slug === "discrete-math");
-  assert.equal(discreteMath.modules.length, 1);
-  const logicFoundations = discreteMath.modules[0];
-  assert.equal(logicFoundations.slug, "logic-foundations");
+  const logicFoundations = discreteMath.modules.find((module) => module.slug === "logic-foundations");
   assert.equal(logicFoundations.provenance.sourceType, "robin");
-  assert.equal(logicFoundations.lessons.length, 1);
-  const propositions = logicFoundations.lessons[0];
-  assert.equal(propositions.slug, "propositions");
+  const propositions = logicFoundations.lessons.find((lesson) => lesson.slug === "propositions");
   assert.equal(propositions.provenance.sourceType, "robin");
   // The course itself remains official; only the learning structure is robin.
   assert.equal(discreteMath.provenance.sourceType, "official");
-  // No other Semester 1 course gained structure in this phase.
-  for (const course of manifest.semesters[0].courses) {
-    if (course.slug !== "programming" && course.slug !== "discrete-math") {
-      assert.equal(course.modules.length, 0, `${course.slug} must stay structureless`);
-    }
-  }
+  // Phase 15: all six other courses declare their own robin-provenance
+  // structure — the Propositions golden lesson keeps its original slot.
+  assert.equal(propositions.position, 1);
 });
 
-// === 14. The structure SQL is exactly the ingestion generator's ADD-only output ===
-test("phase14b structure SQL matches the Phase 13.3 ingestion generator output", () => {
+// === 14. The Phase 15 structure SQL matches the ingestion generator output ===
+test("phase15 structure SQL matches the Phase 13.3 ingestion generator output", () => {
   const manifestModule = loadModule("data/curriculum-manifest.ts");
   const { currentCurriculumManifest, curriculumProvenanceSourceTypes } = manifestModule;
   const { validateCurriculumManifest } = loadModule("lib/curriculum/validation.ts", { curriculumProvenanceSourceTypes });
@@ -257,14 +250,25 @@ test("phase14b structure SQL matches the Phase 13.3 ingestion generator output",
     diffCurriculumManifest,
   });
 
+  // Snapshot: the database as of Phase 14B — only logic-foundations/propositions
+  // existed outside programming.
   const incoming = JSON.parse(JSON.stringify(currentCurriculumManifest));
   const snapshot = JSON.parse(JSON.stringify(currentCurriculumManifest));
-  snapshot.semesters[0].courses.find((course) => course.slug === "discrete-math").modules = [];
+  for (const course of snapshot.semesters[0].courses) {
+    if (course.slug === "programming") continue;
+    if (course.slug === "discrete-math") {
+      const logic = course.modules.find((module) => module.slug === "logic-foundations");
+      course.modules = logic ? [logic] : [];
+      if (logic) logic.lessons = logic.lessons.filter((lesson) => lesson.slug === "propositions");
+    } else {
+      course.modules = [];
+    }
+  }
 
   const result = generateCurriculumApplySql(incoming, snapshot);
   assert.equal(result.ok, true);
-  assert.deepEqual({ ...result.planned }, { semesters: 0, courses: 0, modules: 1, lessons: 1 });
-  const sqlFile = read("database/phase14b-propositions-structure.sql");
+  assert.deepEqual({ ...result.planned }, { semesters: 0, courses: 0, modules: 6, lessons: 16 });
+  const sqlFile = read("database/phase15-semester1-structure.sql");
   assert.equal(sqlFile, result.sql);
   // Additive and idempotent by construction.
   assert.match(sqlFile, /on conflict \(course_id, slug\) do nothing/);
@@ -354,8 +358,20 @@ test("all Programming lessons keep their registry course identity", () => {
   const registry = read("lib/lessons/registry.ts");
   const programming = [...registry.matchAll(/courseSlug: "programming"/g)].length;
   assert.equal(programming, 6);
+  // Phase 15: 7 non-programming lessons use the factory (16 standard lessons
+  // + propositions written explicitly).
   const discrete = [...registry.matchAll(/courseSlug: "discrete-math"/g)].length;
-  assert.equal(discrete, 1);
+  assert.equal(discrete, 3);
+  const designThinking = [...registry.matchAll(/courseSlug: "design-thinking"/g)].length;
+  assert.equal(designThinking, 3);
+  const hci = [...registry.matchAll(/courseSlug: "hci"/g)].length;
+  assert.equal(hci, 3);
+  const algorithms = [...registry.matchAll(/courseSlug: "algorithms"/g)].length;
+  assert.equal(algorithms, 3);
+  const parallel = [...registry.matchAll(/courseSlug: "parallel"/g)].length;
+  assert.equal(parallel, 2);
+  const networking = [...registry.matchAll(/courseSlug: "networking"/g)].length;
+  assert.equal(networking, 3);
   // The flat-registry global uniqueness constraint is documented.
   assert.match(registry, /globally unique/);
 });

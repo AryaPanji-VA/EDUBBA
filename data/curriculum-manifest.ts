@@ -91,6 +91,15 @@ const robinDiscreteMathStructure: CurriculumProvenance = {
   sourceLabel: "ROBIN learning structure for the official Discrete Mathematics course (Phase 14B)",
 };
 
+// Phase 15: ROBIN-created introductory learning structure for the remaining
+// official Semester 1 courses. The official curriculum specifies the courses;
+// every module and lesson below is ROBIN's own learning design, never
+// official university curriculum.
+const robinPhase15Structure: CurriculumProvenance = {
+  sourceType: "robin",
+  sourceLabel: "ROBIN learning structure for the official course (Phase 15)",
+};
+
 // --- Current known curriculum state (mirrors the database) ---
 
 export const currentCurriculumManifest: CurriculumManifest = {
@@ -153,7 +162,20 @@ export const currentCurriculumManifest: CurriculumManifest = {
           description: "Turn fuzzy human problems into ideas you can test and improve.",
           totalLessons: 8,
           provenance: officialSemester1Courses,
-          modules: [],
+          modules: [
+            {
+              slug: "design-thinking-foundations",
+              title: "Design Thinking Foundations",
+              description: "The human-centered, iterative loop from problem to tested idea.",
+              position: 1,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "what-is-design-thinking", title: "What is Design Thinking?", summary: "Human-centered and iterative: the loop, not the pipeline.", estimatedMinutes: 14, position: 1, provenance: robinPhase15Structure },
+                { slug: "empathy-and-define", title: "Empathy and Define", summary: "Separate observations from assumptions; write a POV problem statement.", estimatedMinutes: 16, position: 2, provenance: robinPhase15Structure },
+                { slug: "ideate-prototype-test", title: "Ideate, Prototype, Test", summary: "Diverge before converging; prototype one question; test by watching.", estimatedMinutes: 16, position: 3, provenance: robinPhase15Structure },
+              ],
+            },
+          ],
         },
         {
           slug: "discrete-math",
@@ -170,6 +192,17 @@ export const currentCurriculumManifest: CurriculumManifest = {
               provenance: robinDiscreteMathStructure,
               lessons: [
                 { slug: "propositions", title: "Propositions and Connectives", summary: "Distinguish propositions and evaluate negation, conjunction, and disjunction.", estimatedMinutes: 16, position: 1, provenance: robinDiscreteMathStructure },
+                { slug: "implication", title: "Implication and Equivalence", summary: "Truth conditions of p → q, vacuous truth, the converse, and p ↔ q.", estimatedMinutes: 16, position: 2, provenance: robinPhase15Structure },
+              ],
+            },
+            {
+              slug: "sets-and-relations",
+              title: "Sets and Relations",
+              description: "Sets, membership, subsets, and the beginnings of relations.",
+              position: 2,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "sets-intro", title: "Introduction to Sets", summary: "Sets, membership (∈), subsets (⊆), and the empty set.", estimatedMinutes: 14, position: 1, provenance: robinPhase15Structure },
               ],
             },
           ],
@@ -180,7 +213,20 @@ export const currentCurriculumManifest: CurriculumManifest = {
           description: "Understand how people experience, use, and sometimes fight with software.",
           totalLessons: 9,
           provenance: officialSemester1Courses,
-          modules: [],
+          modules: [
+            {
+              slug: "hci-foundations",
+              title: "HCI Foundations",
+              description: "Usability, the interaction, affordances, feedback, and evaluation.",
+              position: 1,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "hci-intro", title: "What HCI Studies", summary: "Usability lives in the interaction, not in the user.", estimatedMinutes: 14, position: 1, provenance: robinPhase15Structure },
+                { slug: "affordances-and-feedback", title: "Affordances and Feedback", summary: "What form promises and what systems must answer.", estimatedMinutes: 15, position: 2, provenance: robinPhase15Structure },
+                { slug: "interface-evaluation", title: "Evaluating Interfaces", summary: "Usability testing and heuristic evaluation, combined.", estimatedMinutes: 15, position: 3, provenance: robinPhase15Structure },
+              ],
+            },
+          ],
         },
         {
           slug: "algorithms",
@@ -188,7 +234,20 @@ export const currentCurriculumManifest: CurriculumManifest = {
           description: "Learn to describe, compare, and reason about problem-solving procedures.",
           totalLessons: 11,
           provenance: officialSemester1Courses,
-          modules: [],
+          modules: [
+            {
+              slug: "algorithmic-thinking",
+              title: "Algorithmic Thinking",
+              description: "Procedures, their notation, execution by hand, and the feel of cost.",
+              position: 1,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "what-is-an-algorithm", title: "What is an Algorithm?", summary: "Defined input, unambiguous steps, guaranteed output, termination.", estimatedMinutes: 14, position: 1, provenance: robinPhase15Structure },
+                { slug: "pseudocode-and-tracing", title: "Pseudocode and Tracing", summary: "Write the plan precisely; check it by executing on paper.", estimatedMinutes: 16, position: 2, provenance: robinPhase15Structure },
+                { slug: "efficiency-intuition", title: "Efficiency Intuition", summary: "Count growth, not seconds: linear vs logarithmic work.", estimatedMinutes: 15, position: 3, provenance: robinPhase15Structure },
+              ],
+            },
+          ],
         },
         {
           slug: "parallel",
@@ -196,7 +255,19 @@ export const currentCurriculumManifest: CurriculumManifest = {
           description: "Explore how many computers and processes coordinate useful work.",
           totalLessons: 10,
           provenance: officialSemester1Courses,
-          modules: [],
+          modules: [
+            {
+              slug: "parallel-and-distributed-foundations",
+              title: "Parallel and Distributed Foundations",
+              description: "Independence, coordination, and partial failure across machines.",
+              position: 1,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "sequential-vs-parallel", title: "Sequential vs Parallel", summary: "Independence buys time; the sequential part sets the floor.", estimatedMinutes: 15, position: 1, provenance: robinPhase15Structure },
+                { slug: "distributed-basics", title: "Distributed Basics", summary: "Machines coordinating by messages, surviving partial failure.", estimatedMinutes: 16, position: 2, provenance: robinPhase15Structure },
+              ],
+            },
+          ],
         },
         {
           slug: "networking",
@@ -204,7 +275,20 @@ export const currentCurriculumManifest: CurriculumManifest = {
           description: "Follow data as it moves between devices, protocols, and people.",
           totalLessons: 10,
           provenance: officialSemester1Courses,
-          modules: [],
+          modules: [
+            {
+              slug: "network-foundations",
+              title: "Network Foundations",
+              description: "Nodes, links, protocols, packets, clients, servers, and layers.",
+              position: 1,
+              provenance: robinPhase15Structure,
+              lessons: [
+                { slug: "what-is-a-network", title: "What is a Network?", summary: "Nodes, links, and the protocols that make connection into communication.", estimatedMinutes: 14, position: 1, provenance: robinPhase15Structure },
+                { slug: "packets-and-protocols", title: "Packets and Protocols", summary: "Small numbered envelopes: independent routing, local loss.", estimatedMinutes: 15, position: 2, provenance: robinPhase15Structure },
+                { slug: "client-server-and-layers", title: "Client-Server and Layers", summary: "Who asks, who answers, and why the stack is layered.", estimatedMinutes: 15, position: 3, provenance: robinPhase15Structure },
+              ],
+            },
+          ],
         },
       ],
     },
