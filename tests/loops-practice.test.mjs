@@ -164,7 +164,7 @@ function assistRoute({ provider = async () => ({ choices: [{ finish_reason: "sto
   const dependencies = {
     openai: FakeOpenAI,
     "@/lib/ai/server": {
-      getAIConfig: () => ({ configured: true, model: "test-model", provider: "9Inference" }),
+      getAIConfig: () => ({ configured: true, model: "test-model", provider: "OpenRouter" }),
       createServerAIClient: () => ({ chat: { completions: { create: provider } } }),
     },
     "@/lib/robin/instructions": { robinInstructions: "BASE" },

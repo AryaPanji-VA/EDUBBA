@@ -161,8 +161,8 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof OpenAI.APIConnectionTimeoutError) return fail("Robin kelamaan mikir. Coba lagi sebentar.", 504);
     if (error instanceof OpenAI.APIError) {
-      if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa key dan izin 9Inference di server.", 503);
-      if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo 9Inference.", 503);
+      if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa OPENROUTER_API_KEY dan izinnya di server.", 503);
+      if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo OpenRouter.", 503);
       if (error.status === 404) return fail("Model AI Robin belum tersedia. Periksa ROBIN_AI_MODEL di server.", 503);
       if (error.status === 429) return fail("Robin kena batas pemakaian. Coba lagi nanti.", 429);
     }

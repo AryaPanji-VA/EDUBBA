@@ -78,7 +78,7 @@ function route({ configured = true, provider } = {}) {
   const dependencies = {
     openai: FakeOpenAI,
     "@/lib/ai/server": {
-      getAIConfig: () => ({ configured, model: "test-model", provider: "9Inference" }),
+      getAIConfig: () => ({ configured, model: "test-model", provider: "OpenRouter" }),
       createServerAIClient: () => ({ chat: { completions: { create: provider ?? (async () => { throw new Error("unexpected provider call"); }) } } }),
     },
     "@/lib/robin/instructions": { robinInstructions: "BASE ROBIN PERSONALITY" },

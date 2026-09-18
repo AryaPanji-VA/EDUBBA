@@ -1,8 +1,10 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { devToolsDisabledResponse, devToolsEnabled } from "@/lib/dev/gate";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  if (!devToolsEnabled()) return devToolsDisabledResponse();
   try {
     const supabase = createServerSupabaseClient();
     const { count, error } = await supabase

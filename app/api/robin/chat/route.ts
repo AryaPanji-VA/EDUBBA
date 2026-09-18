@@ -20,50 +20,6 @@ function fail(error: string, status: number) {
   return Response.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
 }
 
-function safeDiagnosticToken(value: unknown) {
-  return typeof value === "string" && /^[a-zA-Z0-9_.:/-]{1,100}$/.test(value) ? value : null;
-}
-
-// TEMPORARY: safe production diagnostics for the current 9Inference failure.
-// Remove after the upstream rejection has been identified.
-async function getAPIKeyHashPrefix(apiKey: string) {
-  if (!apiKey || !globalThis.crypto?.subtle) return null;
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", new TextEncoder().encode(apiKey));
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 8);
-}
-
-async function getProviderDiagnosticMetadata() {
-  const config = getAIConfig();
-  const apiKey = typeof process === "undefined"
-    ? ""
-    : process.env.NINEINFERENCE_API_KEY?.trim() ?? "";
-  return {
-    nineInferenceAPIKeyExists: apiKey.length > 0,
-    apiKeyLength: apiKey.length,
-    apiKeyHashPrefix: await getAPIKeyHashPrefix(apiKey),
-    model: safeDiagnosticToken(config.model),
-    baseURL: config.baseURL,
-  };
-}
-
-async function logProviderFailure(error: { status?: number }) {
-  console.error("[ROBIN AI TEMP DIAGNOSTIC]", {
-    upstreamStatus: typeof error.status === "number" ? error.status : null,
-    ...await getProviderDiagnosticMetadata(),
-  });
-}
-
-// TEMPORARY: compare the credential fingerprint after a successful provider request.
-// Remove together with the failure diagnostic after production authentication is resolved.
-async function logProviderSuccess() {
-  console.warn("[ROBIN AI TEMP SUCCESS DIAGNOSTIC]", {
-    ...await getProviderDiagnosticMetadata(),
-    providerRequestSucceeded: true,
-  });
-}
-
 export async function POST(request: Request) {
   if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
     return fail("Kirim request sebagai JSON.", 415);
@@ -160,7 +116,7 @@ export async function POST(request: Request) {
   }
 
   if (!getAIConfig().configured) {
-    return fail("Robin belum dikonfigurasi. Materinya tetap aman; tambahkan NINEINFERENCE_API_KEY di .env.local lalu restart server.", 503);
+    return fail("Robin belum dikonfigurasi. Materinya tetap aman; tambahkan OPENROUTER_API_KEY di .env.local lalu restart server.", 503);
   }
   let lesson;
   try {
@@ -202,7 +158,6 @@ export async function POST(request: Request) {
         { role: "user", content: message.trim() },
       ],
     }, { signal: request.signal });
-    await logProviderSuccess();
     const choice = response.choices?.[0];
     const content = choice?.message?.content;
     if (choice?.finish_reason !== "stop" || typeof content !== "string" || !content.trim()) {
@@ -237,11 +192,10 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof OpenAI.APIConnectionTimeoutError) return fail("Robin kelamaan mikir. Coba lagi sebentar.", 504);
     if (error instanceof OpenAI.APIError) {
-      await logProviderFailure(error);
-      if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa key dan izin 9Inference di server.", 503);
-      if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo 9Inference.", 503);
+      if (error.status === 401 || error.status === 403) return fail("Akses AI Robin ditolak. Periksa OPENROUTER_API_KEY dan izinnya di server.", 503);
+      if (error.status === 402) return fail("Saldo AI Robin belum cukup. Periksa saldo OpenRouter.", 503);
       if (error.status === 404) return fail("Model AI Robin belum tersedia. Periksa ROBIN_AI_MODEL di server.", 503);
-      if (error.status === 429) return fail("Robin kena batas pemakaian. Coba lagi nanti atau periksa kuota 9Inference.", 429);
+      if (error.status === 429) return fail("Robin kena batas pemakaian. Coba lagi nanti atau periksa kuota OpenRouter.", 429);
     }
     return fail("Robin lagi nggak bisa nyambung ke otaknya. Materinya masih aman—coba lagi bentar.", 502);
   }

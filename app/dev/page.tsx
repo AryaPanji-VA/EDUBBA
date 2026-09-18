@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { BackendTest } from "@/components/backend-test";
 import { getAIConfig } from "@/lib/ai/server";
 import { loadVariablesLesson } from "@/lib/lessons/variables";
 import { RobinMemory } from "@/components/robin-memory";
+import { devToolsEnabled } from "@/lib/dev/gate";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +12,7 @@ const endpoints = [
   { route: "GET /api/robin/memory", purpose: "Local-only structured memory inspection" },
   { route: "POST /api/robin/memory", purpose: "Explicit create/update (upsert), server-only credential" },
   { route: "DELETE /api/robin/memory/[id]", purpose: "Forget one exact memory" },
-  { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via 9Inference Chat Completions" },
+  { route: "POST /api/robin/chat", purpose: "Contextual Variables conversation via the configured OpenAI-compatible provider" },
   { route: "POST /api/robin/check", purpose: "Robin Check explain-back AI evaluation (Phase 8C)" },
   { route: "POST /api/robin/feedback", purpose: "Smart quiz feedback: server-graded result + AI pedagogical explanation" },
   { route: "GET /api/learning/mastery", purpose: "Concept mastery summary for Variables (all 6 concepts)" },
@@ -30,6 +32,7 @@ const databaseTables = [
 ] as const;
 
 export default async function DevPage() {
+  if (!devToolsEnabled()) notFound();
   const ai = getAIConfig();
   let sourceCount: number | null = null;
   try {
@@ -60,7 +63,7 @@ export default async function DevPage() {
           <div><dt>Conversation persistence</dt><dd>SESSION ONLY</dd></div>
           <div><dt>Grounding</dt><dd>LESSON CONTEXT V1</dd></div>
         </dl>
-        <p className="lab-panel-note">Configured means a key is present, not that a live request has succeeded. Browser → POST /api/robin/chat → lesson context + 9Inference → reply + grounding. No source pages are fetched; the model receives lesson content and source metadata.</p>
+        <p className="lab-panel-note">Configured means a key is present, not that a live request has succeeded. Browser → POST /api/robin/chat → lesson context + {ai.provider} → reply + grounding. No source pages are fetched; the model receives lesson content and source metadata.</p>
         <Link className="button" href="/courses/programming/variables">test Robin in Variables →</Link>
       </section>
 

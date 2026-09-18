@@ -1,6 +1,9 @@
+import { devToolsDisabledResponse, devToolsEnabled } from "@/lib/dev/gate";
+
 export const dynamic = "force-dynamic";
 
 export function GET() {
+  if (!devToolsEnabled()) return devToolsDisabledResponse();
   return Response.json({
     status: "online",
     message: "akhirnya nyambung juga.",
