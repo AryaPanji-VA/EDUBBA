@@ -23,11 +23,12 @@ test("curriculum keeps the coherent block-lesson order after Values & Data compl
   const seed = read("database/phase4-seed.sql");
   const positions = [...seed.matchAll(/\('programming-building-blocks', '([^']+)', '[^']+', '[^']+', \d+, (\d+)\)/g)]
     .map((match) => [match[1], Number(match[2])]);
-  // Phase 20.2: the six Values & Data lessons occupy 1-6; legacy lessons shift to 7-10.
+  // Phase 20.2-20.3B: Values & Data at 1-6, Operators 7, User Input 8;
+  // legacy lessons shift to 9-11.
   assert.deepEqual(positions, [
     ["variables", 1], ["data-types", 2], ["numbers", 3], ["casting", 4],
-    ["strings", 5], ["booleans", 6], ["operators", 7], ["conditionals", 8],
-    ["loops", 9], ["functions", 10],
+    ["strings", 5], ["booleans", 6], ["operators", 7], ["user-input", 8],
+    ["conditionals", 9], ["loops", 10], ["functions", 11],
   ]);
 });
 

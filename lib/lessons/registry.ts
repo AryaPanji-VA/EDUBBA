@@ -125,6 +125,13 @@ import { booleansMasteryConfig, booleansRelevance } from "@/content/lessons/prog
 import { loadBooleansLesson } from "@/lib/lessons/booleans";
 import { booleansCheckInstructions, booleansFeedbackInstructions } from "@/content/lessons/programming/booleans-instructions";
 
+// Phase 20.3B: Module 03 — User Input.
+import { userInputActivities } from "@/content/lessons/programming/user-input-activities";
+import { userInputLessonContent } from "@/content/lessons/programming/user-input";
+import { userInputMasteryConfig, userInputRelevance } from "@/content/lessons/programming/user-input-config";
+import { loadUserInputLesson } from "@/lib/lessons/user-input";
+import { userInputCheckInstructions, userInputFeedbackInstructions } from "@/content/lessons/programming/user-input-instructions";
+
 import { propositionsActivities } from "@/content/lessons/discrete-math/propositions-activities";
 import { propositionsLessonContent } from "@/content/lessons/discrete-math/propositions";
 import { propositionsMasteryConfig } from "@/content/lessons/discrete-math/propositions-mastery";
@@ -338,7 +345,7 @@ const operatorsDefinition: LessonDefinition = {
   relevance: operatorsRelevance,
   check: {
     rubric: operatorsCheckInstructions,
-    question: "Jelasin pakai bahasa lu sendiri: apa beda = dan ==, lalu kenapa age >= 18 bisa dipakai nanti oleh if?",
+    question: "Jelasin pakai bahasa lu sendiri: apa beda = dan ==, dan apa hasil dari score > 5 kalau score bernilai 10?",
     contextLabel: "Operators lesson context (data only)",
     lessonContext: {
       academicExplanation: operatorsLessonContent.academicExplanation,
@@ -632,6 +639,18 @@ const booleansDefinition = standardLesson({
   feedbackMisconceptions: ["quoted_boolean_confusion", "lowercase_boolean_confusion", "assignment_comparison_confusion", "boolean_as_text_confusion"],
 });
 
+const userInputDefinition = standardLesson({
+  slug: "user-input", courseSlug: "programming",
+  activities: userInputActivities, lessonContent: userInputLessonContent, loadLesson: loadUserInputLesson,
+  mastery: userInputMasteryConfig, relevance: userInputRelevance,
+  checkRubric: userInputCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang diterima program setelah input(\"Age: \") diisi 20 — dan bagaimana cara mengubahnya jadi angka?",
+  contextLabel: "User Input lesson context (data only)",
+  checkConcepts: ["user_input", "input_returns_string", "input_conversion"],
+  checkMisconceptions: ["input_is_number_confusion", "input_vs_output_confusion", "hardcoded_value_confusion", "conversion_order_confusion"],
+  feedbackRubric: userInputFeedbackInstructions,
+  feedbackMisconceptions: ["input_is_number_confusion", "input_vs_output_confusion", "hardcoded_value_confusion", "conversion_order_confusion"],
+});
+
 const implicationDefinition = standardLesson({
   slug: "implication", courseSlug: "discrete-math",
   activities: implicationActivities, lessonContent: implicationLessonContent, loadLesson: loadImplicationLesson,
@@ -821,6 +840,7 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["casting", castingDefinition],
   ["strings", stringsDefinition],
   ["booleans", booleansDefinition],
+  ["user-input", userInputDefinition],
   ["data-types", dataTypesDefinition],
   ["operators", operatorsDefinition],
   ["conditionals", conditionalsDefinition],

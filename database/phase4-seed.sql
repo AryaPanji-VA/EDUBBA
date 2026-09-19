@@ -55,9 +55,10 @@ join (
     ('programming-building-blocks', 'strings', 'Strings', 'Teks sebagai urutan character — index dari 0, len(), dan penggabungan dengan +.', 14, 5),
     ('programming-building-blocks', 'booleans', 'Booleans', 'Dua value untuk dua keadaan — True dan False sebagai data.', 12, 6),
     ('programming-building-blocks', 'operators', 'Operators', 'Transform and compare values with operators.', 12, 7),
-    ('programming-building-blocks', 'conditionals', 'Conditionals', 'Let a program choose what happens next.', 16, 8),
-    ('programming-building-blocks', 'loops', 'Loops', 'Repeat work without repeating code by hand.', 16, 9),
-    ('programming-building-blocks', 'functions', 'Functions', 'Package reusable behavior behind a clear name.', 18, 10)
+    ('programming-building-blocks', 'user-input', 'User Input', 'Terima data dari orang yang menjalankan program — dan selalu sebagai string.', 12, 8),
+    ('programming-building-blocks', 'conditionals', 'Conditionals', 'Let a program choose what happens next.', 16, 9),
+    ('programming-building-blocks', 'loops', 'Loops', 'Repeat work without repeating code by hand.', 16, 10),
+    ('programming-building-blocks', 'functions', 'Functions', 'Package reusable behavior behind a clear name.', 18, 11)
 ) as lesson(module_slug, slug, title, summary, estimated_minutes, position)
   on lesson.module_slug = m.slug
 where c.slug = 'programming'

@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 20,
+          totalLessons: 21,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -158,9 +158,10 @@ export const currentCurriculumManifest: CurriculumManifest = {
                 { slug: "strings", title: "Strings", summary: "Teks sebagai urutan character — index dari 0, len(), dan penggabungan dengan +.", estimatedMinutes: 14, position: 5, provenance: robinLearningStructure },
                 { slug: "booleans", title: "Booleans", summary: "Dua value untuk dua keadaan — True dan False sebagai data.", estimatedMinutes: 12, position: 6, provenance: robinLearningStructure },
                 { slug: "operators", title: "Operators", summary: "Transform and compare values with operators.", estimatedMinutes: 12, position: 7, provenance: robinLearningStructure },
-                { slug: "conditionals", title: "Conditionals", summary: "Let a program choose what happens next.", estimatedMinutes: 16, position: 8, provenance: robinLearningStructure },
-                { slug: "loops", title: "Loops", summary: "Repeat work without repeating code by hand.", estimatedMinutes: 16, position: 9, provenance: robinLearningStructure },
-                { slug: "functions", title: "Functions", summary: "Package reusable behavior behind a clear name.", estimatedMinutes: 18, position: 10, provenance: robinLearningStructure },
+                { slug: "user-input", title: "User Input", summary: "Terima data dari orang yang menjalankan program — dan selalu sebagai string.", estimatedMinutes: 12, position: 8, provenance: robinLearningStructure },
+                { slug: "conditionals", title: "Conditionals", summary: "Let a program choose what happens next.", estimatedMinutes: 16, position: 9, provenance: robinLearningStructure },
+                { slug: "loops", title: "Loops", summary: "Repeat work without repeating code by hand.", estimatedMinutes: 16, position: 10, provenance: robinLearningStructure },
+                { slug: "functions", title: "Functions", summary: "Package reusable behavior behind a clear name.", estimatedMinutes: 18, position: 11, provenance: robinLearningStructure },
               ],
             },
           ],

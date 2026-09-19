@@ -10,14 +10,14 @@ export const operatorsLessonContent: LessonContent = {
   academicExplanation: [
     "An expression combines values, variables, and operators and evaluates to a value. Arithmetic operators calculate numbers: +, -, *, /, //, %, and **. In Python, / always produces a float, while // performs floor division and % produces the remainder.",
     "Comparison operators ==, !=, <, >, <=, and >= compare two values and evaluate to a boolean: True or False. Assignment = stores a value in a name; equality == asks whether two values are equal. They have different jobs and cannot be substituted for each other.",
-    "Logical operators combine or invert boolean expressions. and is True only when both sides are True; or is True when at least one side is True; not reverses a boolean value. These expressions prepare the conditions later used by if statements.",
+    "Python also has operators for combining boolean questions — and, or, and not. They make the most sense once comparisons are used to make decisions, so they are only named here and get their full context in a later lesson.",
     "Operator precedence controls which part of an expression is evaluated first. Multiplication and division happen before addition and subtraction, so 2 + 3 * 4 is 14. Parentheses make an intended order explicit: (2 + 3) * 4 is 20.",
   ],
   codeExamples: [
     { title: "Arithmetic with variables", language: "python", code: "x = 10\ny = 3\n\nprint(x + y)\nprint(x - y)\nprint(x * y)\nprint(x / y)", explanation: "The variables supply numeric values to four arithmetic expressions. Division with / produces a float." },
     { title: "Division and remainder", language: "python", code: "print(10 // 3)\nprint(10 % 3)", explanation: "10 // 3 gives the whole-number quotient 3; 10 % 3 gives the remainder 1." },
     { title: "Comparison becomes bool", language: "python", code: "age = 18\n\nprint(age >= 18)", explanation: "The expression asks a question and evaluates to the boolean True." },
-    { title: "Combine comparisons", language: "python", code: "score = 85\n\nprint(score >= 75 and score <= 100)", explanation: "Both comparisons are True, so the expression joined with and is True." },
+    { title: "Reassignment with a calculation", language: "python", code: "score = 10\nscore = score + 5\nprint(score)", explanation: "The right side is computed first (10 + 5 = 15), then the result is stored back under the same name. The operator does the calculating." },
     { title: "Precedence and parentheses", language: "python", code: "print(2 + 3 * 4)\nprint((2 + 3) * 4)", explanation: "Multiplication runs first in the first expression. Parentheses deliberately change the order in the second." },
   ],
   keyTerms: [
@@ -26,7 +26,7 @@ export const operatorsLessonContent: LessonContent = {
     { term: "Expression", definition: "A combination of values, variables, and operators that evaluates to one value." },
     { term: "Arithmetic operator", definition: "An operator that calculates numeric values, such as +, *, //, or %." },
     { term: "Comparison operator", definition: "An operator that compares values and evaluates to True or False." },
-    { term: "Logical operator", definition: "and, or, or not; used to combine or invert boolean expressions." },
+    { term: "Parentheses", definition: "Marks the part of an expression that should be evaluated first." },
     { term: "Precedence", definition: "The rules that decide which operation in an expression runs first." },
     { term: "Boolean", definition: "The True or False value produced by comparisons and logical expressions." },
   ],
@@ -36,9 +36,9 @@ export const operatorsLessonContent: LessonContent = {
     { title: "Reading % as percentage", explanation: "In Python, % returns the remainder. number % 2 is 0 for an even integer and 1 for an odd positive integer." },
     { title: "Forgetting precedence", explanation: "2 + 3 * 4 is 14, not 20. Use parentheses when another order is intended." },
     { title: "Expecting comparison text", explanation: "age >= 18 evaluates to the boolean True or False, not the strings \"yes\" or \"no\"." },
-    { title: "Confusing and with or", explanation: "and requires both sides to be True. or requires at least one side to be True." },
-    { title: "Misusing not", explanation: "not reverses one boolean expression. Read not age >= 18 as the opposite of age >= 18." },
-    { title: "Comparing incompatible values", explanation: "Python cannot order a string and an integer with < or >=. Convert input before numeric comparisons." },
+    { title: "Gluing quoted digits by mistake", explanation: "\"10\" + \"5\" joins text into \"105\". If a calculation is intended, the values must be real numbers, not quoted digits." },
+    { title: "Hardcoding a result instead of using operators", explanation: "Writing 15 where 10 + 5 belongs skips the point: operators let Python calculate from the values it has." },
+    { title: "Comparing incompatible values", explanation: "Python cannot order a string and an integer with < or >=. The types have to make sense for the comparison." },
     { title: "Assuming 10 / 2 is an int", explanation: "Python's / returns 5.0, a float, even when the mathematical result is a whole number." },
   ],
   quickChecks: [

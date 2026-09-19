@@ -201,7 +201,7 @@ test("the lesson is building-blocks position 4 and shifts legacy lessons safely"
   assert.equal(list[11], "booleans", "Booleans follows Strings");
   assert.equal(list[12], "operators", "Operators survives after the insertions");
   assert.equal(courses.defaultCurrentLesson.lessonSlug, "what-is-programming", "default entry point unchanged");
-  // The manifest and baseline seed mirror the roadmap: casting at 4, block lessons at 5-8.
+  // The manifest and baseline seed include the later User Input insertion.
   const manifest = loadModule("data/curriculum-manifest.ts");
   const blocks = manifest.currentCurriculumManifest.semesters[0].courses
     .find((course) => course.slug === "programming").modules
@@ -212,7 +212,7 @@ test("the lesson is building-blocks position 4 and shifts legacy lessons safely"
   assert.equal(byslug["strings"], 5);
   assert.equal(byslug["booleans"], 6);
   assert.equal(byslug["operators"], 7);
-  assert.equal(byslug["functions"], 10);
+  assert.equal(byslug["functions"], 11);
   const seed = read("database/phase4-seed.sql");
   assert.match(seed, /\('programming-building-blocks', 'casting', 'Casting', '[^']+', 12, 4\)/);
   const migration = read("database/phase20-2d-casting.sql");

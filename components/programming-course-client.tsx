@@ -168,6 +168,14 @@ export function ProgrammingCourseClient() {
         "booleans",
       ],
     },
+    {
+      label: "Module 03 · Program Logic",
+      group: [
+        "operators",
+        "user-input",
+        "conditionals",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },

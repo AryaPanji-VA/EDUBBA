@@ -115,7 +115,7 @@ test("Conditionals content is complete across every LessonContent field", () => 
   assert.ok(content.slug === "conditionals");
   assert.ok(content.intuitiveExplanation.length >= 3);
   assert.ok(content.academicExplanation.length >= 3);
-  assert.equal(content.codeExamples.length, 4);
+  assert.equal(content.codeExamples.length, 5);
   for (const example of content.codeExamples) {
     assert.ok(example.code.trim() && example.title.trim() && example.explanation.trim());
   }
@@ -131,6 +131,36 @@ test("Conditionals content is complete across every LessonContent field", () => 
   for (const operator of ["==", "!=", "<", ">", "<=", ">="]) assert.ok(academic.includes(operator), `${operator} must be taught`);
   assert.match(academic, /elif/);
   assert.match(academic, /indentation/i);
+});
+
+test("the TRY checker requires a real conditional branch and rejects the unconditional print", () => {
+  const practice = activities.find((activity) => activity.type === "practice");
+  assert.equal(practice.id, "try");
+  assert.match(practice.code, /score = 80/);
+  assert.equal(practice.checkAnswer('if score >= 70:\n    print("Pass")'), true);
+  assert.equal(practice.checkAnswer("if score >= 70:\n\tprint('Pass')"), true);
+  assert.equal(practice.checkAnswer('if score>=70:\n  print("Pass")'), true, "indent width is free");
+  assert.equal(practice.checkAnswer('if score >= 70:\r\n    print("Pass")'), true, "CRLF tolerated");
+  assert.equal(practice.checkAnswer('print("Pass")'), false, "unconditional print must be rejected");
+  assert.equal(practice.checkAnswer('if score >= 70:\nprint("Pass")'), false, "the body must be indented");
+  assert.equal(practice.checkAnswer('if score = 70:\n    print("Pass")'), false, "= is not a condition");
+  assert.equal(practice.checkAnswer('if score > 70:\n    print("Pass")'), false, "wrong operator changes the boundary");
+  assert.equal(practice.checkAnswer('if score >= 70:\n    print("Lulus")'), false, "the requested output must match");
+  assert.equal(practice.checkAnswer(""), false);
+});
+
+test("activity code stays in scope: no loops, functions, logical operators, or advanced branching", () => {
+  for (const activity of activities) {
+    if (!activity.code) continue;
+    assert.doesNotMatch(activity.code, /\bfor\b|\bwhile\b|\bdef\b|\bmatch\b|\btry\b|\bexcept\b|\band\b|\bor\b|\bnot\b|\binput\(/, `${activity.id} code stays in scope`);
+  }
+});
+
+test("connect hands off to Module 04 Repetition without teaching loop syntax", () => {
+  const connect = activities.find((activity) => activity.type === "connect");
+  assert.match(connect.content[0], /For Loops/, "the next module must be named");
+  const text = connect.content.join(" ");
+  assert.doesNotMatch(text, /for\s+\w+\s+in\b|\bwhile\b|range\(/, "no loop syntax in the connect");
 });
 
 test("mastery mapping stays inside the lesson-owned concept vocabulary", () => {

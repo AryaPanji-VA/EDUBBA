@@ -42,10 +42,16 @@ test("Operators learning flow follows the nine-stage lesson architecture", () =>
   assert.equal(activities.length, 9);
   assert.deepEqual(Array.from(activities.map((activity) => activity.type)), ["intro", "explain", "predict", "predict", "predict", "practice", "formalize", "robin_check", "connect"]);
   assert.equal(activities.find((activity) => activity.id === "predict-arithmetic").correctAnswer, "14");
-  assert.equal(activities.find((activity) => activity.id === "predict-boolean").correctAnswer, "True");
+  // Phase 20.3A: the comparison predict (kept id) pins the boolean result.
+  assert.match(activities.find((activity) => activity.id === "predict-boolean").correctAnswer, /^True/);
   const practice = activities.find((activity) => activity.id === "try");
-  assert.equal(practice.checkAnswer("score >= 70 and score <= 100"), true);
-  assert.equal(practice.checkAnswer("score >= 70 or score <= 100"), false);
+  // Phase 20.3A: the TRY composes an arithmetic expression instead of the
+  // legacy and-boundary form — logical operators belong to a later lesson.
+  assert.equal(practice.checkAnswer("score = score + 5"), true);
+  assert.equal(practice.checkAnswer("score = score+5"), true);
+  assert.equal(practice.checkAnswer("  score = score + 5  "), true);
+  assert.equal(practice.checkAnswer("score = 15"), false, "hardcoding the result skips the operator");
+  assert.equal(practice.checkAnswer("score >= 70 and score <= 100"), false, "logical combining is out of scope here");
 });
 
 test("Operators mastery and relevance remain inside the four-concept vocabulary", () => {
@@ -81,7 +87,7 @@ test("Operators server rubrics preserve deterministic authority and structured o
   assert.match(check, /assignment_vs_equality/);
   assert.match(check, /comparison_not_boolean/);
   assert.match(check, /Return only JSON/);
-  assert.match(check, /strong: all three recognized concepts/);
+  assert.match(check, /strong: the assignment\/equality distinction/);
   assert.match(check, /If misconceptions is non-empty, signal must be shaky/);
   assert.match(feedback, /Correctness is already determined server-side/);
   assert.match(feedback, /Never re-grade/);

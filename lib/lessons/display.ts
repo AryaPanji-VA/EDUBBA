@@ -33,6 +33,7 @@ import { getNumbersActivities, localizeNumbersContent, numbersCopy, numbersMaste
 import { getCastingActivities, localizeCastingContent, castingCopy, castingMasteryConceptLabels, castingReinforcement } from "@/content/lessons/programming/casting-localization";
 import { getStringsActivities, localizeStringsContent, stringsCopy, stringsMasteryConceptLabels, stringsReinforcement } from "@/content/lessons/programming/strings-localization";
 import { getBooleansActivities, localizeBooleansContent, booleansCopy, booleansMasteryConceptLabels, booleansReinforcement } from "@/content/lessons/programming/booleans-localization";
+import { getUserInputActivities, localizeUserInputContent, userInputCopy, userInputMasteryConceptLabels, userInputReinforcement } from "@/content/lessons/programming/user-input-localization";
 import { getPropositionsActivities, localizePropositionsContent, propositionsCopy } from "@/content/lessons/discrete-math/propositions-localization";
 import { propositionsMasteryConceptLabels, propositionsReinforcement } from "@/content/lessons/discrete-math/propositions-lesson-config";
 // Standard lessons (Phase 15) — localization modules also export labels and
@@ -79,6 +80,7 @@ const displays: Map<string, LessonDisplay> = new Map([
   ["casting", { getActivities: getCastingActivities, localizeContent: localizeCastingContent, copy: castingCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: castingMasteryConceptLabels, reinforcement: castingReinforcement }],
   ["strings", { getActivities: getStringsActivities, localizeContent: localizeStringsContent, copy: stringsCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: stringsMasteryConceptLabels, reinforcement: stringsReinforcement }],
   ["booleans", { getActivities: getBooleansActivities, localizeContent: localizeBooleansContent, copy: booleansCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: booleansMasteryConceptLabels, reinforcement: booleansReinforcement }],
+  ["user-input", { getActivities: getUserInputActivities, localizeContent: localizeUserInputContent, copy: userInputCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: userInputMasteryConceptLabels, reinforcement: userInputReinforcement }],
   ["propositions", { getActivities: getPropositionsActivities, localizeContent: localizePropositionsContent, copy: propositionsCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: propositionsMasteryConceptLabels, reinforcement: propositionsReinforcement }],
   ["implication", { getActivities: getImplicationActivities, localizeContent: localizeImplicationContent, copy: implicationCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: implicationMasteryConceptLabels, reinforcement: implicationReinforcement }],
   ["sets-intro", { getActivities: getSetsIntroActivities, localizeContent: localizeSetsIntroContent, copy: setsIntroCopy as Record<LessonLanguage, Record<string, string>>, masteryConceptLabels: setsIntroMasteryConceptLabels, reinforcement: setsIntroReinforcement }],
