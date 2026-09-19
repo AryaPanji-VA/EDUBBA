@@ -205,7 +205,7 @@ test("the lesson is building-blocks position 8 between Operators and Conditional
   assert.equal(byslug["operators"], 7);
   assert.equal(byslug["user-input"], 8);
   assert.equal(byslug["conditionals"], 9);
-  assert.equal(byslug["functions"], 11);
+  assert.equal(byslug["functions"], 13);
   const seed = read("database/phase4-seed.sql");
   assert.match(seed, /\('programming-building-blocks', 'user-input', 'User Input', '[^']+', 12, 8\)/);
   const migration = read("database/phase20-3b-user-input.sql");

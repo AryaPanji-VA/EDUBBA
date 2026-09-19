@@ -174,9 +174,10 @@ test("the course mastery panel represents all completed modules as grouped rows"
   assert.match(client, /Module 01 · First Steps/);
   assert.match(client, /Module 02 · Values & Data/);
   assert.match(client, /Module 03 · Program Logic/);
+  assert.match(client, /Module 04 · Repetition/);
   // All Module 01 lessons are members of the first group row.
   const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
-  assert.equal(groups.length, 3, "three module groups exist");
+  assert.equal(groups.length, 4, "four module groups exist");
   for (const slug of ["what-is-programming", "hello-python", "print-output", "syntax-indentation", "comments", "understanding-errors"]) {
     assert.ok(groups[0].includes(`"${slug}"`), `${slug} must be a Module 01 group member`);
   }
@@ -189,11 +190,17 @@ test("the course mastery panel represents all completed modules as grouped rows"
   for (const slug of ["operators", "user-input", "conditionals"]) {
     assert.ok(groups[2].includes(`"${slug}"`), `${slug} must be a Module 03 group member`);
   }
+  // Module 04 group covers exactly the Repetition lessons.
+  for (const slug of ["loops", "while-loops", "range-loop-patterns"]) {
+    assert.ok(groups[3].includes(`"${slug}"`), `${slug} must be a Module 04 group member`);
+  }
   const courses = read("data/courses.ts");
   const implemented = courses.match(/implementedProgrammingLessonSlugs = \[([\s\S]*?)\]/)?.[1] ?? "";
   const module03 = implemented.match(/"operators"[\s\S]*?"conditionals"/)?.[0] ?? "";
   assert.match(module03, /"operators"[\s\S]*?"user-input"[\s\S]*?"conditionals"/, "Module 03 order is Operators → User Input → Conditionals");
-  assert.match(courses, /Module 04 \(Repetition\) begins at For Loops/, "the roadmap comment names the Module 04 entry point");
+  const module04 = implemented.match(/"loops"[\s\S]*?"range-loop-patterns"/)?.[0] ?? "";
+  assert.match(module04, /"loops"[\s\S]*?"while-loops"[\s\S]*?"range-loop-patterns"/, "Module 04 order is For Loops → While Loops → Range & Loop Patterns");
+  assert.match(courses, /Module 04 \(Repetition\)/, "the roadmap comment names Module 04");
   // The group state derives from the shared lessonStates (persisted progress)
   // — no parallel progress source and no fabricated completion.
   assert.match(client, /lessonStates\[slug\] \?\? "coming-soon"/);

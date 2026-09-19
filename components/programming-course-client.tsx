@@ -139,9 +139,9 @@ export function ProgrammingCourseClient() {
   const currentLesson = allLessons.find(l => lessonStates[l.slug] === "current")
     ?? allLessons.find(l => lessonStates[l.slug] === "next");
   const totalLessons = allLessons.length;
-  // Mastery panel rows. The Module 01 lessons are represented as one grouped
-  // row (six lessons would crowd the panel); its state derives from the same
-  // persisted lessonStates as every other row — no separate progress source.
+  // Mastery panel rows. Each module's lessons are represented as one grouped
+  // row (per-lesson rows would crowd the panel); its state derives from the
+  // same persisted lessonStates as every other row — no separate progress source.
   type MasteryRow =
     | { label: string; group: string[] }
     | { slug: string; label: string; segments: number };
@@ -176,11 +176,19 @@ export function ProgrammingCourseClient() {
         "conditionals",
       ],
     },
+    {
+      label: "Module 04 · Repetition",
+      group: [
+        "loops",
+        "while-loops",
+        "range-loop-patterns",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },
     { slug: "conditionals", label: "Conditionals", segments: 4 },
-    { slug: "loops", label: "Loops", segments: 4 },
+    { slug: "loops", label: "For Loops", segments: 4 },
     { slug: "functions", label: "Functions", segments: 4 },
   ];
 

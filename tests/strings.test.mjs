@@ -216,7 +216,7 @@ test("the lesson is building-blocks position 5 and shifts legacy lessons safely"
   assert.equal(byslug["strings"], 5);
   assert.equal(byslug["booleans"], 6);
   assert.equal(byslug["operators"], 7);
-  assert.equal(byslug["functions"], 11);
+  assert.equal(byslug["functions"], 13);
   const seed = read("database/phase4-seed.sql");
   assert.match(seed, /\('programming-building-blocks', 'strings', 'Strings', '[^']+', 14, 5\)/);
   const migration = read("database/phase20-2e-strings.sql");

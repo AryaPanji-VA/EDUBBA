@@ -111,7 +111,7 @@ test("Loops is registered after Variables, Data Types, and Conditionals", () => 
   assert.equal(typeof definition.loadLesson, "function");
 });
 
-test("Loops content is complete across every LessonContent field", () => {
+test("For Loops content is complete across every LessonContent field", () => {
   assert.equal(content.slug, "loops");
   assert.ok(content.intuitiveExplanation.length >= 3);
   assert.ok(content.academicExplanation.length >= 3);
@@ -119,26 +119,23 @@ test("Loops content is complete across every LessonContent field", () => {
   for (const example of content.codeExamples) {
     assert.ok(example.code.trim() && example.title.trim() && example.explanation.trim());
   }
-  assert.ok(content.keyTerms.length >= 8);
-  for (const term of ["for", "while", "range()", "Iteration", "Counter", "Accumulator", "Infinite loop"]) {
+  assert.ok(content.keyTerms.length >= 6);
+  for (const term of ["Loop", "for", "Iteration", "Loop variable", "Loop body"]) {
     assert.ok(content.keyTerms.some((item) => item.term === term), `${term} must be a key term`);
   }
-  assert.equal(content.commonMistakes.length, 7);
+  assert.equal(content.commonMistakes.length, 5);
   assert.ok(content.quickChecks.length >= 3);
   for (const check of content.quickChecks) {
     assert.ok(check.options.includes(check.answer), "quick check answer must be one of its options");
   }
-  // The lesson teaches both loops, range boundaries, and loop state explicitly.
+  // Ownership: the lesson teaches for over a sequence — loop variable,
+  // iteration, indented body — and hands while/range to their own lessons.
   const academic = content.academicExplanation.join(" ");
-  assert.match(academic, /range\(5\)/);
-  assert.match(academic, /stops BEFORE|stops before|berhenti sebelum/i);
-  assert.match(academic, /while/);
-  assert.match(academic, /accumulator/i);
-  // A while and a for example exist, plus an accumulator example.
-  assert.ok(content.codeExamples.some((example) => /while\s/.test(example.code)));
-  assert.ok(content.codeExamples.some((example) => /for\s/.test(example.code) && /total/.test(example.code)));
+  assert.match(academic, /loop variable/i);
+  assert.match(academic, /iteration/i);
+  assert.doesNotMatch(academic, /range\(/i);
+  assert.ok(content.codeExamples.every((example) => /for\s/.test(example.code)), "every code example uses a for loop");
 });
-
 test("mastery mapping stays inside the lesson-owned concept vocabulary", () => {
   const allowed = mastery.concepts;
   for (const concept of ["loop_iteration", "range_boundaries", "while_condition", "counter_accumulator"]) {
@@ -153,32 +150,35 @@ test("mastery mapping stays inside the lesson-owned concept vocabulary", () => {
   for (const concept of check.concepts) assert.ok(allowed.includes(concept), `check concept ${concept} must be a mastery concept`);
 });
 
-test("relevance mapping supports adaptation: ranges, while conditions, and accumulators", () => {
-  assert.deepEqual(Array.from(relevance.checkConcepts()), ["loop_iteration", "range_boundaries", "while_condition"]);
-  assert.deepEqual(Array.from(relevance.activityConcepts("range_trace")), ["range_boundaries", "loop_iteration"]);
-  assert.deepEqual(Array.from(relevance.activityConcepts("while_trace")), ["while_condition", "loop_iteration"]);
-  assert.deepEqual(Array.from(relevance.activityConcepts("accumulator_trace")), ["counter_accumulator", "loop_iteration"]);
-  assert.ok(relevance.chatConcepts("bin, kok while gue muter terus?").length > 0);
-  assert.ok(relevance.chatConcepts("range(1,5) kok cuma sampai 4 ya").length > 0);
-  assert.ok(relevance.chatConcepts("cara ngejumlahin total di loop gimanа").length > 0);
+test("relevance mapping supports adaptation: sequences, loop variables, and iteration", () => {
+  assert.deepEqual(Array.from(relevance.checkConcepts()), ["loop_iteration"]);
+  assert.deepEqual(Array.from(relevance.activityConcepts("for_trace")), ["loop_iteration"]);
+  assert.deepEqual(Array.from(relevance.activityConcepts("for_body_trace")), ["loop_iteration"]);
+  assert.deepEqual(Array.from(relevance.activityConcepts("for_write")), ["loop_iteration"]);
+  assert.ok(relevance.chatConcepts("for loop kok cuma jalan 2 kali ya").length > 0);
+  assert.ok(relevance.chatConcepts("loop variable itu apa sih").length > 0);
   assert.equal(relevance.chatConcepts("halo apa kabar").length, 0);
+  // While/range questions belong to their own Module 04 lessons now.
+  assert.equal(relevance.chatConcepts("bin, kok while gue muter terus?").length, 0);
+  assert.equal(relevance.chatConcepts("range(1,5) kok cuma sampai 4 ya").length, 0);
 });
-
 test("Robin Check and Smart Feedback rubrics exist with the JSON evaluation contract", () => {
   const definition = registry.getLessonDefinition("loops");
   assert.equal(definition.check.rubric, "loops rubric");
-  assert.match(definition.check.question, /range\(5\)/);
-  assert.match(definition.check.question, /while/i);
+  assert.match(definition.check.question, /for name in \["Arya", "Bima", "Citra"\]/);
+  assert.deepEqual(Array.from(definition.check.concepts), ["loop_iteration"]);
   const checkRubric = readFileSync(new URL("../content/lessons/programming/loops-check-instructions.ts", import.meta.url), "utf8");
-  assert.match(checkRubric, /range_exclusive_end/);
-  assert.match(checkRubric, /missing_counter_update/);
+  assert.match(checkRubric, /hardcoded_prints_confusion/);
   assert.match(checkRubric, /loop_variable_confusion/);
+  assert.doesNotMatch(checkRubric, /range_exclusive_end|missing_counter_update/, "while/range misconceptions moved to their own lessons");
   const feedbackRubric = readFileSync(new URL("../content/lessons/programming/loops-feedback-instructions.ts", import.meta.url), "utf8");
   assert.match(feedbackRubric, /Correctness is already determined server-side/);
+  assert.match(feedbackRubric, /hardcoded_prints_confusion/);
+  // The practice set still spans the broader loops topic, so the legacy
+  // misconception vocabulary stays available for Practice Mode feedback.
   assert.match(feedbackRubric, /accumulator_reset/);
   assert.match(feedbackRubric, /followUp/);
 });
-
 test("mastery concept labels exist for the lesson summary UI", () => {
   for (const concept of mastery.concepts) {
     assert.ok(config[concept], `label missing for ${concept}`);

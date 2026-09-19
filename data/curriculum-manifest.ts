@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 21,
+          totalLessons: 23,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -160,8 +160,10 @@ export const currentCurriculumManifest: CurriculumManifest = {
                 { slug: "operators", title: "Operators", summary: "Transform and compare values with operators.", estimatedMinutes: 12, position: 7, provenance: robinLearningStructure },
                 { slug: "user-input", title: "User Input", summary: "Terima data dari orang yang menjalankan program — dan selalu sebagai string.", estimatedMinutes: 12, position: 8, provenance: robinLearningStructure },
                 { slug: "conditionals", title: "Conditionals", summary: "Let a program choose what happens next.", estimatedMinutes: 16, position: 9, provenance: robinLearningStructure },
-                { slug: "loops", title: "Loops", summary: "Repeat work without repeating code by hand.", estimatedMinutes: 16, position: 10, provenance: robinLearningStructure },
-                { slug: "functions", title: "Functions", summary: "Package reusable behavior behind a clear name.", estimatedMinutes: 18, position: 11, provenance: robinLearningStructure },
+                { slug: "loops", title: "For Loops", summary: "Ulangi kerja dengan for: sequence, loop variable, dan body yang menjorok.", estimatedMinutes: 12, position: 10, provenance: robinLearningStructure },
+                { slug: "while-loops", title: "While Loops", summary: "Ulangi selama kondisi masih True — starting state, condition, update.", estimatedMinutes: 12, position: 11, provenance: robinLearningStructure },
+                { slug: "range-loop-patterns", title: "Range & Loop Patterns", summary: "range() menghasilkan deret integer untuk loop — start, stop yang dikecualikan, dan step.", estimatedMinutes: 12, position: 12, provenance: robinLearningStructure },
+                { slug: "functions", title: "Functions", summary: "Package reusable behavior behind a clear name.", estimatedMinutes: 18, position: 13, provenance: robinLearningStructure },
               ],
             },
           ],

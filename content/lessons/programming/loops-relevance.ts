@@ -1,16 +1,18 @@
-// Loops lesson-owned adaptation relevance mappings.
+// For Loops lesson-owned adaptation relevance mappings.
+// The lesson teaches only for-loop iteration; all activity concepts
+// lead to the single mastery concept loop_iteration.
 
 const loopsConceptMap: Record<string, string[]> = {
   repetition_need: ["loop_iteration"],
-  for_loop: ["loop_iteration", "range_boundaries"],
-  range_trace: ["range_boundaries", "loop_iteration"],
-  while_trace: ["while_condition", "loop_iteration"],
-  accumulator_trace: ["counter_accumulator", "loop_iteration"],
-  while_condition: ["while_condition", "counter_accumulator"],
-  loop_state: ["counter_accumulator", "loop_iteration"],
+  for_loop: ["loop_iteration"],
+  for_trace: ["loop_iteration"],
+  for_body_trace: ["loop_iteration"],
+  iteration_count: ["loop_iteration"],
+  for_write: ["loop_iteration"],
+  for_model: ["loop_iteration"],
 };
 
-const checkConcepts = ["loop_iteration", "range_boundaries", "while_condition"];
+const checkConcepts = ["loop_iteration"];
 
 export const loopsRelevance = {
   activityConcepts(concept: string): string[] {
@@ -20,10 +22,8 @@ export const loopsRelevance = {
     return [...checkConcepts];
   },
   chatConcepts(message: string): string[] {
-    if (/\b(while|selama|infinite|muter terus|nggak berhenti|never stops)\b/i.test(message)) return [...loopsConceptMap.while_trace];
-    if (/\b(range\(|batas|boundary|off.by.one|start.*stop|dari.*sampai)\b/i.test(message)) return [...loopsConceptMap.range_trace];
-    if (/\b(counter|count|total|accumulator|akumulator|jumlah|penampung)\b/i.test(message)) return [...loopsConceptMap.accumulator_trace];
-    if (/\b(for|loop|iterasi|iteration|ulang|repeat)\b/i.test(message)) return [...loopsConceptMap.for_loop];
+    if (/\b(loop\s*variable|variabel\s*loop|variable\s*loop|loop\s*var)\b/i.test(message)) return [...loopsConceptMap.for_loop];
+    if (/\b(for|loop|iterasi|iteration|ulang|ulangi|repeat|repeats|pengulangan)\b/i.test(message)) return [...loopsConceptMap.for_loop];
     return [];
   },
 };

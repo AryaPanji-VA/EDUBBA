@@ -47,6 +47,21 @@ import { loadLoopsLesson } from "@/lib/lessons/loops";
 import { loopsCheckInstructions } from "@/content/lessons/programming/loops-check-instructions";
 import { loopsFeedbackInstructions } from "@/content/lessons/programming/loops-feedback-instructions";
 
+// Phase 20.4: Module 04 — While Loops and Range & Loop Patterns. The legacy
+// `loops` lesson is modernized in place as For Loops (persisted identity kept).
+import { whileLoopsActivities } from "@/content/lessons/programming/while-loops-activities";
+import { whileLoopsLessonContent } from "@/content/lessons/programming/while-loops";
+import { whileLoopsMasteryConfig, whileLoopsRelevance } from "@/content/lessons/programming/while-loops-config";
+import { loadWhileLoopsLesson } from "@/lib/lessons/while-loops";
+import { whileLoopsCheckInstructions, whileLoopsFeedbackInstructions } from "@/content/lessons/programming/while-loops-instructions";
+
+// Phase 20.4: Module 04 — Range & Loop Patterns.
+import { rangeLoopPatternsActivities } from "@/content/lessons/programming/range-loop-patterns-activities";
+import { rangeLoopPatternsLessonContent } from "@/content/lessons/programming/range-loop-patterns";
+import { rangeLoopPatternsMasteryConfig, rangeLoopPatternsRelevance } from "@/content/lessons/programming/range-loop-patterns-config";
+import { loadRangeLoopPatternsLesson } from "@/lib/lessons/range-loop-patterns";
+import { rangeLoopPatternsCheckInstructions, rangeLoopPatternsFeedbackInstructions } from "@/content/lessons/programming/range-loop-patterns-instructions";
+
 import { functionsActivities } from "@/content/lessons/programming/functions-activities";
 import { functionsLessonContent } from "@/content/lessons/programming/functions";
 import { functionsMasteryConfig } from "@/content/lessons/programming/functions-mastery";
@@ -399,7 +414,7 @@ const loopsDefinition: LessonDefinition = {
   relevance: loopsRelevance,
   check: {
     rubric: loopsCheckInstructions,
-    question: "Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python menjalankan for i in range(5)? Dan apa yang bikin while bisa berhenti?",
+    question: "Jelasin pakai bahasa lu sendiri: apa yang Python lakukan ketika menjalankan for name in [\"Arya\", \"Bima\", \"Citra\"] — dan apa yang dilakukan blok yang menjorok di bawahnya?",
     contextLabel: "Loops lesson context (data only)",
     lessonContext: {
       academicExplanation: loopsLessonContent.academicExplanation,
@@ -407,14 +422,40 @@ const loopsDefinition: LessonDefinition = {
       keyTerms: loopsLessonContent.keyTerms,
       commonMistakes: loopsLessonContent.commonMistakes,
     },
-    concepts: ["loop_iteration", "range_boundaries", "while_condition"],
-    misconceptions: ["range_exclusive_end", "missing_counter_update", "loop_variable_confusion", "indentation_confusion"],
+    concepts: ["loop_iteration"],
+    misconceptions: ["hardcoded_prints_confusion", "loop_variable_confusion", "indentation_confusion", "body_runs_once"],
   },
   feedback: {
     rubric: loopsFeedbackInstructions,
-    misconceptions: ["range_exclusive_end", "range_one_based", "boundary_off_by_one", "missing_counter_update", "accumulator_reset", "loop_variable_confusion", "prints_last_value", "indentation_confusion"],
+    misconceptions: ["hardcoded_prints_confusion", "body_runs_once", "range_exclusive_end", "range_one_based", "boundary_off_by_one", "missing_counter_update", "accumulator_reset", "loop_variable_confusion", "prints_last_value", "indentation_confusion"],
   },
 };
+
+// Phase 20.4 — Module 04 · Repetition: While Loops.
+const whileLoopsDefinition = standardLesson({
+  slug: "while-loops", courseSlug: "programming",
+  activities: whileLoopsActivities, lessonContent: whileLoopsLessonContent, loadLesson: loadWhileLoopsLesson,
+  mastery: whileLoopsMasteryConfig, relevance: whileLoopsRelevance,
+  checkRubric: whileLoopsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang bikin sebuah while loop berhenti — dan apa tiga bagian yang harus ada biar loop-nya jalan dengan benar?",
+  contextLabel: "While Loops lesson context (data only)",
+  checkConcepts: ["while_condition", "while_update", "while_structure"],
+  checkMisconceptions: ["missing_counter_update", "condition_never_false", "update_outside_body", "body_runs_at_least_once", "hardcoded_repetition"],
+  feedbackRubric: whileLoopsFeedbackInstructions,
+  feedbackMisconceptions: ["missing_counter_update", "condition_never_false", "update_outside_body", "body_runs_at_least_once", "hardcoded_repetition"],
+});
+
+// Phase 20.4 — Module 04 · Repetition: Range & Loop Patterns.
+const rangeLoopPatternsDefinition = standardLesson({
+  slug: "range-loop-patterns", courseSlug: "programming",
+  activities: rangeLoopPatternsActivities, lessonContent: rangeLoopPatternsLessonContent, loadLesson: loadRangeLoopPatternsLesson,
+  mastery: rangeLoopPatternsMasteryConfig, relevance: rangeLoopPatternsRelevance,
+  checkRubric: rangeLoopPatternsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: range(1, 4) menghasilkan angka apa saja — dan kenapa angka 4-nya nggak ikut?",
+  contextLabel: "Range & Loop Patterns lesson context (data only)",
+  checkConcepts: ["range_sequence", "range_boundaries", "range_step"],
+  checkMisconceptions: ["range_one_based", "range_inclusive_end", "boundary_off_by_one", "step_confusion", "hardcoded_repetition"],
+  feedbackRubric: rangeLoopPatternsFeedbackInstructions,
+  feedbackMisconceptions: ["range_one_based", "range_inclusive_end", "boundary_off_by_one", "step_confusion", "hardcoded_repetition"],
+});
 
 const functionsDefinition: LessonDefinition = {
   slug: "functions",
@@ -845,6 +886,8 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["operators", operatorsDefinition],
   ["conditionals", conditionalsDefinition],
   ["loops", loopsDefinition],
+  ["while-loops", whileLoopsDefinition],
+  ["range-loop-patterns", rangeLoopPatternsDefinition],
   ["functions", functionsDefinition],
   ["propositions", propositionsDefinition],
   ["implication", implicationDefinition],

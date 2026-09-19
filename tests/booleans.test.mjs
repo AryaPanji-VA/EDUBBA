@@ -219,7 +219,7 @@ test("Module 02 closes at building-blocks position 6 with Operators after it", (
   assert.equal(byslug["strings"], 5);
   assert.equal(byslug["booleans"], 6);
   assert.equal(byslug["operators"], 7);
-  assert.equal(byslug["functions"], 11);
+  assert.equal(byslug["functions"], 13);
   const seed = read("database/phase4-seed.sql");
   assert.match(seed, /\('programming-building-blocks', 'booleans', 'Booleans', '[^']+', 12, 6\)/);
   const migration = read("database/phase20-2f-booleans.sql");

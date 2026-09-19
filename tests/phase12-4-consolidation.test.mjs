@@ -23,12 +23,13 @@ test("curriculum keeps the coherent block-lesson order after Values & Data compl
   const seed = read("database/phase4-seed.sql");
   const positions = [...seed.matchAll(/\('programming-building-blocks', '([^']+)', '[^']+', '[^']+', \d+, (\d+)\)/g)]
     .map((match) => [match[1], Number(match[2])]);
-  // Phase 20.2-20.3B: Values & Data at 1-6, Operators 7, User Input 8;
-  // legacy lessons shift to 9-11.
+  // Phase 20.2-20.4: Values & Data at 1-6, Operators 7, User Input 8,
+  // Conditionals 9; Module 04 Repetition at 10-12; Functions closes at 13.
   assert.deepEqual(positions, [
     ["variables", 1], ["data-types", 2], ["numbers", 3], ["casting", 4],
     ["strings", 5], ["booleans", 6], ["operators", 7], ["user-input", 8],
-    ["conditionals", 9], ["loops", 10], ["functions", 11],
+    ["conditionals", 9], ["loops", 10], ["while-loops", 11],
+    ["range-loop-patterns", 12], ["functions", 13],
   ]);
 });
 

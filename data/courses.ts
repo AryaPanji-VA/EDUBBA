@@ -53,7 +53,8 @@ export type LessonPresentationState = "completed" | "current" | "next" | "availa
 
 // Implemented lesson routes, in the intended beginner learning order.
 // Module 01 (First Steps), Module 02 (Values & Data), and Module 03
-// (Program Logic) are complete; Module 04 (Repetition) begins at For Loops.
+// (Program Logic) are complete; Module 04 (Repetition) covers For Loops
+// (the modernized `loops` lesson), While Loops, and Range & Loop Patterns.
 export const implementedProgrammingLessonSlugs = [
   "what-is-programming",
   "hello-python",
@@ -71,6 +72,8 @@ export const implementedProgrammingLessonSlugs = [
   "user-input",
   "conditionals",
   "loops",
+  "while-loops",
+  "range-loop-patterns",
   "functions",
 ] as const;
 
@@ -166,5 +169,7 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   operators: "current",
   conditionals: "completed",
   loops: "completed",
+  "while-loops": "available",
+  "range-loop-patterns": "available",
   functions: "completed",
 };

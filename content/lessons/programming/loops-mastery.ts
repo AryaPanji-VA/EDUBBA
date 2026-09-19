@@ -1,25 +1,23 @@
 import type { LessonMasteryConfig } from "@/lib/mastery/types";
 
-// Loops lesson-owned mastery configuration.
-// The generic engine never needs to know what "range boundaries" means.
+// For Loops lesson-owned mastery configuration.
+// Legacy concept keys are preserved so persisted mastery/practice vocabulary
+// keeps validating; the lesson itself now teaches only for-loop iteration.
 
 const loopsConcepts = ["loop_iteration", "range_boundaries", "while_condition", "counter_accumulator"] as const;
 
 const activityConceptMap: Record<string, string> = {
   repetition_need: "loop_iteration",
   for_loop: "loop_iteration",
-  range_trace: "range_boundaries",
-  while_trace: "while_condition",
-  accumulator_trace: "counter_accumulator",
-  while_condition: "while_condition",
-  loop_state: "counter_accumulator",
+  for_trace: "loop_iteration",
+  for_body_trace: "loop_iteration",
+  iteration_count: "loop_iteration",
+  for_write: "loop_iteration",
+  for_model: "loop_iteration",
   loop_iteration: "loop_iteration",
-  range_boundaries: "range_boundaries",
-  while_condition_key: "while_condition",
-  counter_accumulator: "counter_accumulator",
 };
 
-const checkConcepts: string[] = ["loop_iteration", "range_boundaries", "while_condition"];
+const checkConcepts: string[] = ["loop_iteration"];
 
 export const loopsMasteryConfig: LessonMasteryConfig = {
   concepts: loopsConcepts,

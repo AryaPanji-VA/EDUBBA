@@ -21,6 +21,8 @@ export const standardLessons = [
   ["strings", "programming"],
   ["booleans", "programming"],
   ["user-input", "programming"],
+  ["while-loops", "programming"],
+  ["range-loop-patterns", "programming"],
   ["implication", "discrete-math"],
   ["sets-intro", "discrete-math"],
   ["what-is-design-thinking", "design-thinking"],
