@@ -8,6 +8,7 @@ import {
   programmingLessonStateBySlug,
   type LessonPresentationState,
 } from "@/data/courses";
+import { deriveLessonStates } from "@/lib/courses/lesson-access";
 
 type Lesson = {
   slug: string;
@@ -84,20 +85,23 @@ export function ProgrammingCourseClient() {
         const persisted = await Promise.all(progressResponses.map(async (progressResponse) =>
           progressResponse.ok ? await progressResponse.json() as ProgressResponse : null,
         ));
-        const nextStates = { ...programmingLessonStateBySlug };
         const currentSlug = currentData?.current?.lessonSlug;
-        for (const slug of implementedProgrammingLessonSlugs) nextStates[slug] = "locked";
-        implementedProgrammingLessonSlugs.forEach((slug, index) => {
-          const progress = persisted[index]?.progress;
-          if (progress?.completed_at) nextStates[slug] = "completed";
+        // Completion is keyed by lesson slug, never by position — inserting
+        // lessons cannot move or revoke existing completions.
+        const completedSlugs = implementedProgrammingLessonSlugs.filter(
+          (slug, index) => persisted[index]?.progress?.completed_at,
+        );
+        // Resume = last-touched incomplete lesson ("current"). The progression
+        // frontier ("next" = first lesson without completion) stays accessible
+        // even when the resume point sits in a later module. Completed lessons
+        // always stay linkable for revisit.
+        const derived = deriveLessonStates({
+          fallbackStates: programmingLessonStateBySlug,
+          implementedSlugs: implementedProgrammingLessonSlugs,
+          completedSlugs,
+          resumeSlug: currentSlug ?? null,
         });
-        const currentIndex = implementedProgrammingLessonSlugs.findIndex((slug) => slug === currentSlug);
-        const currentProgress = currentIndex >= 0 ? persisted[currentIndex]?.progress : null;
-        const activeSlug = currentIndex >= 0 && !currentProgress?.completed_at
-          ? implementedProgrammingLessonSlugs[currentIndex]
-          : implementedProgrammingLessonSlugs.find((slug) => nextStates[slug] !== "completed");
-        if (activeSlug && implementedProgrammingLessonSlugs.some((slug) => slug === activeSlug)) nextStates[activeSlug] = "current";
-        setLessonStates(nextStates);
+        setLessonStates(derived.states);
       } catch {
         // Keep the static curriculum fallback when progress is unavailable.
       }
@@ -122,7 +126,7 @@ export function ProgrammingCourseClient() {
     const segments = [];
     for (let i = 0; i < lessons.length; i++) {
       const slug = lessons[i].slug;
-      const state = lessonStates[slug] ?? "locked";
+      const state = lessonStates[slug] ?? "coming-soon";
       segments.push(state === "completed");
     }
     return segments;
@@ -132,9 +136,27 @@ export function ProgrammingCourseClient() {
   const allLessons = courseData?.modules.flatMap(m => m.lessons) ?? [];
   const completedCount = allLessons.filter(l => lessonStates[l.slug] === "completed").length;
   const progress = allLessons.length === 0 ? 0 : Math.round((completedCount / allLessons.length) * 100);
-  const currentLesson = allLessons.find(l => lessonStates[l.slug] === "current");
+  const currentLesson = allLessons.find(l => lessonStates[l.slug] === "current")
+    ?? allLessons.find(l => lessonStates[l.slug] === "next");
   const totalLessons = allLessons.length;
-  const masteryRows = [
+  // Mastery panel rows. The Module 01 lessons are represented as one grouped
+  // row (six lessons would crowd the panel); its state derives from the same
+  // persisted lessonStates as every other row — no separate progress source.
+  type MasteryRow =
+    | { label: string; group: string[] }
+    | { slug: string; label: string; segments: number };
+  const masteryRows: MasteryRow[] = [
+    {
+      label: "Module 01 · First Steps",
+      group: [
+        "what-is-programming",
+        "hello-python",
+        "print-output",
+        "syntax-indentation",
+        "comments",
+        "understanding-errors",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },
@@ -204,9 +226,11 @@ export function ProgrammingCourseClient() {
                 const lessonsInModule = module.lessons;
                 const completedInModule = lessonsInModule.filter(l => lessonStates[l.slug] === "completed").length;
                 const hasCurrent = lessonsInModule.some(l => lessonStates[l.slug] === "current");
-                const shouldShowLessons = hasCurrent || (completedInModule > 0 && completedInModule < lessonsInModule.length);
-                const isCollapsed = !hasCurrent && completedInModule === lessonsInModule.length;
-                const moduleState = hasCurrent ? "open" : completedInModule === lessonsInModule.length ? "done" : completedInModule > 0 ? "open" : "dim";
+                const hasNext = lessonsInModule.some(l => lessonStates[l.slug] === "next");
+                const hasOpen = lessonsInModule.some(l => lessonStates[l.slug] !== "coming-soon");
+                const shouldShowLessons = hasOpen;
+                const isCollapsed = !hasCurrent && !hasNext && completedInModule === lessonsInModule.length;
+                const moduleState = hasCurrent ? "open" : completedInModule === lessonsInModule.length ? "done" : (hasNext || completedInModule > 0) ? "open" : "dim";
 
                 return (
                   <section key={module.slug} className={`cmap-module ${isCollapsed && !hasCurrent ? "collapsed" : ""}`}>
@@ -215,7 +239,7 @@ export function ProgrammingCourseClient() {
                       <span className="cmap-mnum">{String(module.position).padStart(2, "0")}</span>
                       <span className="cmap-mtitle">{module.title}{module.description && <small>{module.description}</small>}</span>
                       <span className={`mtag ${hasCurrent ? "now" : completedInModule === lessonsInModule.length ? "master" : "lock"}`}>
-                        {hasCurrent ? "in progress" : completedInModule === lessonsInModule.length ? "mastered" : "locked"}
+                        {hasCurrent ? "in progress" : hasNext ? "up next" : completedInModule === lessonsInModule.length ? "mastered" : "open"}
                       </span>
                       <span className="mbar">
                         {buildMbarSegments(lessonsInModule).map((filled, i) => (
@@ -229,9 +253,9 @@ export function ProgrammingCourseClient() {
                     {shouldShowLessons && (
                       <ul className="cmap-lessons">
                         {lessonsInModule.map((lesson, lessonIndex) => {
-                          const state: LessonPresentationState = lessonStates[lesson.slug] ?? "locked";
+                          const state: LessonPresentationState = lessonStates[lesson.slug] ?? "coming-soon";
                           const lessonNumber = `${module.position}.${lesson.position}`;
-                          const isLinkable = state !== "locked" && implementedProgrammingLessonSlugs.some((slug) => slug === lesson.slug);
+                          const isLinkable = state !== "coming-soon" && implementedProgrammingLessonSlugs.some((slug) => slug === lesson.slug);
                           const nodeStyle = state === "completed"
                             ? { background: "var(--ok)", borderColor: "var(--ok)" }
                             : state === "current"
@@ -250,7 +274,7 @@ export function ProgrammingCourseClient() {
                               ) : state === "current" ? (
                                 <span className="cmap-laction">Resume →</span>
                               ) : (
-                                <span className="cmap-lock">{state === "locked" ? "locked" : "next"}</span>
+                                <span className="cmap-lock">{state === "coming-soon" ? "coming soon" : state === "available" ? "start" : "next"}</span>
                               )}
                             </>
                           );
@@ -286,7 +310,27 @@ export function ProgrammingCourseClient() {
               </header>
               <ul className="mast-list">
                 {masteryRows.map((row) => {
-                  const state = lessonStates[row.slug] ?? "locked";
+                  if ("group" in row) {
+                    const memberStates = row.group.map((slug) => lessonStates[slug] ?? "coming-soon");
+                    const done = memberStates.filter((state) => state === "completed").length;
+                    const hasCurrent = memberStates.some((state) => state === "current");
+                    const hasNext = memberStates.some((state) => state === "next");
+                    const label = done === row.group.length ? "completed" : hasCurrent ? "in progress" : hasNext ? "up next" : `${done}/${row.group.length}`;
+                    return (
+                      <li key={row.label} className={`mast-item ${hasCurrent ? "hot" : ""}`}>
+                        <div className="mast-top">
+                          <span className="mast-name">{row.label}</span>
+                          <span className="mast-pct">{label}</span>
+                        </div>
+                        <div className="mbar2">
+                          {memberStates.map((state, index) => (
+                            <i key={index} className={state === "completed" ? "f" : ""} />
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  }
+                  const state = lessonStates[row.slug] ?? "coming-soon";
                   return (
                     <li key={row.slug} className={`mast-item ${state === "current" ? "hot" : ""}`}>
                       <div className="mast-top">

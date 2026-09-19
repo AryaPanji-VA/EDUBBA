@@ -55,6 +55,48 @@ import { loadFunctionsLesson } from "@/lib/lessons/functions";
 import { functionsCheckInstructions } from "@/content/lessons/programming/functions-check-instructions";
 import { functionsFeedbackInstructions } from "@/content/lessons/programming/functions-feedback-instructions";
 
+// Phase 20.1A: beginner onboarding — the first lesson of Programming Fundamentals.
+import { whatIsProgrammingActivities } from "@/content/lessons/programming/what-is-programming-activities";
+import { whatIsProgrammingLessonContent } from "@/content/lessons/programming/what-is-programming";
+import { whatIsProgrammingMasteryConfig, whatIsProgrammingRelevance } from "@/content/lessons/programming/what-is-programming-config";
+import { loadWhatIsProgrammingLesson } from "@/lib/lessons/what-is-programming";
+import { whatIsProgrammingCheckInstructions, whatIsProgrammingFeedbackInstructions } from "@/content/lessons/programming/what-is-programming-instructions";
+
+// Phase 20.1B: beginner onboarding — Meet Python, the first language.
+import { helloPythonActivities } from "@/content/lessons/programming/hello-python-activities";
+import { helloPythonLessonContent } from "@/content/lessons/programming/hello-python";
+import { helloPythonMasteryConfig, helloPythonRelevance } from "@/content/lessons/programming/hello-python-config";
+import { loadHelloPythonLesson } from "@/lib/lessons/hello-python";
+import { helloPythonCheckInstructions, helloPythonFeedbackInstructions } from "@/content/lessons/programming/hello-python-instructions";
+
+// Phase 20.1C: beginner onboarding — Output with print().
+import { printOutputActivities } from "@/content/lessons/programming/print-output-activities";
+import { printOutputLessonContent } from "@/content/lessons/programming/print-output";
+import { printOutputMasteryConfig, printOutputRelevance } from "@/content/lessons/programming/print-output-config";
+import { loadPrintOutputLesson } from "@/lib/lessons/print-output";
+import { printOutputCheckInstructions, printOutputFeedbackInstructions } from "@/content/lessons/programming/print-output-instructions";
+
+// Phase 20.1D: beginner onboarding — Syntax & Indentation.
+import { syntaxIndentationActivities } from "@/content/lessons/programming/syntax-indentation-activities";
+import { syntaxIndentationLessonContent } from "@/content/lessons/programming/syntax-indentation";
+import { syntaxIndentationMasteryConfig, syntaxIndentationRelevance } from "@/content/lessons/programming/syntax-indentation-config";
+import { loadSyntaxIndentationLesson } from "@/lib/lessons/syntax-indentation";
+import { syntaxIndentationCheckInstructions, syntaxIndentationFeedbackInstructions } from "@/content/lessons/programming/syntax-indentation-instructions";
+
+// Phase 20.1E: beginner onboarding — Comments.
+import { commentsActivities } from "@/content/lessons/programming/comments-activities";
+import { commentsLessonContent } from "@/content/lessons/programming/comments";
+import { commentsMasteryConfig, commentsRelevance } from "@/content/lessons/programming/comments-config";
+import { loadCommentsLesson } from "@/lib/lessons/comments";
+import { commentsCheckInstructions, commentsFeedbackInstructions } from "@/content/lessons/programming/comments-instructions";
+
+// Phase 20.1F: beginner onboarding — Understanding Errors. Closes Module 01.
+import { understandingErrorsActivities } from "@/content/lessons/programming/understanding-errors-activities";
+import { understandingErrorsLessonContent } from "@/content/lessons/programming/understanding-errors";
+import { understandingErrorsMasteryConfig, understandingErrorsRelevance } from "@/content/lessons/programming/understanding-errors-config";
+import { loadUnderstandingErrorsLesson } from "@/lib/lessons/understanding-errors";
+import { understandingErrorsCheckInstructions, understandingErrorsFeedbackInstructions } from "@/content/lessons/programming/understanding-errors-instructions";
+
 import { propositionsActivities } from "@/content/lessons/discrete-math/propositions-activities";
 import { propositionsLessonContent } from "@/content/lessons/discrete-math/propositions";
 import { propositionsMasteryConfig } from "@/content/lessons/discrete-math/propositions-mastery";
@@ -442,6 +484,78 @@ function standardLesson(input: StandardLessonInput): LessonDefinition {
   };
 }
 
+const whatIsProgrammingDefinition = standardLesson({
+  slug: "what-is-programming", courseSlug: "programming",
+  activities: whatIsProgrammingActivities, lessonContent: whatIsProgrammingLessonContent, loadLesson: loadWhatIsProgrammingLesson,
+  mastery: whatIsProgrammingMasteryConfig, relevance: whatIsProgrammingRelevance,
+  checkRubric: whatIsProgrammingCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa itu programming, dan kenapa instruksi buat komputer harus jelas dan berurutan?",
+  contextLabel: "What Is Programming lesson context (data only)",
+  checkConcepts: ["programming_definition", "code_instructions", "literal_execution"],
+  checkMisconceptions: ["syntax_first_confusion", "computer_understands_intent", "vague_instructions_ok"],
+  feedbackRubric: whatIsProgrammingFeedbackInstructions,
+  feedbackMisconceptions: ["value_placeholder_confusion", "prints_name_text", "syntax_first_confusion", "computer_understands_intent", "position_vs_rule_confusion", "runs_everything_confusion"],
+});
+
+const helloPythonDefinition = standardLesson({
+  slug: "hello-python", courseSlug: "programming",
+  activities: helloPythonActivities, lessonContent: helloPythonLessonContent, loadLesson: loadHelloPythonLesson,
+  mastery: helloPythonMasteryConfig, relevance: helloPythonRelevance,
+  checkRubric: helloPythonCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa itu Python, dan bagaimana satu baris code seperti print(\"Halo, dunia!\") bisa jadi output di layar?",
+  contextLabel: "Meet Python lesson context (data only)",
+  checkConcepts: ["python_as_language", "code_to_output", "instruction_execution"],
+  checkMisconceptions: ["language_program_confusion", "prints_code_text_confusion", "output_stored_confusion", "order_irrelevant_confusion"],
+  feedbackRubric: helloPythonFeedbackInstructions,
+  feedbackMisconceptions: ["language_program_confusion", "prints_code_text_confusion", "output_stored_confusion", "order_irrelevant_confusion"],
+});
+
+const printOutputDefinition = standardLesson({
+  slug: "print-output", courseSlug: "programming",
+  activities: printOutputActivities, lessonContent: printOutputLessonContent, loadLesson: loadPrintOutputLesson,
+  mastery: printOutputMasteryConfig, relevance: printOutputRelevance,
+  checkRubric: printOutputCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang dilakukan print(...), dan kenapa output-nya muncul berurutan kalau ada beberapa print?",
+  contextLabel: "Output with print() lesson context (data only)",
+  checkConcepts: ["output_concept", "print_instruction", "execution_order"],
+  checkMisconceptions: ["prints_code_text_confusion", "output_stored_confusion", "order_irrelevant_confusion", "quotes_optional_confusion"],
+  feedbackRubric: printOutputFeedbackInstructions,
+  feedbackMisconceptions: ["prints_code_text_confusion", "output_stored_confusion", "order_irrelevant_confusion", "quotes_optional_confusion"],
+});
+
+const syntaxIndentationDefinition = standardLesson({
+  slug: "syntax-indentation", courseSlug: "programming",
+  activities: syntaxIndentationActivities, lessonContent: syntaxIndentationLessonContent, loadLesson: loadSyntaxIndentationLesson,
+  mastery: syntaxIndentationMasteryConfig, relevance: syntaxIndentationRelevance,
+  checkRubric: syntaxIndentationCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa itu syntax di Python, dan kenapa indentation nggak boleh dianggap cuma dekorasi?",
+  contextLabel: "Syntax & Indentation lesson context (data only)",
+  checkConcepts: ["syntax_rules", "case_sensitivity", "indentation_meaning"],
+  checkMisconceptions: ["case_insensitive_confusion", "indentation_decorative_confusion", "whitespace_ignored_confusion"],
+  feedbackRubric: syntaxIndentationFeedbackInstructions,
+  feedbackMisconceptions: ["case_insensitive_confusion", "indentation_decorative_confusion", "whitespace_ignored_confusion"],
+});
+
+const commentsDefinition = standardLesson({
+  slug: "comments", courseSlug: "programming",
+  activities: commentsActivities, lessonContent: commentsLessonContent, loadLesson: loadCommentsLesson,
+  mastery: commentsMasteryConfig, relevance: commentsRelevance,
+  checkRubric: commentsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa itu comment, dan kenapa Python tidak menjalankannya?",
+  contextLabel: "Comments lesson context (data only)",
+  checkConcepts: ["comment_purpose", "comment_syntax", "code_comment_output"],
+  checkMisconceptions: ["comments_executed_confusion", "comments_displayed_confusion", "comment_stops_program_confusion", "comment_syntax_confusion"],
+  feedbackRubric: commentsFeedbackInstructions,
+  feedbackMisconceptions: ["comments_executed_confusion", "comments_displayed_confusion", "comment_stops_program_confusion", "comment_syntax_confusion"],
+});
+
+const understandingErrorsDefinition = standardLesson({
+  slug: "understanding-errors", courseSlug: "programming",
+  activities: understandingErrorsActivities, lessonContent: understandingErrorsLessonContent, loadLesson: loadUnderstandingErrorsLesson,
+  mastery: understandingErrorsMasteryConfig, relevance: understandingErrorsRelevance,
+  checkRubric: understandingErrorsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang Python lakukan saat menemukan masalah, dan apa langkah lu setelah melihat pesan error?",
+  contextLabel: "Understanding Errors lesson context (data only)",
+  checkConcepts: ["error_as_information", "common_error_shapes", "fix_cycle"],
+  checkMisconceptions: ["error_dead_end_confusion", "broken_shape_runs_confusion", "guess_without_reading_confusion"],
+  feedbackRubric: understandingErrorsFeedbackInstructions,
+  feedbackMisconceptions: ["error_dead_end_confusion", "broken_shape_runs_confusion", "guess_without_reading_confusion"],
+});
+
 const implicationDefinition = standardLesson({
   slug: "implication", courseSlug: "discrete-math",
   activities: implicationActivities, lessonContent: implicationLessonContent, loadLesson: loadImplicationLesson,
@@ -621,6 +735,12 @@ const clientServerAndLayersDefinition = standardLesson({
 // Explicit static registration — no dynamic loading, no filesystem discovery.
 const registry: Map<string, LessonDefinition> = new Map([
   ["variables", variablesDefinition],
+  ["what-is-programming", whatIsProgrammingDefinition],
+  ["hello-python", helloPythonDefinition],
+  ["print-output", printOutputDefinition],
+  ["syntax-indentation", syntaxIndentationDefinition],
+  ["comments", commentsDefinition],
+  ["understanding-errors", understandingErrorsDefinition],
   ["data-types", dataTypesDefinition],
   ["operators", operatorsDefinition],
   ["conditionals", conditionalsDefinition],

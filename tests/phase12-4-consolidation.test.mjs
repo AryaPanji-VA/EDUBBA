@@ -59,7 +59,7 @@ test("course overview resolves persisted states and links all non-locked impleme
   assert.match(source, /fetch\("\/api\/learning\/progress"\)/);
   assert.match(source, /api\/learning\/progress\?lesson=/);
   assert.match(source, /progress\?\.completed_at/);
-  assert.match(source, /state !== "locked"/);
+  assert.match(source, /state !== "coming-soon"/);
   assert.match(source, /shouldShowLessons/);
   assert.match(source, /<span className="cmap-laction">Resume →<\/span>/);
 });

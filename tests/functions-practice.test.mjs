@@ -151,7 +151,7 @@ test("Functions integrates into the course sequence and generic Practice Assista
   assert.match(courses, /loops: "completed"/);
   assert.match(courses, /functions: "completed"/);
   assert.match(courses, /implementedProgrammingLessonSlugs[\s\S]*"functions"/);
-  assert.match(client, /state !== "locked"/);
+  assert.match(client, /state !== "coming-soon"/);
   assert.match(client, /slug: "functions", label: "Functions"/);
   assert.doesNotMatch(assist, /lessonSlug\s*===\s*["']functions["']/);
   assert.match(assist, /getPracticeExercise/);

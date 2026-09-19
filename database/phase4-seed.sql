@@ -39,8 +39,13 @@ join public.modules m on m.course_id = c.id
 join (
   values
     ('programming-fundamentals', 'what-is-programming', 'What is Programming?', 'Build a useful definition of programming.', 10, 1),
-    ('programming-fundamentals', 'programming-languages', 'Programming Languages', 'See why different programming languages exist.', 12, 2),
-    ('programming-fundamentals', 'syntax-vs-semantics', 'Syntax vs Semantics', 'Separate how code is written from what it means.', 12, 3),
+    ('programming-fundamentals', 'hello-python', 'Kenalan dengan Python', 'Kenali Python sebagai bahasa, tulis instruksi pertama, dan lihat code berubah jadi output.', 12, 2),
+    ('programming-fundamentals', 'print-output', 'Output with print()', 'Minta Python menampilkan sesuatu dengan print(), dan bedakan code dari output.', 12, 3),
+    ('programming-fundamentals', 'syntax-indentation', 'Syntax & Indentation', 'Python peduli bagaimana code ditulis dan disusun — kenal syntax dan indentation.', 12, 4),
+    ('programming-fundamentals', 'comments', 'Comments', 'Tinggalkan catatan untuk manusia di dalam code — dan lihat Python melewatinya.', 10, 5),
+    ('programming-fundamentals', 'understanding-errors', 'Understanding Errors', 'Error itu petunjuk, bukan kegagalan — baca pesannya, perbaiki, jalankan lagi.', 12, 6),
+    ('programming-fundamentals', 'programming-languages', 'Programming Languages', 'See why different programming languages exist.', 12, 7),
+    ('programming-fundamentals', 'syntax-vs-semantics', 'Syntax vs Semantics', 'Separate how code is written from what it means.', 12, 8),
     ('how-programs-run', 'compiler-vs-interpreter', 'Compiler vs Interpreter', 'Compare two ways source code becomes executable work.', 14, 1),
     ('how-programs-run', 'source-code-to-program-execution', 'Source Code to Program Execution', 'Trace the journey from a file to a running program.', 14, 2),
     ('programming-building-blocks', 'variables', 'Variables', 'Give values names so a program can reuse them.', 18, 1),

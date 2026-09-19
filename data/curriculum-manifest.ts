@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 11,
+          totalLessons: 16,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -124,8 +124,13 @@ export const currentCurriculumManifest: CurriculumManifest = {
               provenance: robinLearningStructure,
               lessons: [
                 { slug: "what-is-programming", title: "What is Programming?", summary: "Build a useful definition of programming.", estimatedMinutes: 10, position: 1, provenance: robinLearningStructure },
-                { slug: "programming-languages", title: "Programming Languages", summary: "See why different programming languages exist.", estimatedMinutes: 12, position: 2, provenance: robinLearningStructure },
-                { slug: "syntax-vs-semantics", title: "Syntax vs Semantics", summary: "Separate how code is written from what it means.", estimatedMinutes: 12, position: 3, provenance: robinLearningStructure },
+                { slug: "hello-python", title: "Kenalan dengan Python", summary: "Kenali Python sebagai bahasa, tulis instruksi pertama, dan lihat code berubah jadi output.", estimatedMinutes: 12, position: 2, provenance: robinLearningStructure },
+                { slug: "print-output", title: "Output with print()", summary: "Minta Python menampilkan sesuatu dengan print(), dan bedakan code dari output.", estimatedMinutes: 12, position: 3, provenance: robinLearningStructure },
+                { slug: "syntax-indentation", title: "Syntax & Indentation", summary: "Python peduli bagaimana code ditulis dan disusun — kenal syntax dan indentation.", estimatedMinutes: 12, position: 4, provenance: robinLearningStructure },
+                { slug: "comments", title: "Comments", summary: "Tinggalkan catatan untuk manusia di dalam code — dan lihat Python melewatinya.", estimatedMinutes: 10, position: 5, provenance: robinLearningStructure },
+                { slug: "understanding-errors", title: "Understanding Errors", summary: "Error itu petunjuk, bukan kegagalan — baca pesannya, perbaiki, jalankan lagi.", estimatedMinutes: 12, position: 6, provenance: robinLearningStructure },
+                { slug: "programming-languages", title: "Programming Languages", summary: "See why different programming languages exist.", estimatedMinutes: 12, position: 7, provenance: robinLearningStructure },
+                { slug: "syntax-vs-semantics", title: "Syntax vs Semantics", summary: "Separate how code is written from what it means.", estimatedMinutes: 12, position: 8, provenance: robinLearningStructure },
               ],
             },
             {

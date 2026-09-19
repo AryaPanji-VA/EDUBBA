@@ -227,7 +227,7 @@ test("course overview marks conditionals as completed in the implemented sequenc
   assert.match(courses, /"data-types": "completed"/);
   const client = readFileSync(new URL("../components/programming-course-client.tsx", import.meta.url), "utf8");
   assert.match(courses, /implementedProgrammingLessonSlugs[\s\S]*"conditionals"/);
-  assert.match(client, /state !== "locked"/, "implemented completed lessons stay semantic links");
+  assert.match(client, /state !== "coming-soon"/, "implemented lessons stay semantic links");
   assert.match(client, /slug: "conditionals", label: "Conditionals"/);
 });
 

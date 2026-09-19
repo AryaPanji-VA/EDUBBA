@@ -15,7 +15,7 @@ export type Course = {
 // persisted lesson progress server-side (see /api/courses); these entries
 // only provide codes, titles, and a neutral 0% / "Not started" baseline.
 export const courses: Course[] = [
-  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 0, lessons: 11, status: "Not started" },
+  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 0, lessons: 16, status: "Not started" },
   { slug: "design-thinking", code: "DT-101", title: "Design Thinking", description: "Turn fuzzy human problems into ideas you can test and improve.", progress: 0, lessons: 8, status: "Not started" },
   { slug: "discrete-math", code: "MA-105", title: "Discrete Mathematics", description: "Logic, sets, relations, and the mathematical language of computing.", progress: 0, lessons: 12, status: "Not started" },
   { slug: "hci", code: "CS-112", title: "Human-Computer Interaction", description: "Understand how people experience, use, and sometimes fight with software.", progress: 0, lessons: 9, status: "Not started" },
@@ -44,10 +44,24 @@ export const courseOverviewRouteBySlug: Record<string, string> = {
   networking: "/courses/networking",
 };
 
-export type LessonPresentationState = "completed" | "current" | "locked";
+// Presentation states on course pages. Progression is a recommendation, not
+// an access restriction:
+//   completed → DONE · current → CONTINUE · next → recommended next step ·
+//   available → implemented and open · coming-soon → no route yet, not
+//   clickable · locked → legacy default on the generic course client only.
+export type LessonPresentationState = "completed" | "current" | "next" | "available" | "coming-soon" | "locked";
 
 // Implemented lesson routes, in the intended beginner learning order.
+// Phase 20.1 onboarding lessons complete Module 01: What is Programming?,
+// Meet Python, Output with print(), Syntax & Indentation, Comments, and
+// Understanding Errors.
 export const implementedProgrammingLessonSlugs = [
+  "what-is-programming",
+  "hello-python",
+  "print-output",
+  "syntax-indentation",
+  "comments",
+  "understanding-errors",
   "variables",
   "data-types",
   "operators",
@@ -123,10 +137,19 @@ export const defaultCurrentLesson: { courseSlug: string; lessonSlug: string } = 
 };
 
 // Static curriculum fallback used when the local progress API is unavailable.
+// Implemented lessons fall back to "available" (completion is unknown without
+// the API). The programming-fundamentals placeholders (programming-languages,
+// syntax-vs-semantics) have no lesson content or route yet, so they render as
+// coming soon — never clickable, never a fake "completed".
 export const programmingLessonStateBySlug: Record<string, LessonPresentationState> = {
-  "what-is-programming": "completed",
-  "programming-languages": "completed",
-  "syntax-vs-semantics": "completed",
+  "what-is-programming": "available",
+  "hello-python": "available",
+  "print-output": "available",
+  "syntax-indentation": "available",
+  "comments": "available",
+  "understanding-errors": "available",
+  "programming-languages": "coming-soon",
+  "syntax-vs-semantics": "coming-soon",
   "compiler-vs-interpreter": "completed",
   "source-code-to-program-execution": "locked",
   variables: "completed",

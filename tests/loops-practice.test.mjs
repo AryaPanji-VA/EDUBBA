@@ -226,7 +226,7 @@ test("course overview marks loops complete and Functions current in sequence", (
   assert.match(courses, /conditionals: "completed"/);
   const client = readFileSync(new URL("../components/programming-course-client.tsx", import.meta.url), "utf8");
   assert.match(courses, /implementedProgrammingLessonSlugs[\s\S]*"loops"[\s\S]*"functions"/);
-  assert.match(client, /state !== "locked"/, "implemented completed lessons stay semantic links");
+  assert.match(client, /state !== "coming-soon"/, "implemented lessons stay semantic links");
   assert.match(client, /slug: "loops", label: "Loops"/);
 });
 

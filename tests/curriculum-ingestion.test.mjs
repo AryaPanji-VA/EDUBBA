@@ -77,7 +77,8 @@ test("manifest semester 1 carries the seven existing courses with their official
 test("manifest programming modules and lessons mirror database/phase4-seed.sql", () => {
   const programming = currentCurriculumManifest.semesters[0].courses.find((course) => course.slug === "programming");
   assert.ok(programming);
-  assert.equal(programming.totalLessons, 11);
+  // Phase 20.1B-20.1F: the beginner onboarding lessons join programming-fundamentals.
+  assert.equal(programming.totalLessons, 16);
 
   const seed = read("database/phase4-seed.sql");
   const moduleRows = [...seed.matchAll(/\('([a-z-]+)', '([^']+)', '([^']+)', (\d)\)/g)]
@@ -95,7 +96,7 @@ test("manifest programming modules and lessons mirror database/phase4-seed.sql",
   }
   const manifestLessons = programming.modules.flatMap((item) => item.lessons);
   assert.equal(manifestLessons.length, lessonRows.length);
-  assert.equal(manifestLessons.length, 11);
+  assert.equal(manifestLessons.length, 16);
   for (const lessonRow of lessonRows) {
     const manifestLesson = manifestLessons.find((item) => item.slug === lessonRow.slug);
     assert.ok(manifestLesson, `lesson ${lessonRow.slug} missing from manifest`);
@@ -275,8 +276,8 @@ test("diffing the current manifest against itself yields only unchanged entries"
   assert.equal(diff.summary.conflict, 0);
   assert.equal(diff.summary.missing, 0);
   // 8 semesters + 7 courses + 10 modules (3 programming + 7 others)
-  // + 28 lessons (11 programming + 17 others)
-  assert.equal(diff.summary.unchanged, 53);
+  // + 33 lessons (16 programming + 17 others; Phase 20.1 onboarding lessons)
+  assert.equal(diff.summary.unchanged, 58);
 });
 
 // === 15. New records are recognized as ADD ===

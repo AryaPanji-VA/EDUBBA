@@ -7,8 +7,15 @@ import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import vm from "node:vm";
 
-// Standard lessons registered in Phase 15. [slug, courseSlug]
+// Standard lessons registered via the standardLesson factory. [slug, courseSlug]
+// Phase 15 batch plus the Phase 20.1A beginner onboarding lesson.
 export const standardLessons = [
+  ["what-is-programming", "programming"],
+  ["hello-python", "programming"],
+  ["print-output", "programming"],
+  ["syntax-indentation", "programming"],
+  ["comments", "programming"],
+  ["understanding-errors", "programming"],
   ["implication", "discrete-math"],
   ["sets-intro", "discrete-math"],
   ["what-is-design-thinking", "design-thinking"],
@@ -28,6 +35,7 @@ export const standardLessons = [
 ];
 
 const contentBase = {
+  programming: "content/lessons/programming",
   "discrete-math": "content/lessons/discrete-math",
   "design-thinking": "content/lessons/design-thinking",
   hci: "content/lessons/hci",

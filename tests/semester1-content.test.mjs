@@ -29,7 +29,7 @@ test("all seven courses have implemented lessons and overview routes", () => {
   const courseData = read("data/courses.ts");
   const implementedMap = loadModule("data/courses.ts");
   const expected = {
-    programming: 6, "discrete-math": 3, "design-thinking": 3, hci: 3, algorithms: 3, parallel: 2, networking: 3,
+    programming: 12, "discrete-math": 3, "design-thinking": 3, hci: 3, algorithms: 3, parallel: 2, networking: 3,
   };
   for (const [slug, count] of Object.entries(expected)) {
     const list = implementedMap.implementedLessonSlugsByCourse[slug];
@@ -50,7 +50,8 @@ test("all seven courses have implemented lessons and overview routes", () => {
 test("the fallback current lesson derives from the implemented map, never a hardcoded course", () => {
   const courses = loadModule("data/courses.ts");
   assert.equal(courses.defaultCurrentLesson.courseSlug, "programming");
-  assert.equal(courses.defaultCurrentLesson.lessonSlug, "variables");
+  // Phase 20.1A: the beginner onboarding lesson is the map-derived entry point.
+  assert.equal(courses.defaultCurrentLesson.lessonSlug, "what-is-programming");
   const source = read("data/courses.ts");
   assert.match(source, /firstImplemented/);
   assert.doesNotMatch(source, /courseSlug: "programming",\s*\n\s*lessonSlug: "variables"/);
