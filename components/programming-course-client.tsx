@@ -157,6 +157,17 @@ export function ProgrammingCourseClient() {
         "understanding-errors",
       ],
     },
+    {
+      label: "Module 02 · Values & Data",
+      group: [
+        "variables",
+        "data-types",
+        "numbers",
+        "casting",
+        "strings",
+        "booleans",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },

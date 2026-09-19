@@ -97,6 +97,34 @@ import { understandingErrorsMasteryConfig, understandingErrorsRelevance } from "
 import { loadUnderstandingErrorsLesson } from "@/lib/lessons/understanding-errors";
 import { understandingErrorsCheckInstructions, understandingErrorsFeedbackInstructions } from "@/content/lessons/programming/understanding-errors-instructions";
 
+// Phase 20.2C: Module 02 — Numbers.
+import { numbersActivities } from "@/content/lessons/programming/numbers-activities";
+import { numbersLessonContent } from "@/content/lessons/programming/numbers";
+import { numbersMasteryConfig, numbersRelevance } from "@/content/lessons/programming/numbers-config";
+import { loadNumbersLesson } from "@/lib/lessons/numbers";
+import { numbersCheckInstructions, numbersFeedbackInstructions } from "@/content/lessons/programming/numbers-instructions";
+
+// Phase 20.2D: Module 02 — Casting.
+import { castingActivities } from "@/content/lessons/programming/casting-activities";
+import { castingLessonContent } from "@/content/lessons/programming/casting";
+import { castingMasteryConfig, castingRelevance } from "@/content/lessons/programming/casting-config";
+import { loadCastingLesson } from "@/lib/lessons/casting";
+import { castingCheckInstructions, castingFeedbackInstructions } from "@/content/lessons/programming/casting-instructions";
+
+// Phase 20.2E: Module 02 — Strings.
+import { stringsActivities } from "@/content/lessons/programming/strings-activities";
+import { stringsLessonContent } from "@/content/lessons/programming/strings";
+import { stringsMasteryConfig, stringsRelevance } from "@/content/lessons/programming/strings-config";
+import { loadStringsLesson } from "@/lib/lessons/strings";
+import { stringsCheckInstructions, stringsFeedbackInstructions } from "@/content/lessons/programming/strings-instructions";
+
+// Phase 20.2F: Module 02 — Booleans. Closes Module 02.
+import { booleansActivities } from "@/content/lessons/programming/booleans-activities";
+import { booleansLessonContent } from "@/content/lessons/programming/booleans";
+import { booleansMasteryConfig, booleansRelevance } from "@/content/lessons/programming/booleans-config";
+import { loadBooleansLesson } from "@/lib/lessons/booleans";
+import { booleansCheckInstructions, booleansFeedbackInstructions } from "@/content/lessons/programming/booleans-instructions";
+
 import { propositionsActivities } from "@/content/lessons/discrete-math/propositions-activities";
 import { propositionsLessonContent } from "@/content/lessons/discrete-math/propositions";
 import { propositionsMasteryConfig } from "@/content/lessons/discrete-math/propositions-mastery";
@@ -556,6 +584,54 @@ const understandingErrorsDefinition = standardLesson({
   feedbackMisconceptions: ["error_dead_end_confusion", "broken_shape_runs_confusion", "guess_without_reading_confusion"],
 });
 
+const numbersDefinition = standardLesson({
+  slug: "numbers", courseSlug: "programming",
+  activities: numbersActivities, lessonContent: numbersLessonContent, loadLesson: loadNumbersLesson,
+  mastery: numbersMasteryConfig, relevance: numbersRelevance,
+  checkRubric: numbersCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa beda 5 dan 5.0 di Python, dan apa yang Python tampilkan kalau dijalankan print(10 + 5)?",
+  contextLabel: "Numbers lesson context (data only)",
+  checkConcepts: ["numeric_values", "integer_float", "basic_calculation"],
+  checkMisconceptions: ["float_as_int_confusion", "negative_not_numeric_confusion", "quoted_number_confusion", "calculation_result_confusion"],
+  feedbackRubric: numbersFeedbackInstructions,
+  feedbackMisconceptions: ["float_as_int_confusion", "negative_not_numeric_confusion", "quoted_number_confusion", "calculation_result_confusion"],
+});
+
+const castingDefinition = standardLesson({
+  slug: "casting", courseSlug: "programming",
+  activities: castingActivities, lessonContent: castingLessonContent, loadLesson: loadCastingLesson,
+  mastery: castingMasteryConfig, relevance: castingRelevance,
+  checkRubric: castingCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang berubah setelah int(\"20\") dijalankan, dan apa bedanya dengan \"20\"?",
+  contextLabel: "Casting lesson context (data only)",
+  checkConcepts: ["type_conversion", "conversion_functions", "conversion_result"],
+  checkMisconceptions: ["assignment_changes_type_confusion", "quotes_number_confusion", "wrong_conversion_function", "conversion_always_works_confusion"],
+  feedbackRubric: castingFeedbackInstructions,
+  feedbackMisconceptions: ["assignment_changes_type_confusion", "quotes_number_confusion", "wrong_conversion_function", "conversion_always_works_confusion"],
+});
+
+const stringsDefinition = standardLesson({
+  slug: "strings", courseSlug: "programming",
+  activities: stringsActivities, lessonContent: stringsLessonContent, loadLesson: loadStringsLesson,
+  mastery: stringsMasteryConfig, relevance: stringsRelevance,
+  checkRubric: stringsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa yang membuat sebuah value menjadi string, dan kenapa name[1] pada \"Arya\" hasilnya \"r\"?",
+  contextLabel: "Strings lesson context (data only)",
+  checkConcepts: ["string_value", "string_concatenation", "string_indexing"],
+  checkMisconceptions: ["quoted_number_confusion", "variable_vs_string_confusion", "zero_index_confusion", "string_plus_numeric_plus_confusion"],
+  feedbackRubric: stringsFeedbackInstructions,
+  feedbackMisconceptions: ["quoted_number_confusion", "variable_vs_string_confusion", "zero_index_confusion", "string_plus_numeric_plus_confusion"],
+});
+
+const booleansDefinition = standardLesson({
+  slug: "booleans", courseSlug: "programming",
+  activities: booleansActivities, lessonContent: booleansLessonContent, loadLesson: loadBooleansLesson,
+  mastery: booleansMasteryConfig, relevance: booleansRelevance,
+  checkRubric: booleansCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa beda True dan \"True\", dan dari mana value True bisa berasal?",
+  contextLabel: "Booleans lesson context (data only)",
+  checkConcepts: ["boolean_value", "boolean_literal", "boolean_result"],
+  checkMisconceptions: ["quoted_boolean_confusion", "lowercase_boolean_confusion", "assignment_comparison_confusion", "boolean_as_text_confusion"],
+  feedbackRubric: booleansFeedbackInstructions,
+  feedbackMisconceptions: ["quoted_boolean_confusion", "lowercase_boolean_confusion", "assignment_comparison_confusion", "boolean_as_text_confusion"],
+});
+
 const implicationDefinition = standardLesson({
   slug: "implication", courseSlug: "discrete-math",
   activities: implicationActivities, lessonContent: implicationLessonContent, loadLesson: loadImplicationLesson,
@@ -741,6 +817,10 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["syntax-indentation", syntaxIndentationDefinition],
   ["comments", commentsDefinition],
   ["understanding-errors", understandingErrorsDefinition],
+  ["numbers", numbersDefinition],
+  ["casting", castingDefinition],
+  ["strings", stringsDefinition],
+  ["booleans", booleansDefinition],
   ["data-types", dataTypesDefinition],
   ["operators", operatorsDefinition],
   ["conditionals", conditionalsDefinition],

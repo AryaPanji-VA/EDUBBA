@@ -26,10 +26,10 @@ export const variablesLessonContent: LessonContent = {
       explanation: "The second assignment rebinds score, so the earlier value is no longer the one reached through that name.",
     },
     {
-      title: "Using variables in an expression",
+      title: "Using a variable again",
       language: "python",
-      code: "price = 12_000\nquantity = 3\ntotal = price * quantity\nprint(total)  # 36000",
-      explanation: "The expression reads two variables, multiplies their values, and assigns the result to total.",
+      code: "name = \"Arya\"\nprint(name)",
+      explanation: "The name stores the value once; print(name) reaches it again wherever the program needs it.",
     },
     {
       title: "Choosing readable names",
@@ -47,8 +47,8 @@ export const variablesLessonContent: LessonContent = {
   ],
   commonMistakes: [
     {
-      title: "Confusing = with ==",
-      explanation: "In Python, = performs assignment. The == operator compares two values for equality.",
+      title: "Assuming reassignment merges values",
+      explanation: "Each assignment replaces the binding. After score = 10 and score = 20, the name points to 20 only — the two values are not combined.",
     },
     {
       title: "Using an invalid identifier",
@@ -66,10 +66,10 @@ export const variablesLessonContent: LessonContent = {
   quickChecks: [
     {
       question: "What does this program print?",
-      code: "level = 1\nlevel = level + 2\nprint(level)",
-      options: ["1", "2", "3", "NameError"],
-      answer: "3",
-      explanation: "Python reads the old value 1, adds 2, then reassigns the result 3 to level.",
+      code: "name = \"Arya\"\nprint(name)",
+      options: ["Arya", "name", "NameError"],
+      answer: "Arya",
+      explanation: "print(name) reads the value reached through the name — \"Arya\" — and displays it.",
     },
     {
       question: "Which one is a valid, readable Python identifier?",
@@ -78,10 +78,10 @@ export const variablesLessonContent: LessonContent = {
       explanation: "It starts with a letter, uses only letters and an underscore, and is not a Python keyword.",
     },
     {
-      question: "Which operator compares two values for equality in Python?",
-      options: ["=", "==", ":=", "!="],
-      answer: "==",
-      explanation: "== asks whether two values are equal. A single = performs assignment.",
+      question: "score starts at 10, then score = 20 runs. What does print(score) show?",
+      options: ["20 — the name now points to the new value", "10 — the first assignment wins", "10 and 20 — both values stay attached"],
+      answer: "20 — the name now points to the new value",
+      explanation: "Reassignment replaces the binding: after score = 20, the name reaches 20. The old 10 is no longer attached to the name.",
     },
   ],
 };

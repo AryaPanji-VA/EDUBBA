@@ -357,8 +357,9 @@ test("the shared renderer keeps the python code-block default and copy-driven la
 test("all Programming lessons keep their registry course identity", () => {
   const registry = read("lib/lessons/registry.ts");
   const programming = [...registry.matchAll(/courseSlug: "programming"/g)].length;
-  // Phase 20.1A-F: six block lessons + all six beginner onboarding lessons.
-  assert.equal(programming, 12);
+  // Phase 20.1A-F + 20.2A-F: six onboarding lessons and the six Values & Data
+  // lessons complete before the legacy block lessons.
+  assert.equal(programming, 16);
   // Phase 15: 7 non-programming lessons use the factory (16 standard lessons
   // + propositions written explicitly).
   const discrete = [...registry.matchAll(/courseSlug: "discrete-math"/g)].length;

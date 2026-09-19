@@ -15,7 +15,7 @@ export type Course = {
 // persisted lesson progress server-side (see /api/courses); these entries
 // only provide codes, titles, and a neutral 0% / "Not started" baseline.
 export const courses: Course[] = [
-  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 0, lessons: 16, status: "Not started" },
+  { slug: "programming", code: "CS-101", title: "Foundations of Programming Language", description: "Build the mental model behind code, from values and variables to functions.", progress: 0, lessons: 20, status: "Not started" },
   { slug: "design-thinking", code: "DT-101", title: "Design Thinking", description: "Turn fuzzy human problems into ideas you can test and improve.", progress: 0, lessons: 8, status: "Not started" },
   { slug: "discrete-math", code: "MA-105", title: "Discrete Mathematics", description: "Logic, sets, relations, and the mathematical language of computing.", progress: 0, lessons: 12, status: "Not started" },
   { slug: "hci", code: "CS-112", title: "Human-Computer Interaction", description: "Understand how people experience, use, and sometimes fight with software.", progress: 0, lessons: 9, status: "Not started" },
@@ -52,9 +52,9 @@ export const courseOverviewRouteBySlug: Record<string, string> = {
 export type LessonPresentationState = "completed" | "current" | "next" | "available" | "coming-soon" | "locked";
 
 // Implemented lesson routes, in the intended beginner learning order.
-// Phase 20.1 onboarding lessons complete Module 01: What is Programming?,
-// Meet Python, Output with print(), Syntax & Indentation, Comments, and
-// Understanding Errors.
+// Module 01 (First Steps) and Module 02 (Values & Data) are complete:
+// onboarding lessons, Variables, Data Types, Numbers, Casting, Strings,
+// and Booleans.
 export const implementedProgrammingLessonSlugs = [
   "what-is-programming",
   "hello-python",
@@ -64,6 +64,10 @@ export const implementedProgrammingLessonSlugs = [
   "understanding-errors",
   "variables",
   "data-types",
+  "numbers",
+  "casting",
+  "strings",
+  "booleans",
   "operators",
   "conditionals",
   "loops",
@@ -148,6 +152,10 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   "syntax-indentation": "available",
   "comments": "available",
   "understanding-errors": "available",
+  "numbers": "available",
+  "casting": "available",
+  "strings": "available",
+  "booleans": "available",
   "programming-languages": "coming-soon",
   "syntax-vs-semantics": "coming-soon",
   "compiler-vs-interpreter": "completed",

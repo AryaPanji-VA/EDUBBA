@@ -25,15 +25,15 @@ export const dataTypesCopy: Record<LessonLanguage, Record<string, string>> = {
 };
 
 const indonesianActivities = [
-  { title: "WHY · Kenapa value punya tipe", content: ["Value itu bukan cuma \"sesuatu yang disimpen di variable.\" Jenis value-nya penting karena program memperlakukan angka, teks, dan benar/salah secara berbeda.", "42 + 8 itu 50. \"42\" + \"8\" itu \"428\". Tipe menentukan apa arti +."] },
-  { title: "INTUITION · Empat tipe dasar Python", content: ["20 → integer (int). 172.5 → floating-point (float). \"Arya\" → string (str). True → boolean (bool).", "Tiap tipe jawab pertanyaan berbeda: berapa, seberapa, teks apa, atau ini bener nggak?"] },
+  { title: "WHY · Kenapa value punya tipe", content: ["Value itu bukan cuma \"sesuatu yang disimpen di variable.\" Jenis value-nya penting karena program memperlakukan angka, teks, dan benar/salah secara berbeda.", "42 dan \"42\" memuat karakter yang sama, tapi yang satu angka dan yang satu teks — tipenya, bukan kelihatannya, yang menentukan."] },
+  { title: "INTUITION · Empat tipe dasar Python", content: ["20 → integer (int). 172.5 → floating-point (float). \"Arya\" → string (str). True → boolean (bool).", "Rangkai dengan Variables: age → 20 → int — nama menunjuk value, dan value punya tipe. Tiap tipe jawab pertanyaan berbeda: berapa, seberapa, teks apa, atau ini bener nggak?"] },
   { title: "PREDICT · Tipe 20 apa?", content: ["Tipe dari value 20 itu apa?"], explanation: "20 itu angka bulat tanpa desimal, jadi tipenya int." },
   { title: "PREDICT · String atau number?", content: ["Variable mana yang isinya string?"], explanation: "b = \"42\" pakai tanda kutip, jadi string. a = 42 tanpa kutip, jadi integer." },
   { title: "PREDICT · Mana yang boolean?", content: ["Mana dari value ini yang boolean?"], explanation: "True tanpa kutip itu boolean. \"True\" dengan kutip itu string yang kebetulan ngeja boolean. False juga boolean, tapi \"True\" bukan." },
   { title: "TRY · Identifikasi tipe 29.5", content: ["Tulis nama tipe Python (int, float, str, atau bool) untuk value 29.5."], explanation: "29.5 punya desimal, jadi tipenya float." },
-  { title: "FORMALIZE · Tipe menentukan perilaku", content: ["Tipe sebuah value menentukan bagaimana Python mengartikan dan mengoperasikannya. Python dynamically typed: value punya tipe, dan sebuah nama bisa di-bind ke value dengan tipe berbeda.", "type() mengembalikan tipe dari sebuah value. String seperti \"42\" itu teks, bukan angka — nggak bisa dipakai aritmatika tanpa konversi. Tipe menentukan operasi mana yang valid."] },
+  { title: "FORMALIZE · Tipe menentukan perilaku", content: ["Tipe sebuah value menentukan bagaimana Python mengartikan dan mengoperasikannya. Python dynamically typed: value punya tipe, dan sebuah nama bisa di-bind ke value dengan tipe berbeda.", "type() mengembalikan tipe dari sebuah value — cara cepat mengecek apa yang Python lihat. String seperti \"42\" itu teks, bukan angka: kutip adalah bagian dari tipenya."] },
   { title: "ROBIN CHECK · Jelasin balik", content: [dataTypesCopy.id.prompt] },
-  { title: "CONNECT · Konsep ini nyambung ke mana?", content: ["Data Types → konversi tipe → operator → conditionals → collections", "Kesadaran tipe penting saat belajar konversi (int(\"42\") → 42), logika kondisional (bool menggerakkan if), dan collections (list menampung banyak value bertipe).", "Selesai mengikuti alur bukan berarti mastery sudah dinilai. Jawaban penting dan posisi langkah disimpan supaya bisa lanjut setelah reload."] },
+  { title: "CONNECT · Konsep ini nyambung ke mana?", content: ["Data Types → Numbers → Casting → Strings", "Berikutnya Numbers: tipe-tipe angka dapat lesson sendiri — lalu Casting, Strings, dan Booleans membangun di atas model nama → value → tipe yang sama.", "Selesai mengikuti alur bukan berarti mastery sudah dinilai. Jawaban penting dan posisi langkah disimpan supaya bisa lanjut setelah reload."] },
 ];
 
 export function getDataTypesActivities(language: LessonLanguage) {
@@ -50,17 +50,17 @@ export function localizeDataTypesContent(content: LessonContent, language: Lesso
     ...content,
     academicExplanation: [
       "Tipe sebuah value menentukan bagaimana bahasa memahami dan mengoperasikan value itu. Python dynamically typed: value punya tipe, dan nama bisa di-bind ke value dengan tipe berbeda.",
-      "Tipe bawaan int, float, str, dan bool masing-masing merepresentasikan integer, bilangan desimal, teks, dan nilai kebenaran. String seperti \"42\" itu teks, bukan angka — tidak bisa dipakai aritmatika tanpa konversi eksplisit.",
-      "type() mengembalikan tipe dari sebuah value, memungkinkan inspeksi tipe saat runtime. Tipe menentukan operasi mana yang valid: menjumlahkan dua integer menghasilkan integer, tapi menjumlahkan integer dan string menghasilkan TypeError.",
+      "Tipe bawaan int, float, str, dan bool masing-masing merepresentasikan integer, bilangan desimal, teks, dan nilai kebenaran. String seperti \"42\" itu teks, bukan angka: kutip membuat tipenya berbeda walaupun karakternya kelihatan sama.",
+      "type() mengembalikan tipe dari sebuah value untuk inspeksi yang cepat. Untuk sekarang, membaca bentuk value — kutip, titik desimal, True atau False — sudah cukup untuk menyebut tipenya.",
     ],
     codeExamples: content.codeExamples.map((example, index) => ({ ...example,
-      title: ["Empat tipe dasar", "String vs number", "Inspeksi tipe", "Tipe menentukan operasi"][index] ?? example.title,
-      explanation: ["Tiap value punya tipe berbeda: integer, float, string, dan boolean.", "100 dan \"100\" kelihatannya mirip tapi berperilaku berbeda: integer bisa aritmatika, string menggabungkan teks.", "type() menunjukkan tipe value yang sedang kamu proses.", "Operator + yang sama melakukan aritmatika untuk integer, penggabungan untuk string, dan gagal untuk tipe campuran."][index] ?? example.explanation,
+      title: ["Empat tipe dasar", "Karakter sama, tipe berbeda", "Inspeksi tipe", "Membaca bentuknya"][index] ?? example.title,
+      explanation: ["Tiap value punya tipe berbeda: integer, float, string, dan boolean.", "Dua-duanya mencetak karakter yang sama, tapi score itu int dan code itu str — output bisa terlihat identik padahal tipenya berbeda.", "type() menunjukkan tipe value yang sedang kamu proses.", "Bentuknya menyebut tipenya: angka tanpa desimal itu int, ada titik desimal berarti float, ada kutip berarti str, dan True atau False itu bool."][index] ?? example.explanation,
     })),
     keyTerms: content.keyTerms.map((term, index) => ({ ...term, definition: ["Kategori value yang menentukan bagaimana program mengartikannya.", "Tipe integer Python untuk angka bulat seperti 7, 42, atau -3.", "Tipe Python untuk angka dengan desimal seperti 3.14 atau -0.5.", "Tipe string Python untuk teks, ditulis dengan kutipan seperti \"hello\".", "Tipe boolean Python untuk nilai kebenaran: True atau False.", "Function bawaan yang mengembalikan tipe sebuah value."][index] ?? term.definition })),
     commonMistakes: content.commonMistakes.map((mistake, index) => ({
-      title: ["Ketuker \"42\" dengan 42", "Menganggap True sebagai teks", "Mencampur tipe dalam operasi"][index] ?? mistake.title,
-      explanation: ["\"42\" itu string (teks). 42 itu integer (angka). Mereka kelihatan mirip tapi nggak bisa dipakai bergantian.", "True itu boolean, bukan string. \"True\" dengan kutip itu teks yang kebetulan ngeja boolean.", "Python mengeluarkan TypeError saat kamu mencoba menggabungkan tipe yang tidak kompatibel, seperti menambah int ke str."][index] ?? mistake.explanation,
+      title: ["Ketuker \"42\" dengan 42", "Menganggap True sebagai teks", "Membaca tipe dari output saja"][index] ?? mistake.title,
+      explanation: ["\"42\" itu string (teks). 42 itu integer (angka). Mereka kelihatan mirip tapi nggak bisa dipakai bergantian.", "True itu boolean, bukan string. \"True\" dengan kutip itu teks yang kebetulan ngeja boolean.", "print(100) dan print(\"100\") menampilkan karakter yang sama. Tipenya bisa berbeda walaupun teks cetakannya sama — cek kutipnya di code, bukan di output."][index] ?? mistake.explanation,
     })),
     quickChecks: content.quickChecks.map((check, index) => ({ ...check,
       question: ["Tipe 3.14 apa?", "Value mana yang string?", "type(True) mengembalikan apa?"][index] ?? check.question,

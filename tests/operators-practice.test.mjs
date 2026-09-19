@@ -75,7 +75,8 @@ test("course compatibility activates Operators without deleting later progress",
   const data = readFileSync(new URL("../data/courses.ts", import.meta.url), "utf8");
   const course = readFileSync(new URL("../components/programming-course-client.tsx", import.meta.url), "utf8");
   const access = readFileSync(new URL("../lib/courses/lesson-access.ts", import.meta.url), "utf8");
-  assert.match(data, /"data-types",\s*\n\s*"operators",\s*\n\s*"conditionals"/);
+  // Phase 20.2C-20.2F: the six Values & Data lessons sit before Operators.
+  assert.match(data, /"booleans",\s*\n\s*"operators",\s*\n\s*"conditionals"/);
   assert.match(course, /progress\?\.completed_at/);
   // The first lesson without completion stays accessible (progression frontier).
   assert.match(access, /find\(\(slug\) => !completed\.has\(slug\)\)/);

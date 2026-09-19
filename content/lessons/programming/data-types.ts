@@ -9,14 +9,14 @@ export const dataTypesLessonContent: LessonContent = {
   ],
   academicExplanation: [
     "A value's type determines how the programming language interprets and operates on that value. Python is dynamically typed: values have types, and a name can be rebound to values of different types.",
-    "The built-in types int, float, str, and bool represent integers, floating-point numbers, text, and truth values respectively. A string like \"42\" is text, not a number — it cannot be used in arithmetic without explicit conversion.",
-    "The type() function returns the type object of a value, allowing runtime type inspection. Type determines which operations are valid: adding two integers yields an integer, but adding an integer to a string raises a TypeError.",
+    "The built-in types int, float, str, and bool represent integers, floating-point numbers, text, and truth values respectively. A string like \"42\" is text, not a number: the quotes make its type different even when the characters look the same.",
+    "The type() function returns the type of a value, allowing quick inspection. For now, reading a value's shape — quotes, a decimal point, True or False — is enough to name its type.",
   ],
   codeExamples: [
     { title: "Four basic types", language: "python", code: "age = 20          # int\nheight = 172.5   # float\nname = \"Arya\"     # str\nis_student = True # bool", explanation: "Each value has a distinct type: integer, float, string, and boolean." },
-    { title: "String vs number", language: "python", code: "score = 100    # int\ncode = \"100\"   # str\nprint(score + 1)   # 101\nprint(code + \"1\")  # \"1001\"", explanation: "100 and \"100\" look similar but behave differently: the integer can do arithmetic, the string concatenates text." },
+    { title: "Same characters, different types", language: "python", code: "score = 100    # int\ncode = \"100\"   # str\nprint(score)   # 100\nprint(code)    # 100", explanation: "Both print the same characters, yet score is an int and code is a str — the printed output can look identical while the types differ." },
     { title: "Type inspection", language: "python", code: "type(42)        # <class 'int'>\ntype(\"42\")       # <class 'str'>\ntype(True)       # <class 'bool'>\ntype(3.14)       # <class 'float'>", explanation: "type() reveals what kind of value you are working with." },
-    { title: "Type affects operations", language: "python", code: "print(42 + 8)       # 50\nprint(\"42\" + \"8\")    # \"428\"\nprint(42 + \"8\")      # TypeError", explanation: "The same + operator does arithmetic for integers, concatenation for strings, and fails for mixed types." },
+    { title: "Reading the shape", language: "python", code: "20        # int\n172.5     # float\n\"Arya\"    # str\nTrue      # bool", explanation: "The shape names the type: digits without a decimal point are int, a decimal point makes float, quotes make str, and True or False is bool." },
   ],
   keyTerms: [
     { term: "Type", definition: "The category of a value that determines how the program interprets it." },
@@ -29,7 +29,7 @@ export const dataTypesLessonContent: LessonContent = {
   commonMistakes: [
     { title: "Confusing \"42\" with 42", explanation: "\"42\" is a string (text). 42 is an integer (number). They look similar but cannot be used interchangeably." },
     { title: "Treating True as text", explanation: "True is a boolean, not a string. \"True\" with quotes is text that happens to spell a boolean." },
-    { title: "Mixing types in operations", explanation: "Python raises a TypeError when you try to combine incompatible types, like adding an int to a str." },
+    { title: "Reading the type from the output alone", explanation: "print(100) and print(\"100\") show the same characters. The type can differ even when the printed text matches — check the quotes in the code, not the output." },
   ],
   quickChecks: [
     { question: "What is the type of 3.14?", code: "type(3.14)", options: ["int", "float", "str", "bool"], answer: "float", explanation: "Numbers with a decimal point are floats." },

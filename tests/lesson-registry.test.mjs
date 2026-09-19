@@ -233,7 +233,8 @@ test("Variables practice grading uses the activity-owned checkAnswer", () => {
   const tryActivity = getLessonDefinition("variables").activities.find((a) => a.id === "try");
   assert.ok(tryActivity.checkAnswer);
   assert.equal(gradeActivity(tryActivity, "listeners = 150").isCorrect, true);
-  assert.equal(gradeActivity(tryActivity, "listeners = listeners + 30").isCorrect, true);
+  // Phase 20.2A scope: arithmetic belongs to a later lesson, not here.
+  assert.equal(gradeActivity(tryActivity, "listeners = listeners + 30").isCorrect, false);
   assert.equal(gradeActivity(tryActivity, "listeners = 120").isCorrect, false);
   assert.equal(gradeActivity(tryActivity, "listeners == 150").isCorrect, false);
 });

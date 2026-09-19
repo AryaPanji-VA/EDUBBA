@@ -168,14 +168,20 @@ test("completion stays slug-keyed; the derivation never mutates completion data"
   assert.doesNotMatch(client, /delete.*progress|reset.*progress/i);
 });
 
-// === Module 01 mastery on the course page (Phase 20.1H) ===
-test("the course mastery panel represents Module 01 as one grouped row", () => {
+// === Module 01 + Module 02 mastery on the course page (Phase 20.1H/20.2G) ===
+test("the course mastery panel represents both modules as grouped rows", () => {
   const client = read("components/programming-course-client.tsx");
   assert.match(client, /Module 01 · First Steps/);
-  // All six Module 01 lessons are members of the group row.
-  const group = client.match(/group: \[([\s\S]*?)\]/)?.[1] ?? "";
+  assert.match(client, /Module 02 · Values & Data/);
+  // All Module 01 lessons are members of the first group row.
+  const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
+  assert.equal(groups.length, 2, "two module groups exist");
   for (const slug of ["what-is-programming", "hello-python", "print-output", "syntax-indentation", "comments", "understanding-errors"]) {
-    assert.ok(group.includes(`"${slug}"`), `${slug} must be a group member`);
+    assert.ok(groups[0].includes(`"${slug}"`), `${slug} must be a Module 01 group member`);
+  }
+  // Module 02 group covers exactly the six Values & Data lessons.
+  for (const slug of ["variables", "data-types", "numbers", "casting", "strings", "booleans"]) {
+    assert.ok(groups[1].includes(`"${slug}"`), `${slug} must be a Module 02 group member`);
   }
   // The group state derives from the shared lessonStates (persisted progress)
   // — no parallel progress source and no fabricated completion.

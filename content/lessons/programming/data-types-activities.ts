@@ -2,10 +2,10 @@ import type { LessonActivity } from "../activities";
 
 export const dataTypesActivities: LessonActivity[] = [
   { id: "why", type: "intro", title: "WHY · Why values have types", concept: "data_type",
-    content: ["A value isn't just \"something stored in a variable.\" The kind of value matters because the program treats numbers, text, and true/false values differently.", "Adding 42 + 8 gives 50. Adding \"42\" + \"8\" gives \"428\". The type determines what + means."] },
+    content: ["A value isn't just \"something stored in a variable.\" The kind of value matters because the program treats numbers, text, and true/false values differently.", "42 and \"42\" hold the same characters, but one is a number and the other is text. The type — not the looks — tells Python what the value is."] },
   { id: "intuition", type: "explain", title: "INTUITION · Four basic Python types", concept: "data_type",
     code: "age = 20\nheight = 172.5\nname = \"Arya\"\nis_student = True",
-    content: ["20 → integer (int). 172.5 → floating-point (float). \"Arya\" → string (str). True → boolean (bool).", "Each type answers a different question: how many, how much, what text, or is this true?"] },
+    content: ["20 → integer (int). 172.5 → floating-point (float). \"Arya\" → string (str). True → boolean (bool).", "Chain it with Variables: age → 20 → int — the name points to the value, and the value has a type. Each type answers a different question: how many, how much, what text, or is this true?"] },
   { id: "predict-type", type: "predict", title: "PREDICT · What type is 20?", concept: "integer",
     code: "age = 20", content: ["What is the type of the value 20?"], options: ["int", "float", "str", "bool"], correctAnswer: "int",
     explanation: "20 is a whole number with no decimal point, so it is an int.",
@@ -28,9 +28,9 @@ export const dataTypesActivities: LessonActivity[] = [
     learningPurpose: "Detect whether the learner can identify a float value.",
     checkAnswer: (answer: string) => /^float$/i.test(answer.trim()) },
   { id: "formalize", type: "formalize", title: "FORMALIZE · Type determines behavior", concept: "data_type",
-    content: ["A value's type determines how Python interprets and operates on it. Python is dynamically typed: values have types, and a name can be rebound to values of different types.", "type() returns the type of a value. A string like \"42\" is text, not a number — it cannot be used in arithmetic without conversion. Type determines which operations are valid."] },
+    content: ["A value's type determines how Python interprets and operates on it. Python is dynamically typed: values have types, and a name can be rebound to values of different types.", "type() returns the type of a value — a quick way to check what Python sees. A string like \"42\" is text, not a number: the quotes are part of the type."] },
   { id: "robin-check", type: "robin_check", title: "ROBIN CHECK · Explain it back", concept: "data_type",
     content: ["Kenapa 42 dan \"42\" itu berbeda walaupun kelihatannya mirip?"] },
   { id: "connect", type: "connect", title: "CONNECT · Where this goes next", concept: "type_inspection",
-    content: ["Data Types → type conversion → operators → conditionals → collections", "Type awareness will matter when you learn about type conversion (int(\"42\") → 42), conditional logic (bool drives if statements), and collections (lists hold many typed values).", "Completing this flow is not a mastery score. Your meaningful answers and position are saved so you can continue after reload."] },
+    content: ["Data Types → Numbers → Casting → Strings", "Numbers next: the number types get their own lesson — then Casting, Strings, and Booleans build on the same name → value → type model.", "Completing this flow is not a mastery score. Your meaningful answers and position are saved so you can continue after reload."] },
 ];

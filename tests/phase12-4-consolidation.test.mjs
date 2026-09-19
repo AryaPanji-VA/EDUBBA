@@ -19,13 +19,15 @@ function loadExport(path, exportName, deps = {}) {
 
 const implemented = ["variables", "data-types", "operators", "conditionals", "loops", "functions"];
 
-test("curriculum keeps the coherent six-lesson order with Operators third", () => {
+test("curriculum keeps the coherent block-lesson order after Values & Data completes", () => {
   const seed = read("database/phase4-seed.sql");
-  const positions = [...seed.matchAll(/\('programming-building-blocks', '([^']+)', '[^']+', '[^']+', \d+, (\d)\)/g)]
+  const positions = [...seed.matchAll(/\('programming-building-blocks', '([^']+)', '[^']+', '[^']+', \d+, (\d+)\)/g)]
     .map((match) => [match[1], Number(match[2])]);
+  // Phase 20.2: the six Values & Data lessons occupy 1-6; legacy lessons shift to 7-10.
   assert.deepEqual(positions, [
-    ["variables", 1], ["data-types", 2], ["operators", 3],
-    ["conditionals", 4], ["loops", 5], ["functions", 6],
+    ["variables", 1], ["data-types", 2], ["numbers", 3], ["casting", 4],
+    ["strings", 5], ["booleans", 6], ["operators", 7], ["conditionals", 8],
+    ["loops", 9], ["functions", 10],
   ]);
 });
 

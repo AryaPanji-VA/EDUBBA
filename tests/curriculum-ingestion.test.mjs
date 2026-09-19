@@ -77,13 +77,13 @@ test("manifest semester 1 carries the seven existing courses with their official
 test("manifest programming modules and lessons mirror database/phase4-seed.sql", () => {
   const programming = currentCurriculumManifest.semesters[0].courses.find((course) => course.slug === "programming");
   assert.ok(programming);
-  // Phase 20.1B-20.1F: the beginner onboarding lessons join programming-fundamentals.
-  assert.equal(programming.totalLessons, 16);
+  // Phase 20.1B-20.2F: the onboarding lessons and all of Values & Data join the course.
+  assert.equal(programming.totalLessons, 20);
 
   const seed = read("database/phase4-seed.sql");
   const moduleRows = [...seed.matchAll(/\('([a-z-]+)', '([^']+)', '([^']+)', (\d)\)/g)]
     .map((match) => ({ slug: match[1], title: match[2], description: match[3], position: Number(match[4]) }));
-  const lessonRows = [...seed.matchAll(/\('([a-z-]+)', '([a-z-]+)', '([^']+)', '([^']+)', (\d+), (\d)\)/g)]
+  const lessonRows = [...seed.matchAll(/\('([a-z-]+)', '([a-z-]+)', '([^']+)', '([^']+)', (\d+), (\d+)\)/g)]
     .map((match) => ({ moduleSlug: match[1], slug: match[2], title: match[3], summary: match[4], estimatedMinutes: Number(match[5]), position: Number(match[6]) }));
 
   assert.equal(programming.modules.length, moduleRows.length);
@@ -96,7 +96,7 @@ test("manifest programming modules and lessons mirror database/phase4-seed.sql",
   }
   const manifestLessons = programming.modules.flatMap((item) => item.lessons);
   assert.equal(manifestLessons.length, lessonRows.length);
-  assert.equal(manifestLessons.length, 16);
+  assert.equal(manifestLessons.length, 20);
   for (const lessonRow of lessonRows) {
     const manifestLesson = manifestLessons.find((item) => item.slug === lessonRow.slug);
     assert.ok(manifestLesson, `lesson ${lessonRow.slug} missing from manifest`);
@@ -276,8 +276,8 @@ test("diffing the current manifest against itself yields only unchanged entries"
   assert.equal(diff.summary.conflict, 0);
   assert.equal(diff.summary.missing, 0);
   // 8 semesters + 7 courses + 10 modules (3 programming + 7 others)
-  // + 33 lessons (16 programming + 17 others; Phase 20.1 onboarding lessons)
-  assert.equal(diff.summary.unchanged, 58);
+  // + 37 lessons (20 programming + 17 others; Phase 20 lessons to date)
+  assert.equal(diff.summary.unchanged, 62);
 });
 
 // === 15. New records are recognized as ADD ===

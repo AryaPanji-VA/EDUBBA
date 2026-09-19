@@ -50,10 +50,14 @@ join (
     ('how-programs-run', 'source-code-to-program-execution', 'Source Code to Program Execution', 'Trace the journey from a file to a running program.', 14, 2),
     ('programming-building-blocks', 'variables', 'Variables', 'Give values names so a program can reuse them.', 18, 1),
     ('programming-building-blocks', 'data-types', 'Data Types', 'Describe the kinds of values a program can handle.', 14, 2),
-    ('programming-building-blocks', 'operators', 'Operators', 'Transform and compare values with operators.', 12, 3),
-    ('programming-building-blocks', 'conditionals', 'Conditionals', 'Let a program choose what happens next.', 16, 4),
-    ('programming-building-blocks', 'loops', 'Loops', 'Repeat work without repeating code by hand.', 16, 5),
-    ('programming-building-blocks', 'functions', 'Functions', 'Package reusable behavior behind a clear name.', 18, 6)
+    ('programming-building-blocks', 'numbers', 'Numbers', 'int untuk bulat, float untuk desimal — dan angka yang bisa dihitung.', 12, 3),
+    ('programming-building-blocks', 'casting', 'Casting', 'Ubah value ke type lain dengan int(), float(), dan str() — sengaja dan sadar.', 12, 4),
+    ('programming-building-blocks', 'strings', 'Strings', 'Teks sebagai urutan character — index dari 0, len(), dan penggabungan dengan +.', 14, 5),
+    ('programming-building-blocks', 'booleans', 'Booleans', 'Dua value untuk dua keadaan — True dan False sebagai data.', 12, 6),
+    ('programming-building-blocks', 'operators', 'Operators', 'Transform and compare values with operators.', 12, 7),
+    ('programming-building-blocks', 'conditionals', 'Conditionals', 'Let a program choose what happens next.', 16, 8),
+    ('programming-building-blocks', 'loops', 'Loops', 'Repeat work without repeating code by hand.', 16, 9),
+    ('programming-building-blocks', 'functions', 'Functions', 'Package reusable behavior behind a clear name.', 18, 10)
 ) as lesson(module_slug, slug, title, summary, estimated_minutes, position)
   on lesson.module_slug = m.slug
 where c.slug = 'programming'
