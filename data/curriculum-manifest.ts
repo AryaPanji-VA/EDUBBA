@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 23,
+          totalLessons: 26,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -163,7 +163,10 @@ export const currentCurriculumManifest: CurriculumManifest = {
                 { slug: "loops", title: "For Loops", summary: "Ulangi kerja dengan for: sequence, loop variable, dan body yang menjorok.", estimatedMinutes: 12, position: 10, provenance: robinLearningStructure },
                 { slug: "while-loops", title: "While Loops", summary: "Ulangi selama kondisi masih True — starting state, condition, update.", estimatedMinutes: 12, position: 11, provenance: robinLearningStructure },
                 { slug: "range-loop-patterns", title: "Range & Loop Patterns", summary: "range() menghasilkan deret integer untuk loop — start, stop yang dikecualikan, dan step.", estimatedMinutes: 12, position: 12, provenance: robinLearningStructure },
-                { slug: "functions", title: "Functions", summary: "Package reusable behavior behind a clear name.", estimatedMinutes: 18, position: 13, provenance: robinLearningStructure },
+                { slug: "functions", title: "Functions", summary: "Bungkus langkah jadi satu nama — definisikan sekali, panggil berkali-kali.", estimatedMinutes: 14, position: 13, provenance: robinLearningStructure },
+                { slug: "parameters-arguments", title: "Parameters & Arguments", summary: "Function menerima data: parameter di definition, argument di call.", estimatedMinutes: 12, position: 14, provenance: robinLearningStructure },
+                { slug: "return-values", title: "Return Values", summary: "print menampilkan, return mengembalikan value ke program.", estimatedMinutes: 12, position: 15, provenance: robinLearningStructure },
+                { slug: "scope-basics", title: "Scope Basics", summary: "Variable di dalam function hidup di area kerja lokalnya sendiri.", estimatedMinutes: 12, position: 16, provenance: robinLearningStructure },
               ],
             },
           ],

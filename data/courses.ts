@@ -52,9 +52,10 @@ export const courseOverviewRouteBySlug: Record<string, string> = {
 export type LessonPresentationState = "completed" | "current" | "next" | "available" | "coming-soon" | "locked";
 
 // Implemented lesson routes, in the intended beginner learning order.
-// Module 01 (First Steps), Module 02 (Values & Data), and Module 03
-// (Program Logic) are complete; Module 04 (Repetition) covers For Loops
-// (the modernized `loops` lesson), While Loops, and Range & Loop Patterns.
+// Modules 01-04 are complete (Module 04 (Repetition) covered For Loops, the
+// modernized `loops` lesson, While Loops, and Range & Loop Patterns);
+// Module 05 (Reusable Code) covers Functions (the modernized `functions`
+// lesson), Parameters & Arguments, Return Values, and Scope Basics.
 export const implementedProgrammingLessonSlugs = [
   "what-is-programming",
   "hello-python",
@@ -75,6 +76,9 @@ export const implementedProgrammingLessonSlugs = [
   "while-loops",
   "range-loop-patterns",
   "functions",
+  "parameters-arguments",
+  "return-values",
+  "scope-basics",
 ] as const;
 
 // Implemented Discrete Mathematics lesson routes (Phase 14B golden lesson
@@ -172,4 +176,7 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   "while-loops": "available",
   "range-loop-patterns": "available",
   functions: "completed",
+  "parameters-arguments": "available",
+  "return-values": "available",
+  "scope-basics": "available",
 };

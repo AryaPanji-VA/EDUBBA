@@ -70,6 +70,26 @@ import { loadFunctionsLesson } from "@/lib/lessons/functions";
 import { functionsCheckInstructions } from "@/content/lessons/programming/functions-check-instructions";
 import { functionsFeedbackInstructions } from "@/content/lessons/programming/functions-feedback-instructions";
 
+// Phase 20.5: Module 05 — Parameters & Arguments, Return Values, Scope Basics.
+// The legacy `functions` lesson is modernized in place (persisted identity kept).
+import { parametersArgumentsActivities } from "@/content/lessons/programming/parameters-arguments-activities";
+import { parametersArgumentsLessonContent } from "@/content/lessons/programming/parameters-arguments";
+import { parametersArgumentsMasteryConfig, parametersArgumentsRelevance } from "@/content/lessons/programming/parameters-arguments-config";
+import { loadParametersArgumentsLesson } from "@/lib/lessons/parameters-arguments";
+import { parametersArgumentsCheckInstructions, parametersArgumentsFeedbackInstructions } from "@/content/lessons/programming/parameters-arguments-instructions";
+
+import { returnValuesActivities } from "@/content/lessons/programming/return-values-activities";
+import { returnValuesLessonContent } from "@/content/lessons/programming/return-values";
+import { returnValuesMasteryConfig, returnValuesRelevance } from "@/content/lessons/programming/return-values-config";
+import { loadReturnValuesLesson } from "@/lib/lessons/return-values";
+import { returnValuesCheckInstructions, returnValuesFeedbackInstructions } from "@/content/lessons/programming/return-values-instructions";
+
+import { scopeBasicsActivities } from "@/content/lessons/programming/scope-basics-activities";
+import { scopeBasicsLessonContent } from "@/content/lessons/programming/scope-basics";
+import { scopeBasicsMasteryConfig, scopeBasicsRelevance } from "@/content/lessons/programming/scope-basics-config";
+import { loadScopeBasicsLesson } from "@/lib/lessons/scope-basics";
+import { scopeBasicsCheckInstructions, scopeBasicsFeedbackInstructions } from "@/content/lessons/programming/scope-basics-instructions";
+
 // Phase 20.1A: beginner onboarding — the first lesson of Programming Fundamentals.
 import { whatIsProgrammingActivities } from "@/content/lessons/programming/what-is-programming-activities";
 import { whatIsProgrammingLessonContent } from "@/content/lessons/programming/what-is-programming";
@@ -467,7 +487,7 @@ const functionsDefinition: LessonDefinition = {
   relevance: functionsRelevance,
   check: {
     rubric: functionsCheckInstructions,
-    question: "Jelasin pakai bahasa lu sendiri: apa bedanya mendefinisikan function dengan memanggilnya, dan apa yang dikembalikan oleh return?",
+    question: "Jelasin pakai bahasa lu sendiri: apa yang terjadi ketika Python membaca def greet(): — dan apa yang berubah ketika baris greet() dijalankan?",
     contextLabel: "Functions lesson context (data only)",
     lessonContext: {
       academicExplanation: functionsLessonContent.academicExplanation,
@@ -475,14 +495,53 @@ const functionsDefinition: LessonDefinition = {
       keyTerms: functionsLessonContent.keyTerms,
       commonMistakes: functionsLessonContent.commonMistakes,
     },
-    concepts: ["function_definition", "function_call", "return_values"],
-    misconceptions: ["definition_without_call", "print_not_return", "parameter_argument_mismatch", "missing_parentheses"],
+    concepts: ["function_definition", "function_call"],
+    misconceptions: ["definition_executes_body", "definition_without_call", "call_syntax_invalid", "prints_name_text"],
   },
   feedback: {
     rubric: functionsFeedbackInstructions,
-    misconceptions: ["definition_without_call", "definition_executes_body", "print_not_return", "returns_expression_text", "parameter_argument_mismatch", "missing_parentheses", "arguments_uncombined", "call_syntax_invalid"],
+    misconceptions: ["definition_without_call", "definition_executes_body", "print_not_return", "returns_expression_text", "parameter_argument_mismatch", "missing_parentheses", "arguments_uncombined", "call_syntax_invalid", "prints_name_text"],
   },
 };
+
+// Phase 20.5 — Module 05 · Reusable Code: Parameters & Arguments.
+const parametersArgumentsDefinition = standardLesson({
+  slug: "parameters-arguments", courseSlug: "programming",
+  activities: parametersArgumentsActivities, lessonContent: parametersArgumentsLessonContent, loadLesson: loadParametersArgumentsLesson,
+  mastery: parametersArgumentsMasteryConfig, relevance: parametersArgumentsRelevance,
+  checkRubric: parametersArgumentsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa beda parameter dan argument — dan bagaimana value dari argument dipakai di dalam body?",
+  contextLabel: "Parameters & Arguments lesson context (data only)",
+  checkConcepts: ["parameters_arguments", "argument_flow", "multiple_parameters"],
+  checkMisconceptions: ["parameter_argument_confusion", "hardcoded_output_confusion", "argument_count_mismatch", "parameter_outside_confusion"],
+  feedbackRubric: parametersArgumentsFeedbackInstructions,
+  feedbackMisconceptions: ["parameter_argument_confusion", "hardcoded_output_confusion", "argument_count_mismatch", "parameter_outside_confusion"],
+});
+
+// Phase 20.5 — Module 05 · Reusable Code: Return Values.
+const returnValuesDefinition = standardLesson({
+  slug: "return-values", courseSlug: "programming",
+  activities: returnValuesActivities, lessonContent: returnValuesLessonContent, loadLesson: loadReturnValuesLesson,
+  mastery: returnValuesMasteryConfig, relevance: returnValuesRelevance,
+  checkRubric: returnValuesCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa bedanya print dan return di dalam function — dan ke mana value hasil return pergi?",
+  contextLabel: "Return Values lesson context (data only)",
+  checkConcepts: ["return_values", "return_vs_print", "return_flow"],
+  checkMisconceptions: ["print_not_return", "returns_expression_text", "result_unused", "hardcoded_result"],
+  feedbackRubric: returnValuesFeedbackInstructions,
+  feedbackMisconceptions: ["print_not_return", "returns_expression_text", "result_unused", "hardcoded_result", "value_passed_unchanged", "code_after_return_runs"],
+});
+
+// Phase 20.5 — Module 05 · Reusable Code: Scope Basics.
+const scopeBasicsDefinition = standardLesson({
+  slug: "scope-basics", courseSlug: "programming",
+  activities: scopeBasicsActivities, lessonContent: scopeBasicsLessonContent, loadLesson: loadScopeBasicsLesson,
+  mastery: scopeBasicsMasteryConfig, relevance: scopeBasicsRelevance,
+  checkRubric: scopeBasicsCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: kenapa variable yang dibuat di dalam function nggak bisa dipakai di luar — dan apa yang terjadi pada local names setelah function-nya selesai?",
+  contextLabel: "Scope Basics lesson context (data only)",
+  checkConcepts: ["local_scope", "global_scope", "parameter_local"],
+  checkMisconceptions: ["local_available_outside", "local_survives_call", "assignment_is_global", "parameter_is_global"],
+  feedbackRubric: scopeBasicsFeedbackInstructions,
+  feedbackMisconceptions: ["local_available_outside", "local_survives_call", "assignment_is_global", "parameter_is_global"],
+});
 
 const propositionsDefinition: LessonDefinition = {
   slug: "propositions",
@@ -889,6 +948,9 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["while-loops", whileLoopsDefinition],
   ["range-loop-patterns", rangeLoopPatternsDefinition],
   ["functions", functionsDefinition],
+  ["parameters-arguments", parametersArgumentsDefinition],
+  ["return-values", returnValuesDefinition],
+  ["scope-basics", scopeBasicsDefinition],
   ["propositions", propositionsDefinition],
   ["implication", implicationDefinition],
   ["sets-intro", setsIntroDefinition],

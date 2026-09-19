@@ -184,6 +184,15 @@ export function ProgrammingCourseClient() {
         "range-loop-patterns",
       ],
     },
+    {
+      label: "Module 05 · Reusable Code",
+      group: [
+        "functions",
+        "parameters-arguments",
+        "return-values",
+        "scope-basics",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },

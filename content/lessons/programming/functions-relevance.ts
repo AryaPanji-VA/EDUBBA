@@ -4,13 +4,13 @@ const functionsConceptMap: Record<string, string[]> = {
   reuse_need: ["function_definition", "function_call"],
   define_function: ["function_definition", "function_call"],
   call_trace: ["function_call", "function_definition"],
-  return_trace: ["return_values", "function_call"],
-  print_return_compare: ["return_values", "function_call"],
-  writing_function: ["parameters_arguments", "function_definition"],
-  function_state: ["function_call", "return_values"],
+  definition_no_run: ["function_definition", "function_call"],
+  writing_function: ["function_definition", "function_call"],
+  function_state: ["function_definition", "function_call"],
+  define_call_model: ["function_definition", "function_call"],
 };
 
-const checkConcepts = ["function_definition", "function_call", "return_values"];
+const checkConcepts = ["function_definition", "function_call"];
 
 export const functionsRelevance = {
   activityConcepts(concept: string): string[] {
@@ -20,10 +20,9 @@ export const functionsRelevance = {
     return [...checkConcepts];
   },
   chatConcepts(message: string): string[] {
-    if (/\b(return|kembalikan|nilai balik|mengembalikan|print vs return)\b/i.test(message)) return [...functionsConceptMap.print_return_compare];
-    if (/\b(parameter|argument|input function|masukan)\b/i.test(message)) return [...functionsConceptMap.writing_function];
-    if (/\b(def|define|definisikan|buat function|nama function)\b/i.test(message)) return [...functionsConceptMap.define_function];
-    if (/\b(call|panggil|manggil|run function|memanggil)\b/i.test(message)) return [...functionsConceptMap.call_trace];
+    if (/\b(def|define|definisikan|mendefinisikan|buat function|nama function|menyimpan)\b/i.test(message)) return [...functionsConceptMap.define_function];
+    if (/\b(call|panggil|manggil|memanggil|run function|dipanggil)\b/i.test(message)) return [...functionsConceptMap.call_trace];
+    if (/\b(function|fungsi|reuse|gunakan ulang|pengulangan kode)\b/i.test(message)) return [...functionsConceptMap.reuse_need];
     return [];
   },
 };

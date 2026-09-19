@@ -1,9 +1,9 @@
 -- Seed only the first fully structured ROBIN course.
 -- Every insert finds the existing course by slug, so no UUID is hardcoded.
 
--- This course now contains twenty-three lessons across three modules.
+-- This course now contains twenty-six lessons across three modules.
 update public.courses
-set total_lessons = 23
+set total_lessons = 26
 where slug = 'programming';
 
 insert into public.modules (course_id, slug, title, description, position)
@@ -60,7 +60,10 @@ join (
     ('programming-building-blocks', 'loops', 'For Loops', 'Ulangi kerja dengan for: sequence, loop variable, dan body yang menjorok.', 12, 10),
     ('programming-building-blocks', 'while-loops', 'While Loops', 'Ulangi selama kondisi masih True — starting state, condition, update.', 12, 11),
     ('programming-building-blocks', 'range-loop-patterns', 'Range & Loop Patterns', 'range() menghasilkan deret integer untuk loop — start, stop yang dikecualikan, dan step.', 12, 12),
-    ('programming-building-blocks', 'functions', 'Functions', 'Package reusable behavior behind a clear name.', 18, 13)
+    ('programming-building-blocks', 'functions', 'Functions', 'Bungkus langkah jadi satu nama — definisikan sekali, panggil berkali-kali.', 14, 13),
+    ('programming-building-blocks', 'parameters-arguments', 'Parameters & Arguments', 'Function menerima data: parameter di definition, argument di call.', 12, 14),
+    ('programming-building-blocks', 'return-values', 'Return Values', 'print menampilkan, return mengembalikan value ke program.', 12, 15),
+    ('programming-building-blocks', 'scope-basics', 'Scope Basics', 'Variable di dalam function hidup di area kerja lokalnya sendiri.', 12, 16)
 ) as lesson(module_slug, slug, title, summary, estimated_minutes, position)
   on lesson.module_slug = m.slug
 where c.slug = 'programming'
