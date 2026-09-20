@@ -215,7 +215,10 @@ test("trigger presentation styles stay subtle, token-based, and mobile-safe", ()
   // Phones swap to the short label and reveal the search at content width.
   assert.match(css, /\.lsearch-label-full \{ display: none; \}/);
   assert.match(css, /\.lsearch-label-short \{ display: inline; \}/);
-  assert.match(css, /\.lsearch-popover \{ position: fixed; left: 18px; right: 18px; width: auto; max-width: none; \}/);
+  // The popover stays anchored to the trigger at content width — a fixed
+  // position would push it below the viewport (top: 100% + offset).
+  assert.match(css, /\.lsearch-popover \{ left: 0; right: 0; width: 100%; max-width: none; margin-top: 6px; \}/);
+  assert.doesNotMatch(css, /max-width: 430px\) \{[^}]*\.lsearch-popover \{ position: fixed/s, "popover must not leave the viewport on phones");
   // Reduced motion is respected via the existing global rule.
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
@@ -304,6 +307,58 @@ test("practice sub-lab dictionary keys exist in both languages with natural copy
   // Proper/technical terms stay untranslated.
   assert.ok(uiCopy.id["sbox.eyebrow"].includes("Python Sandbox"));
   assert.ok(uiCopy.en["sbox.outputNote"].includes("Imports"));
+});
+
+// === 11. Mobile pass: narrow-width reflow keeps info, drops redundancy ===
+test("narrow layouts reflow crowded rows instead of overflowing", () => {
+  const css = read("app/globals.css");
+  // Dashboard path module row: segmented bar and module number are redundant
+  // at phone width; title, status tag, and count stay.
+  assert.match(css, /@media \(max-width: 430px\) \{[\s\S]*\.mod-row \{ grid-template-columns: 16px minmax\(0, 1fr\) auto auto; \}/);
+  assert.match(css, /@media \(max-width: 430px\) \{[\s\S]*\.mod-row \.mnum, \.mod-row \.mbar \{ display: none; \}/);
+  // Course detail rows already compress at tablet/phone widths.
+  assert.match(css, /@media \(max-width: 1120px\) \{\s*\.cmap-mrow \{ grid-template-columns: 18px 30px minmax\(0,1fr\) auto; \}/);
+  assert.match(css, /@media \(max-width: 720px\) \{[\s\S]*\.cmap-lesson \{ grid-template-columns: 14px minmax\(0,1fr\) auto; \}/);
+  // Course rows keep code/title/status/progress/CTA by stacking instead of squeezing.
+  assert.match(css, /\.course-row \{ grid-template-columns: 38px minmax\(0, 1fr\); gap: 10px 12px/);
+  assert.match(css, /\.course-row \.course-progress \{ grid-column: 2; justify-content: flex-start; \}/);
+  // Phone gutters live on the single owning containers.
+  assert.match(css, /\.mast-inner, \.content \{ padding-inline: 18px; \}/);
+});
+
+test("mobile search, settings, and FAB surfaces stay inside the viewport", () => {
+  const css = read("app/globals.css");
+  // Search trigger spans the topbar row, popover tracks content width.
+  assert.match(css, /\.top-right \.lsearch-trigger \{ grid-column: 1 \/ -1; \}/);
+  assert.match(css, /\.lsearch-pill \{ min-width: 0; height: 44px; width: 100%; justify-content: center; \}/);
+  // Long status tags wrap instead of colliding with neighbours.
+  assert.match(css, /\.mtag \{ white-space: normal; text-align: right; \}/);
+  // Settings panels stack their controls and stay within the content column.
+  assert.match(css, /\.settings-appearance \{ display: flex; flex-direction: column; gap: 10px; max-width: 420px; \}/);
+  assert.match(css, /\.settings-appearance \.switcher button \{ min-height: 38px; padding: 6px 14px; \}/);
+  // FAB stays phone-only, safe-area aware, and clear of the page.
+  assert.match(css, /\.mobile-fab \{[^}]*bottom: calc\(16px \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(css, /\.main \{ padding: 0 0 calc\(112px \+ env\(safe-area-inset-bottom, 0px\)\); \}/);
+});
+
+// === 12. Mobile pass 2: lesson, Robin, and practice phones ===
+test("lesson/robin/practice touch controls and reflow stay phone-safe", () => {
+  const css = read("app/globals.css");
+  // Touch targets: companion prompts and lesson/practice navigation hit 44px on coarse pointers.
+  assert.match(css, /\.companion-actions a, \.companion-actions button \{ min-height: 44px; \}/);
+  assert.match(css, /\.learning-flow-nav \.button, \.practice-nav \.button, \.practice-actions \.button \{ min-height: 44px; \}/);
+  // Robin stays secondary on phones: no forced tall bubble, capped conversation.
+  assert.match(css, /@media \(max-width: 430px\) \{[\s\S]*\.robin-message \{ min-height: 0; \}/);
+  assert.match(css, /@media \(max-width: 430px\) \{[\s\S]*\.robin-conversation \{ max-height: min\(420px, 52vh\); \}/);
+  // Code blocks scroll horizontally instead of breaking the layout.
+  assert.match(css, /\.code-block pre \{[^}]*overflow-x: auto/);
+  assert.match(css, /\.sandbox-output \{[^}]*overflow: auto[^}]*white-space: pre-wrap/);
+  // Practice surfaces stack instead of squeezing.
+  assert.match(css, /\.sandbox-grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+  assert.match(css, /\.thinking-grid \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+  assert.match(css, /\.sandbox-stdin > div \{ flex-direction: column; \}/);
+  // Lesson footer spacing clears the floating nav (layout already pads .main).
+  assert.match(css, /\.learning-flow-nav \{ padding: 18px 0; gap: 14px; \}/);
 });
 
 

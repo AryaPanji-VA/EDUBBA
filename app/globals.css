@@ -503,7 +503,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .robin-error { padding: 0 15px; color: var(--danger); font-size: .76rem; line-height: 1.6; }
 .robin-ask { display: grid; gap: 10px; padding: 0 13px 15px; }
 .robin-ask label { color: var(--muted); font-size: .7rem; }
-.robin-ask textarea { width: 100%; resize: vertical; padding: 10px; border: 1px solid var(--line); border-radius: 2px; background: var(--surface); color: var(--text); font: inherit; font-size: .8rem; }
+.robin-ask textarea { width: 100%; resize: vertical; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: .8rem; }
 .robin-ask textarea:focus { outline: 1px solid var(--cyan); }
 .companion-actions button:disabled { cursor: wait; opacity: .45; }
 
@@ -591,7 +591,8 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .a-send { width: 44px; height: 44px; }
   .thinking-order button { width: 40px; height: 40px; }
   .sandbox-starter-list button { min-height: 38px; padding: 10px 14px; }
-  .companion-actions a, .companion-actions button { min-height: 40px; }
+  .companion-actions a, .companion-actions button { min-height: 44px; }
+  .learning-flow-nav .button, .practice-nav .button, .practice-actions .button { min-height: 44px; }
   .answer-options button { min-height: 44px; }
   .quick-check .answer-options button { min-height: 44px; }
   .practice-exercise-row { min-height: 44px; }
@@ -705,6 +706,9 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .lesson-title { padding: 34px 0 26px; }
   .lesson-title h1 { margin: 14px 0 12px; font-size: clamp(2rem, 9vw, 2.6rem); }
   .lesson-section { padding: 30px 0 28px; }
+  /* Robin stays secondary: no forced tall empty bubble on phones. */
+  .robin-message { min-height: 0; }
+  .robin-conversation { max-height: min(420px, 52vh); }
 }
 
 /* --- Lesson decoration safety: skyline/waves stay ambient, never under text.
@@ -1071,14 +1075,21 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 @media (max-width: 430px) {
   .lsearch { max-width: 100%; }
   .lsearch-panel { max-width: calc(100vw - 36px); }
-  /* Phones: short localized trigger; the revealed search takes the content width. */
+  /* Phones: short localized trigger; the revealed search tracks the content
+     width below the trigger (anchored, not a fixed offscreen layer). */
   .lsearch-trigger { width: 100%; }
   .lsearch-pill { min-width: 0; height: 44px; width: 100%; justify-content: center; }
   .lsearch-label-full { display: none; }
   .lsearch-label-short { display: inline; }
-  .lsearch-popover { position: fixed; left: 18px; right: 18px; width: auto; max-width: none; }
+  .lsearch-popover { left: 0; right: 0; width: 100%; max-width: none; margin-top: 6px; }
   .lsearch-popover .lsearch-panel { max-width: none; }
+  /* Dashboard Path rows: the segmented bar is redundant with the status tag
+     and count at this width — drop it and the module number, keep the rest. */
+  .mod-row { grid-template-columns: 16px minmax(0, 1fr) auto auto; }
+  .mod-row .mnum, .mod-row .mbar { display: none; }
+  .mtag { white-space: normal; text-align: right; }
 }
+
 
 
 /* --- First-run dashboard: centered guided start --- */
