@@ -3,6 +3,7 @@
 // minimal, task-specific payload; the server builds the authoritative Robin
 // context from the registries and re-grades deterministic results itself.
 // No provider abstraction, no persistence, no mastery evidence.
+import { type RobinLocale, parseRobinLocale } from "@/lib/robin/locale";
 
 export type PracticeAssistMode = "guided" | "sandbox" | "thinking";
 
@@ -41,6 +42,8 @@ export type PracticeAssistRequest = {
   sandboxCode?: string;
   // Sandbox: raw runtime/syntax error text (sanitized server-side before Robin).
   sandboxError?: string;
+  // Active EDUBBA locale for Robin's response language (optional context).
+  language?: RobinLocale;
   // Only meaningful for hint-style actions.
   hintStage?: PracticeAssistHintStage;
 };
@@ -49,6 +52,8 @@ export type ValidatedPracticeAssistRequest = PracticeAssistRequest & {
   mode: PracticeAssistMode;
   action: PracticeAssistAction;
   hintStage: PracticeAssistHintStage;
+  // Always present after validation: malformed/missing values fall back.
+  language: RobinLocale;
 };
 
 export const MAX_ASSIST_ANSWER_LENGTH = 2_000;
@@ -79,7 +84,7 @@ export function sanitizeSandboxError(raw: string): string {
 export function validatePracticeAssistRequest(value: unknown): ValidatedPracticeAssistRequest | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const row = value as Record<string, unknown>;
-  if (Object.keys(row).some((key) => !["mode", "action", "exerciseId", "learnerAnswer", "activityId", "submission", "sandboxCode", "sandboxError", "hintStage"].includes(key))) return null;
+  if (Object.keys(row).some((key) => !["mode", "action", "exerciseId", "learnerAnswer", "activityId", "submission", "sandboxCode", "sandboxError", "language", "hintStage"].includes(key))) return null;
   if (typeof row.mode !== "string" || !(row.mode in practiceAssistActionsByMode)) return null;
   const mode = row.mode as PracticeAssistMode;
   if (typeof row.action !== "string" || !practiceAssistActionsByMode[mode].includes(row.action as PracticeAssistAction)) return null;
@@ -108,5 +113,6 @@ export function validatePracticeAssistRequest(value: unknown): ValidatedPractice
   return {
     mode, action, hintStage,
     exerciseId, activityId, learnerAnswer, submission, sandboxCode, sandboxError,
+    language: parseRobinLocale(row.language),
   };
 }

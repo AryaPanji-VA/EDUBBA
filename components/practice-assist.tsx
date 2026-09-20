@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PracticeAssistAction, PracticeAssistHintStage, PracticeAssistMode } from "@/lib/practice/assistance";
+import { getActiveLessonLanguage } from "@/lib/robin/locale";
 
 // Compact contextual Robin assistance for all Practice modes (Phase 11B.4).
 // Not a chat window: one click sends one minimal, task-specific payload and
@@ -65,7 +66,7 @@ export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props
       const response = await fetch("/api/practice/robin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode, action, ...payload, hintStage: stage }),
+        body: JSON.stringify({ mode, action, ...payload, hintStage: stage, language: getActiveLessonLanguage() }),
         signal: requestController.signal,
       });
       const data = await response.json();

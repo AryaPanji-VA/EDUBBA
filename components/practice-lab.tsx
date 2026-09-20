@@ -11,32 +11,97 @@ import { RobinCompanion } from "@/components/robin-companion";
 import { LearningLogOffer } from "@/components/learning-log-offer";
 import { checkPracticeExercise } from "@/lib/practice/check";
 import { getPracticeTrack } from "@/lib/practice/registry";
+import { localizePracticeTrack } from "@/content/practice/python/localization";
+import { getActiveLessonLanguage } from "@/lib/robin/locale";
 import { resolvePracticeAttemptId } from "@/lib/practice/state";
 import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
 import type { PracticeCheckResult, PracticeExerciseType } from "@/content/practice/types";
+import type { LessonLanguage } from "@/content/lessons/shared-copy";
 import type { RobinState } from "@/lib/robin/types";
 
-const typeLabels: Record<PracticeExerciseType, string> = {
-  predict_output: "Predict Output",
-  fix_code: "Fix the Code",
-  write_code: "Write Code",
+const typeLabels: Record<PracticeExerciseType, Record<LessonLanguage, string>> = {
+  predict_output: { en: "Predict Output", id: "Prediksi output" },
+  fix_code: { en: "Fix the Code", id: "Perbaiki kodenya" },
+  write_code: { en: "Write Code", id: "Tulis kode" },
 };
 
-const statusLabels: Record<PracticeCheckResult["status"], string> = {
-  correct: "Correct",
-  incorrect: "Not yet",
-  partial: "Partly there",
+const statusLabels: Record<PracticeCheckResult["status"], Record<LessonLanguage, string>> = {
+  correct: { en: "Correct", id: "Benar" },
+  incorrect: { en: "Not yet", id: "Belum" },
+  partial: { en: "Partly there", id: "Hampir pas" },
 };
 
-const placeholders: Record<PracticeExerciseType, string> = {
-  predict_output: "Tulis persis output yang muncul…",
-  fix_code: "Perbaiki kodenya di sini…",
-  write_code: "Tulis kodenya di sini…",
+const placeholders: Record<PracticeExerciseType, Record<LessonLanguage, string>> = {
+  predict_output: { en: "Write exactly the output that appears…", id: "Tulis persis output yang muncul…" },
+  fix_code: { en: "Fix the code here…", id: "Perbaiki kodenya di sini…" },
+  write_code: { en: "Write your code here…", id: "Tulis kodenya di sini…" },
+};
+
+const copy: Record<LessonLanguage, Record<string, string>> = {
+  en: {
+    heading: "Small, focused, hands-on.",
+    intro: "Short drills from the lesson concepts — predict, fix, write. Checks are deterministic; Robin sits beside you when something needs re-explaining.",
+    perTopic: "exercises per topic",
+    of: "of",
+    complete: "complete",
+    yourCode: "Your code",
+    checking: "Checking…",
+    check: "Check",
+    hideHint: "Hide hint",
+    hint: "Hint",
+    restored: "Attempt restored:",
+    retake: "Retake freely — check again for a new attempt.",
+    misconception: "Misconception ·",
+    aiHint: "Give me a hint",
+    aiExplain: "Explain why this is wrong",
+    aiNote: "Robin's hints are staged — it will not hand over the answer. The deterministic hint above works without AI.",
+    next: "Next exercise →",
+    topicDone: "Topic complete — nice.",
+    moreBelow: "More practice via the list below.",
+    logSaved: "This practice session is already saved in the Learning Log.",
+    logSkipped: "The log for this session was skipped. Robin is still ready if you want to record one via the panel.",
+    footer: "Checks are deterministic and run without AI. Each exercise ships its own hint; Robin in the side panel explains using the lesson context.",
+    topicAria: "Practice topic",
+    sessionAria: "Practice exercise",
+    listAria: "Exercises in this topic",
+  },
+  id: {
+    heading: "Kecil, fokus, ngoding.",
+    intro: "Latihan pendek dari konsep lesson — predict, fix, write. Check-nya deterministic; Robin duduk di samping kalau perlu dijelaskan ulang.",
+    perTopic: "latihan per topik",
+    of: "dari",
+    complete: "selesai",
+    yourCode: "Kode lu",
+    checking: "Menyusun…",
+    check: "Check",
+    hideHint: "Sembunyikan hint",
+    hint: "Hint",
+    restored: "Attempt dipulihkan:",
+    retake: "Retake bebas — check lagi untuk attempt baru.",
+    misconception: "Miskonsepsi ·",
+    aiHint: "Kasih hint dong",
+    aiExplain: "Jelasin kenapa ini salah",
+    aiNote: "Hint Robin bertahap — dia nggak langsung nyerahin jawaban. Hint deterministic di atas tetap jalan tanpa AI.",
+    next: "Latihan berikutnya →",
+    topicDone: "Topik selesai — mantap.",
+    moreBelow: "Latihan lain lewat daftar di bawah.",
+    logSaved: "Practice session ini udah tersimpan di Learning Log.",
+    logSkipped: "Log untuk sesi ini dilewati. Robin tetap siap kalau mau catat lewat panel.",
+    footer: "Check itu deterministic dan jalan tanpa AI. Hint tersimpan di tiap exercise; Robin di panel samping menjelaskan pakai konteks lesson.",
+    topicAria: "Topik practice",
+    sessionAria: "Exercise practice",
+    listAria: "Exercise di topik ini",
+  },
 };
 
 export function PracticeLab() {
-  const track = getPracticeTrack("python");
+  // The active EDUBBA locale is read once per mount of this route — the same
+  // source the language switcher writes, so navigation applies it reactively.
+  const [language] = useState<LessonLanguage>(() => getActiveLessonLanguage());
+  const t = copy[language];
+  const rawTrack = getPracticeTrack("python");
+  const track = useMemo(() => (rawTrack ? localizePracticeTrack(rawTrack, language) : rawTrack), [language, rawTrack]);
   const [topicSlug, setTopicSlug] = useState<string>(track?.topics[0]?.lessonSlug ?? "variables");
   const practice = usePractice("python");
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -117,7 +182,7 @@ export function PracticeLab() {
     setSubmission(restoredAnswer ?? exercise.starterCode ?? "");
     // This only reconstructs a previously persisted display result. New grading
     // remains authoritative in POST /api/practice/check.
-    setResult(restoredAnswer ? checkPracticeExercise(exercise, restoredAnswer) : null);
+    setResult(restoredAnswer ? checkPracticeExercise(exercise, restoredAnswer, language) : null);
     setCheckError(null);
     setHintShown(false);
   }, [exercise, exerciseId, practice.attempts]);
@@ -158,7 +223,7 @@ export function PracticeLab() {
       () => crypto.randomUUID(),
     );
     if (previousAttempt?.attemptId === attemptId) {
-      setResult(checkPracticeExercise(exercise, submission));
+      setResult(checkPracticeExercise(exercise, submission, language));
       setCheckError(null);
       return;
     }
@@ -168,7 +233,7 @@ export function PracticeLab() {
       const response = await fetch("/api/practice/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exerciseId: exercise.id, answer: submission, attemptId }),
+        body: JSON.stringify({ exerciseId: exercise.id, answer: submission, attemptId, language }),
       });
       const data = await response.json();
       if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : "Check belum tersedia. Coba lagi.");
@@ -209,22 +274,22 @@ export function PracticeLab() {
       <div className="content">
         <header className="page-header">
           <div>
-            <span className="eyebrow">Practice Lab · Python Fundamentals · {track ? topicExercises.length : 0} exercises per topic</span>
-            <h1>Kecil, fokus, ngoding.</h1>
-            <p>Latihan pendek dari konsep lesson — predict, fix, write. Check-nya deterministic; Robin duduk di samping kalau perlu dijelaskan ulang.</p>
+            <span className="eyebrow">Practice Lab · Python Fundamentals · {track ? topicExercises.length : 0} {t.perTopic}</span>
+            <h1>{t.heading}</h1>
+            <p>{t.intro}</p>
           </div>
         </header>
 
         <PracticeModeNav active="guided" />
 
         <div className="practice-topic-bar">
-          <div className="switcher" role="group" aria-label="Practice topic">
+          <div className="switcher" role="group" aria-label={t.topicAria}>
             {(track?.topics ?? []).map((item) => (
               <button key={item.lessonSlug} type="button" aria-pressed={item.lessonSlug === topicSlug} className={item.lessonSlug === topicSlug ? "on" : ""} onClick={() => switchTopic(item.lessonSlug)}>{item.title}</button>
             ))}
           </div>
           <div className="practice-topic-actions">
-            <span className="practice-count">{completedCount} of {topicExercises.length} complete</span>
+            <span className="practice-count">{completedCount} {t.of} {topicExercises.length} {t.complete}</span>
           </div>
         </div>
 
@@ -233,8 +298,8 @@ export function PracticeLab() {
             <ProgressBar value={topicExercises.length ? Math.round((completedCount / topicExercises.length) * 100) : 0} />
 
             {exercise && <>
-              <section className="practice-session" aria-label="Practice exercise">
-                <span className="eyebrow">{topic?.title} · {typeLabels[exercise.type]}</span>
+              <section className="practice-session" aria-label={t.sessionAria}>
+                <span className="eyebrow">{topic?.title} · {typeLabels[exercise.type][language]}</span>
                 <h2>{exercise.concept}</h2>
                 <p className="practice-prompt">{exercise.prompt}</p>
 
@@ -246,13 +311,13 @@ export function PracticeLab() {
                 )}
 
                 <form onSubmit={(event) => { event.preventDefault(); void check(); }}>
-                  <label className="practice-editor-label" htmlFor="practice-answer">Your code</label>
+                  <label className="practice-editor-label" htmlFor="practice-answer">{t.yourCode}</label>
                   <textarea id="practice-answer" className="practice-editor" rows={exercise.type === "predict_output" ? 2 : 6} spellCheck={false} autoComplete="off"
-                    placeholder={placeholders[exercise.type]} value={submission}
+                    placeholder={placeholders[exercise.type][language]} value={submission}
                     onChange={(event) => setSubmission(event.target.value)} />
                   <div className="practice-actions">
-                    <button className="button button-primary" type="submit" disabled={checking || !submission.trim()}>{checking ? "Menyusun…" : "Check"}</button>
-                    <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? "Hide hint" : "Hint"}</button>
+                    <button className="button button-primary" type="submit" disabled={checking || !submission.trim()}>{checking ? t.checking : t.check}</button>
+                    <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? t.hideHint : t.hint}</button>
                     {canOpenInSandbox && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>Open in Sandbox</Link>}
                   </div>
                 </form>
@@ -260,10 +325,10 @@ export function PracticeLab() {
                 {hintShown && <p className="practice-hint" role="note"><strong>Hint.</strong> {exercise.hint}</p>}
 
                 {result && <p className={`answer-note ${result.status === "correct" ? "is-correct" : "is-incorrect"}`} role="status">
-                  <strong>{statusLabels[result.status]}</strong> {result.explanation}
-                  {result.misconceptionNote && <span className="practice-misconception"><strong>Misconception · {result.misconception}</strong> {result.misconceptionNote}</span>}
+                  <strong>{statusLabels[result.status][language]}</strong> {result.explanation}
+                  {result.misconceptionNote && <span className="practice-misconception"><strong>{t.misconception} {result.misconception}</strong> {result.misconceptionNote}</span>}
                 </p>}
-                {!result && attempt && <p className="practice-restored" role="status">Attempt dipulihkan: {attempt.status}. Retake bebas — check lagi untuk attempt baru.</p>}
+                {!result && attempt && <p className="practice-restored" role="status">{t.restored} {attempt.status}. {t.retake}</p>}
                 {checkError && <p className="robin-error" role="alert">{checkError}</p>}
 
                 <PracticeAssist
@@ -271,26 +336,26 @@ export function PracticeLab() {
                   resetKey={exercise.id}
                   payload={{ exerciseId: exercise.id, learnerAnswer: submission.trim() || undefined }}
                   actions={[
-                    { action: "hint", label: "Give me a hint" },
-                    { action: "explain-result", label: "Explain why this is wrong", disabled: !result || result.status === "correct" },
+                    { action: "hint", label: t.aiHint },
+                    { action: "explain-result", label: t.aiExplain, disabled: !result || result.status === "correct" },
                   ]}
-                  note="Hint Robin bertahap — dia nggak langsung nyerahin jawaban. Hint deterministic di atas tetap jalan tanpa AI."
+                  note={t.aiNote}
                 />
 
                 <div className="practice-nav">
-                  <button className="button button-primary" disabled={!nextId} onClick={next}>Next exercise →</button>
-                  {!nextId && <span className="practice-count">{topicComplete ? "Topic complete — nice." : "Latihan lain lewat daftar di bawah."}</span>}
+                  <button className="button button-primary" disabled={!nextId} onClick={next}>{t.next}</button>
+                  {!nextId && <span className="practice-count">{topicComplete ? t.topicDone : t.moreBelow}</span>}
                 </div>
               </section>
 
-              <nav className="practice-exercise-list" aria-label="Exercises in this topic">
+              <nav className="practice-exercise-list" aria-label={t.listAria}>
                 {ordered.map((item, itemIndex) => {
                   const itemAttempt = practice.attempts[item.id];
                   const done = practice.completedExerciseIds.includes(item.id);
                   return <button key={item.id} type="button" className={`practice-exercise-row ${item.id === exercise.id ? "now" : ""}`} onClick={() => jumpTo(item.id)}>
                     <span className={`practice-dot ${done ? "done" : itemAttempt ? "tried" : ""}`} aria-hidden="true" />
                     <span className="practice-exercise-name">{String(itemIndex + 1).padStart(2, "0")} · {item.concept}</span>
-                    <span className="practice-exercise-type">{typeLabels[item.type]}{done ? " · done" : itemAttempt ? ` · ${itemAttempt.status}` : ""}</span>
+                    <span className="practice-exercise-type">{typeLabels[item.type][language]}{done ? " · done" : itemAttempt ? ` · ${itemAttempt.status}` : ""}</span>
                   </button>;
                 })}
               </nav>
@@ -298,10 +363,10 @@ export function PracticeLab() {
 
             {topicComplete && logStatus === "pending" &&
               <LearningLogOffer lessonSlug={topicSlug} onDecision={(decision) => practice.markLog(topicSlug, decision)} />}
-            {topicComplete && logStatus === "saved" && <p className="panel-footnote" role="status">Practice session ini udah tersimpan di Learning Log.</p>}
-            {topicComplete && logStatus === "skipped" && <p className="panel-footnote" role="status">Log untuk sesi ini dilewati. Robin tetap siap kalau mau catat lewat panel.</p>}
+            {topicComplete && logStatus === "saved" && <p className="panel-footnote" role="status">{t.logSaved}</p>}
+            {topicComplete && logStatus === "skipped" && <p className="panel-footnote" role="status">{t.logSkipped}</p>}
 
-            <p className="panel-footnote">Check itu deterministic dan jalan tanpa AI. Hint tersimpan di tiap exercise; Robin di panel samping menjelaskan pakai konteks lesson.</p>
+            <p className="panel-footnote">{t.footer}</p>
           </article>
 
           <RobinCompanion lessonSlug={topicSlug} sourceMode={false} onStateChange={updateRobinState} />

@@ -1,5 +1,7 @@
 import { getPracticeExercise } from "@/lib/practice/registry";
 import { checkPracticeExercise } from "@/lib/practice/check";
+import { localizePracticeExercises } from "@/content/practice/python/localization";
+import { parseRobinLocale } from "@/lib/robin/locale";
 import { recordEvidence } from "@/lib/mastery/server";
 import { requireLocalUserId } from "@/lib/local-user/server";
 
@@ -38,14 +40,17 @@ export async function POST(request: Request) {
     return fail("Request JSON tidak valid.", 400);
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Request tidak valid.", 400);
-  const { exerciseId, answer, attemptId } = body as Record<string, unknown>;
+  const { exerciseId, answer, attemptId, language } = body as Record<string, unknown>;
   if (typeof exerciseId !== "string" || !exerciseId.trim() || exerciseId.length > 80) return fail("Exercise id tidak valid.", 400);
   if (typeof attemptId !== "string" || !attemptId.trim() || attemptId.length > 100) return fail("Attempt id tidak valid.", 400);
   if (typeof answer !== "string" || !answer.trim() || answer.length > 2_000) return fail("Tulis jawaban antara 1 dan 2000 karakter.", 400);
   const exercise = getPracticeExercise(exerciseId);
   if (!exercise) return fail("Exercise belum terdaftar.", 400);
+  // Deterministic result text follows the active EDUBBA locale; grading is
+  // unaffected (ids, patterns, and outputs are never localized).
+  const localizedExercise = localizePracticeExercises([exercise], parseRobinLocale(language))[0];
 
-  const result = checkPracticeExercise(exercise, answer);
+  const result = checkPracticeExercise(localizedExercise, answer, parseRobinLocale(language));
 
   const evidenceType = result.status === "correct" ? "correct_practice" : "incorrect_practice";
   for (const concept of exercise.masteryConcepts) {

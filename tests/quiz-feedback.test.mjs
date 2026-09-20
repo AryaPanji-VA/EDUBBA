@@ -48,6 +48,7 @@ function route({ configured = true, recordEvidence = async () => {}, provider = 
       } : null,
     },
     "@/lib/robin/quiz-feedback": { validateQuizFeedbackRequest, gradeActivity, parseQuizFeedbackResult },
+    "@/lib/robin/locale": { robinLocaleInstruction: (locale) => `ACTIVE EDUBBA LANGUAGE: ${locale}` },
     "@/lib/mastery/server": { recordEvidence },
     "@/lib/local-user/server": { requireLocalUserId: () => "55555555-5555-4555-8555-555555555555" },
     "@/lib/adaptation/server": { loadAdaptationContext: async () => "" },
@@ -202,7 +203,7 @@ test("success uses model + messages only, server rubric, and no memory dependenc
 test("server reconstructs correctness from activity data, not client claims", async () => {
   let quizContext;
   const post = route({ provider: async (body) => {
-    quizContext = JSON.parse(body.messages[1].content.split(":\n")[1]);
+    quizContext = JSON.parse(body.messages.find((message) => message.content.startsWith("Quiz activity context")).content.split(":\n")[1]);
     return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify(validResult) } }] };
   } });
   // Client sends learnerAnswer "110" (correct) — server must determine isCorrect=true

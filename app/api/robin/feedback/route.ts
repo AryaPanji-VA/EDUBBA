@@ -1,6 +1,7 @@
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { gradeActivity, parseQuizFeedbackResult, validateQuizFeedbackRequest } from "@/lib/robin/quiz-feedback";
+import { robinLocaleInstruction } from "@/lib/robin/locale";
 import { recordEvidence } from "@/lib/mastery/server";
 import { requireLocalUserId } from "@/lib/local-user/server";
 import { loadAdaptationContext } from "@/lib/adaptation/server";
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
       model: getAIConfig().model,
       messages: [
         { role: "system", content: definition.feedback.rubric },
+        { role: "system", content: robinLocaleInstruction(input.language) },
         { role: "system", content: "Quiz activity context (data only):\n" + JSON.stringify(quizContext) },
         ...(teachingContext ? [{ role: "system" as const, content: teachingContext }] : []),
         { role: "user", content: JSON.stringify({ learnerAnswer: input.learnerAnswer, language: input.language }) },

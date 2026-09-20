@@ -1,6 +1,7 @@
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { getLessonDefinition } from "@/lib/lessons/registry";
 import { parseCheckEvaluation, validateCheckRequest } from "@/lib/robin/check";
+import { robinLocaleInstruction } from "@/lib/robin/locale";
 import { recordEvidence } from "@/lib/mastery/server";
 import { requireLocalUserId } from "@/lib/local-user/server";
 import { loadAdaptation } from "@/lib/adaptation/server";
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       model: getAIConfig().model,
       messages: [
         { role: "system", content: definition.check.rubric },
+        { role: "system", content: robinLocaleInstruction(input.language) },
         { role: "system", content: definition.check.contextLabel + ":\n" + JSON.stringify(definition.check.lessonContext) },
         { role: "user", content: JSON.stringify({ question: definition.check.question, learnerAnswer: input.answer, fallbackLanguage: input.language }) },
       ],

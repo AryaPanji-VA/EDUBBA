@@ -2,6 +2,8 @@ import { recordEvidence } from "@/lib/mastery/server";
 import { requireLocalUserId } from "@/lib/local-user/server";
 import { checkThinkingActivity, isThinkingSubmissionFor } from "@/lib/practice/thinking-check";
 import { getThinkingActivity } from "@/lib/practice/thinking-registry";
+import { localizeThinkingActivities } from "@/content/practice/thinking/localization";
+import { parseRobinLocale } from "@/lib/robin/locale";
 
 export const runtime = "nodejs";
 
@@ -34,13 +36,17 @@ export async function POST(request: Request) {
     return fail("Request JSON tidak valid.", 400);
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Request tidak valid.", 400);
-  const { activityId, answer, attemptId } = body as Record<string, unknown>;
+  const { activityId, answer, attemptId, language } = body as Record<string, unknown>;
   if (typeof activityId !== "string" || !activityId || activityId.length > 80) return fail("Activity id tidak valid.", 400);
   if (typeof attemptId !== "string" || !attemptId || attemptId.length > 100) return fail("Attempt id tidak valid.", 400);
   const activity = getThinkingActivity(activityId);
   if (!activity || !isThinkingSubmissionFor(activity.interaction, answer)) return fail("Jawaban activity tidak valid.", 400);
 
-  const result = checkThinkingActivity(activity, answer);
+  // Deterministic result text follows the active EDUBBA locale; ids, correct
+  // answers, and mastery evidence are never localized.
+  const localizedActivity = localizeThinkingActivities([activity], parseRobinLocale(language))[0];
+
+  const result = checkThinkingActivity(localizedActivity, answer);
   const evidenceType = result.status === "correct" ? "correct_practice" : "incorrect_practice";
   for (const mapping of activity.masteryEvidence) {
     await recordEvidence(localUserId, mapping.lessonSlug, mapping.concept, evidenceType, attemptId);

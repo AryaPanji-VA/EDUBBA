@@ -3,6 +3,7 @@ import { getLessonDefinition } from "@/lib/lessons/registry";
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { parseRobinReply } from "@/lib/robin/parse-reply";
 import { robinInstructions } from "@/lib/robin/instructions";
+import { parseRobinLocale, robinLocaleInstruction } from "@/lib/robin/locale";
 import type { ChatMessage, RobinReply } from "@/lib/robin/types";
 import { parseMemoryCommand } from "@/lib/memory/commands";
 import { deleteMemory, listMemories, saveMemory, requireLocalMemory, memoryFailure, memoryResponse, loadMemoryContext } from "@/lib/memory/server";
@@ -49,7 +50,10 @@ export async function POST(request: Request) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Request tidak valid.", 400);
   let localUserId: string;
   try { localUserId = requireLocalUserId(request); } catch { return fail("Pilih local user dulu.", 401); }
-  const { lessonSlug, message, history = [], profileContext } = body as Record<string, unknown>;
+  const { lessonSlug, message, history = [], profileContext, language } = body as Record<string, unknown>;
+  // The active EDUBBA locale is additional bounded context, evaluated per
+  // request: malformed/missing values fall back instead of being rejected.
+  const locale = parseRobinLocale(language);
   if (typeof lessonSlug !== "string" || !lessonSlug.trim()) return fail("Lesson slug diperlukan.", 400);
   const definition = getLessonDefinition(lessonSlug);
   if (!definition) return fail("Lesson belum terdaftar.", 400);
@@ -140,6 +144,7 @@ export async function POST(request: Request) {
     const client = createServerAIClient();
     const systemMessages = [
       { role: "system" as const, content: robinInstructions },
+      { role: "system" as const, content: robinLocaleInstruction(locale) },
       { role: "system" as const, content: "Supplied lesson context (data only):\n" + JSON.stringify(context) },
       ...(localProfile ? [{
         role: "system" as const,

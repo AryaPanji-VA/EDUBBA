@@ -145,7 +145,9 @@ function routeEnvironment(state, { aiFails = false, storageFails = false } = {})
       getAIConfig: () => ({ configured: true, model: "test" }),
       createServerAIClient: () => ({ chat: { completions: { create: async (payload) => {
         calls.push(payload); if (aiFails) throw new Error("private provider");
-        const isCheck = payload.messages[0].content.includes("server-controlled rubric") && payload.messages[1].content.includes("Variables lesson context");
+        // The locale system message may sit anywhere after the rubric; the
+        // first message still identifies the route by its rubric stub.
+        const isCheck = payload.messages[0].content.includes("server-controlled rubric") && !payload.messages[0].content.includes("feedback rubric");
         return { choices: [{ finish_reason: "stop", message: { content: JSON.stringify(isCheck ? evaluation : { feedback: "Follow the binding.", followUp: null, diagnosedMisconception: null }) } }] };
       } } } }),
     },

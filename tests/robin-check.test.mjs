@@ -28,6 +28,7 @@ function route({ configured = true, provider = async () => ({ choices: [{ finish
       } : null,
     },
     "@/lib/robin/check": { parseCheckEvaluation, validateCheckRequest },
+    "@/lib/robin/locale": { robinLocaleInstruction: (locale) => `ACTIVE EDUBBA LANGUAGE: ${locale}` },
     "@/lib/mastery/server": { recordEvidence: async () => {} },
     "@/lib/local-user/server": { requireLocalUserId: () => "66666666-6666-4666-8666-666666666666" },
     "@/lib/adaptation/server": { loadAdaptation: async () => ({ concepts: [] }) },

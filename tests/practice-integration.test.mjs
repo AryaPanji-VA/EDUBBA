@@ -37,6 +37,13 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + "\nexports.getPractice
 });
 const checker = {};
 vm.runInNewContext(strip("../lib/practice/check.ts") + "\nexports.checkPracticeExercise=checkPracticeExercise;", { exports: checker });
+const practiceLocalization = {};
+vm.runInNewContext(strip("../content/practice/python/localization.ts") + "\nexports.localizePracticeExercises=localizePracticeExercises;", { exports: practiceLocalization });
+const robinLocale = {};
+vm.runInNewContext(strip("../lib/robin/locale.ts") + "\nexports.parseRobinLocale=parseRobinLocale;", {
+  exports: robinLocale,
+  require: (name) => name.includes("shared-copy") ? { lessonLanguageStorageKey: "robin.lessonLanguage" } : (() => { throw new Error(name); })(),
+});
 
 const request = (body) => new Request("http://localhost/api/practice/check", {
   method: "POST",
@@ -48,6 +55,8 @@ function route({ recordEvidence = async () => {} } = {}) {
   const dependencies = {
     "@/lib/practice/registry": { getPracticeExercise: registry.getPracticeExercise },
     "@/lib/practice/check": { checkPracticeExercise: checker.checkPracticeExercise },
+    "@/content/practice/python/localization": { localizePracticeExercises: practiceLocalization.localizePracticeExercises },
+    "@/lib/robin/locale": { parseRobinLocale: robinLocale.parseRobinLocale },
     "@/lib/mastery/server": { recordEvidence },
     "@/lib/local-user/server": { requireLocalUserId: () => "44444444-4444-4444-8444-444444444444" },
   };

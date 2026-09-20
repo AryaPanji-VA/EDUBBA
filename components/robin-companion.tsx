@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, LogPreview, RobinReply, RobinState } from "@/lib/robin/types";
+import { getActiveLessonLanguage } from "@/lib/robin/locale";
 import { toRobinProfileContext } from "@/lib/profile/local-profile";
 import { useLocalProfile } from "@/lib/profile/use-local-profile";
 
@@ -66,6 +67,9 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
           lessonSlug, message: message.trim(),
           history: messages.slice(-8).map(({ role, content }) => ({ role, content })),
           profileContext: toRobinProfileContext(profile),
+          // The active EDUBBA locale is read per request, so switching the
+          // app language affects the next message without a reload.
+          language: getActiveLessonLanguage(),
         }),
         signal: requestController.signal,
       });

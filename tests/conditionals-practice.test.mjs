@@ -41,8 +41,20 @@ vm.runInNewContext(strip("../lib/practice/registry.ts") + ["getPracticeTrack", "
     : name.includes("functions-exercises") ? { functionsPracticeExercises: [] }
     : (() => { throw new Error(name); })(),
 });
+const robinLocale = {};
+vm.runInNewContext(strip("../lib/robin/locale.ts") + ["parseRobinLocale", "robinLocaleInstruction"].map((name) => `\nexports.${name}=${name};`).join(""), {
+  exports: robinLocale,
+  require: (name) => name.includes("shared-copy") ? { lessonLanguageStorageKey: "robin.lessonLanguage" } : (() => { throw new Error(name); })(),
+});
+const practiceLocalization = {};
+vm.runInNewContext(strip("../content/practice/python/localization.ts") + "\nexports.localizePracticeExercises=localizePracticeExercises;", { exports: practiceLocalization });
+const thinkingLocalization = {};
+vm.runInNewContext(strip("../content/practice/thinking/localization.ts") + "\nexports.localizeThinkingActivities=localizeThinkingActivities;", { exports: thinkingLocalization });
 const assistance = {};
-vm.runInNewContext(strip("../lib/practice/assistance.ts") + ["validatePracticeAssistRequest", "sanitizeSandboxError"].map((name) => `\nexports.${name}=${name};`).join(""), { exports: assistance });
+vm.runInNewContext(strip("../lib/practice/assistance.ts") + ["validatePracticeAssistRequest", "sanitizeSandboxError"].map((name) => `\nexports.${name}=${name};`).join(""), {
+  exports: assistance,
+  require: (name) => name.includes("robin/locale") ? robinLocale : (() => { throw new Error(name); })(),
+});
 const parseReply = {};
 vm.runInNewContext(strip("../lib/robin/parse-reply.ts") + "\nexports.parseRobinReply=parseRobinReply;", { exports: parseReply });
 const thinkingRegistry = {};
@@ -170,6 +182,7 @@ function assistRoute({ provider = async () => ({ choices: [{ finish_reason: "sto
       createServerAIClient: () => ({ chat: { completions: { create: provider } } }),
     },
     "@/lib/robin/instructions": { robinInstructions: "BASE" },
+  "@/lib/robin/locale": { robinLocaleInstruction: (locale) => `ACTIVE EDUBBA LANGUAGE: ${locale}` },
     "@/lib/robin/parse-reply": { parseRobinReply: parseReply.parseRobinReply },
     "@/lib/practice/assistance-instructions": { robinInstructions: "BASE", practiceAssistInstructions: (req) => `STAGE ${req.hintStage}` },
     "@/lib/practice/assistance": { validatePracticeAssistRequest: assistance.validatePracticeAssistRequest, sanitizeSandboxError: assistance.sanitizeSandboxError },
@@ -177,6 +190,8 @@ function assistRoute({ provider = async () => ({ choices: [{ finish_reason: "sto
     "@/lib/practice/check": { checkPracticeExercise: checker.checkPracticeExercise },
     "@/lib/practice/thinking-registry": { getThinkingActivity: thinkingRegistry.getThinkingActivity },
     "@/lib/practice/thinking-check": { checkThinkingActivity: thinkingCheck.checkThinkingActivity, isThinkingSubmissionFor: thinkingCheck.isThinkingSubmissionFor },
+    "@/content/practice/python/localization": { localizePracticeExercises: practiceLocalization.localizePracticeExercises },
+    "@/content/practice/thinking/localization": { localizeThinkingActivities: thinkingLocalization.localizeThinkingActivities },
   };
   const code = strip("../app/api/practice/robin/route.ts", [[/import OpenAI from "openai";/g, "const OpenAI = require(\"openai\");"]]) + "\nexports.POST = POST;";
   const exports = {};

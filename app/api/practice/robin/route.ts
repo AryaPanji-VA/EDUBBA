@@ -1,11 +1,14 @@
-import OpenAI from "openai";
+﻿import OpenAI from "openai";
 import { createServerAIClient, getAIConfig } from "@/lib/ai/server";
 import { parseRobinReply } from "@/lib/robin/parse-reply";
 import { robinInstructions } from "@/lib/robin/instructions";
+import { robinLocaleInstruction } from "@/lib/robin/locale";
 import { practiceAssistInstructions } from "@/lib/practice/assistance-instructions";
 import { validatePracticeAssistRequest, sanitizeSandboxError, type PracticeAssistRequest } from "@/lib/practice/assistance";
 import { getPracticeExercise } from "@/lib/practice/registry";
 import { checkPracticeExercise } from "@/lib/practice/check";
+import { localizePracticeExercises } from "@/content/practice/python/localization";
+import { localizeThinkingActivities } from "@/content/practice/thinking/localization";
 import { getThinkingActivity } from "@/lib/practice/thinking-registry";
 import { checkThinkingActivity, isThinkingSubmissionFor } from "@/lib/practice/thinking-check";
 
@@ -67,17 +70,19 @@ export async function POST(request: Request) {
     const exercise = getPracticeExercise(assist.exerciseId!);
     if (!exercise) return fail("Exercise belum terdaftar.", 400);
     lesson = exercise.lessonSlug;
+    // The AI context speaks the learner's language; ids and code stay exact.
+    const localizedExercise = localizePracticeExercises([exercise], assist.language)[0];
     const answer = assist.learnerAnswer?.trim() ? assist.learnerAnswer : undefined;
     const deterministicResult = answer ? checkPracticeExercise(exercise, answer) : null;
     context = {
       mode: assist.mode, action: assist.action,
       exercise: {
-        id: exercise.id, type: exercise.type, concept: exercise.concept,
-        prompt: exercise.prompt, starterCode: exercise.starterCode ?? null, code: exercise.code ?? null,
-        // The stored explanation is only supplied when the action explains —
+        id: localizedExercise.id, type: localizedExercise.type, concept: localizedExercise.concept,
+        prompt: localizedExercise.prompt, starterCode: localizedExercise.starterCode ?? null, code: localizedExercise.code ?? null,
+        // The stored explanation is only supplied when the action explains â€”
         // hint requests must not carry the full solution text.
-        explanation: assist.action === "hint" ? null : exercise.explanation,
-        storedHint: exercise.hint,
+        explanation: assist.action === "hint" ? null : localizedExercise.explanation,
+        storedHint: localizedExercise.hint,
       },
       attempt: answer ? {
         learnerAnswer: answer.slice(0, 2_000),
@@ -91,6 +96,7 @@ export async function POST(request: Request) {
     const activity = getThinkingActivity(assist.activityId!);
     if (!activity) return fail("Activity belum terdaftar.", 400);
     lesson = "thinking";
+    const localizedActivity = localizeThinkingActivities([activity], assist.language)[0];
     let parsedSubmission: unknown = null;
     if (assist.submission?.trim()) {
       try { parsedSubmission = JSON.parse(assist.submission); } catch { parsedSubmission = null; }
@@ -100,12 +106,12 @@ export async function POST(request: Request) {
     context = {
       mode: assist.mode, action: assist.action,
       activity: {
-        id: activity.id, type: activity.type, title: activity.title,
-        prompt: activity.prompt, instruction: activity.instruction,
-        choices: interactionLabels(activity),
+        id: localizedActivity.id, type: localizedActivity.type, title: localizedActivity.title,
+        prompt: localizedActivity.prompt, instruction: localizedActivity.instruction,
+        choices: interactionLabels(localizedActivity),
         // Same leakage rule as guided: explanations ride along only when explaining.
-        explanation: assist.action === "hint" || assist.action === "break-down-problem" ? null : activity.explanation,
-        storedHint: activity.hint,
+        explanation: assist.action === "hint" || assist.action === "break-down-problem" ? null : localizedActivity.explanation,
+        storedHint: localizedActivity.hint,
       },
       submission: valid ? assist.submission!.slice(0, 4_000) : null,
       deterministicResult: deterministicResult ? {
@@ -136,6 +142,7 @@ export async function POST(request: Request) {
       model: getAIConfig().model,
       messages: [
         { role: "system" as const, content: robinInstructions },
+        { role: "system" as const, content: robinLocaleInstruction(assist.language) },
         { role: "system" as const, content: practiceAssistInstructions(assist) },
         { role: "system" as const, content: "PRACTICE CONTEXT (data only):\n" + JSON.stringify(context) },
         { role: "user" as const, content: userMessage },
@@ -166,11 +173,11 @@ export async function POST(request: Request) {
       if (error.status === 404) return fail("Model AI Robin belum tersedia. Periksa ROBIN_AI_MODEL di server.", 503);
       if (error.status === 429) return fail("Robin kena batas pemakaian. Coba lagi nanti.", 429);
     }
-    return fail("Robin lagi nggak bisa nyambung ke otaknya. Practice tetap jalan normal—coba lagi bentar.", 502);
+    return fail("Robin lagi nggak bisa nyambung ke otaknya. Practice tetap jalan normalâ€”coba lagi bentar.", 502);
   }
 }
 
-// Interaction choices as learner-visible labels only — correct-answer ids and
+// Interaction choices as learner-visible labels only â€” correct-answer ids and
 // misconception metadata stay server-side.
 function interactionLabels(activity: NonNullable<ReturnType<typeof getThinkingActivity>>): string[] {
   const interaction = activity.interaction;

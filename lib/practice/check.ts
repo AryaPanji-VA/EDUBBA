@@ -45,7 +45,15 @@ function incorrectResult(exercise: PracticeExercise, misconception?: { misconcep
   };
 }
 
-export function checkPracticeExercise(exercise: PracticeExercise, submission: string): PracticeCheckResult {
+// The only templated deterministic string in the checker. Exercise content
+// itself is localized before it reaches this module; this template follows.
+type CheckLanguage = "en" | "id";
+const partialTemplate: Record<CheckLanguage, (missing: string, explanation: string) => string> = {
+  en: (missing, explanation) => `Part of the expected structure is there. Still missing: ${missing}. ${explanation}`,
+  id: (missing, explanation) => `Sebagian struktur yang diminta udah ada. Yang masih kurang: ${missing}. ${explanation}`,
+};
+
+export function checkPracticeExercise(exercise: PracticeExercise, submission: string, language: CheckLanguage = "en"): PracticeCheckResult {
   if (exercise.type === "predict_output") {
     const expected = normalizeOutput(exercise.expectedOutput ?? "");
     const actual = normalizeOutput(submission);
@@ -77,7 +85,7 @@ export function checkPracticeExercise(exercise: PracticeExercise, submission: st
       status: "partial",
       misconception: null,
       misconceptionNote: null,
-      explanation: `Part of the expected structure is there. Still missing: ${missing.join("; ")}. ${exercise.explanation}`,
+      explanation: partialTemplate[language](missing.join("; "), exercise.explanation),
     };
   }
 

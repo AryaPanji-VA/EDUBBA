@@ -14,14 +14,80 @@ import {
   isThinkingSubmissionComplete, serializeThinkingSubmission,
 } from "@/lib/practice/thinking-check";
 import { getThinkingActivities, thinkingTypeLabels } from "@/lib/practice/thinking-registry";
+import { localizeThinkingActivities } from "@/content/practice/thinking/localization";
+import { getActiveLessonLanguage } from "@/lib/robin/locale";
 import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
 import { resolvePracticeAttemptId } from "@/lib/practice/state";
+import type { LessonLanguage } from "@/content/lessons/shared-copy";
 
-const statusLabels: Record<PracticeCheckResult["status"], string> = {
-  correct: "Reasoning-nya pas",
-  partial: "Sebagian sudah nyambung",
-  incorrect: "Belum pas",
+const statusLabels: Record<PracticeCheckResult["status"], Record<LessonLanguage, string>> = {
+  correct: { en: "Reasoning checks out", id: "Reasoning-nya pas" },
+  partial: { en: "Partly connected", id: "Sebagian sudah nyambung" },
+  incorrect: { en: "Not quite yet", id: "Belum pas" },
+};
+
+const copy: Record<LessonLanguage, Record<string, string>> = {
+  en: {
+    heading: "Learn to think like a programmer.",
+    intro: "Break problems down, find patterns, trace programs, and order steps. Not an IQ test — this is practice in how programs work.",
+    of: "of",
+    complete: "complete",
+    activities: "activities",
+    beginner: "Beginner",
+    checking: "Checking…",
+    check: "Check reasoning",
+    hideHint: "Hide hint",
+    hint: "Hint",
+    fixed: "What to fix ·",
+    restored: "Attempt saved:",
+    restoredNote: "Your answer is restored after a reload.",
+    aiHint: "One hint",
+    aiBreakDown: "Break it down",
+    aiExplain: "Explain the reasoning",
+    aiNote: "Robin shows the next reasoning step, not the whole answer. The deterministic hint above works without AI.",
+    next: "Next activity →",
+    setDone: "Thinking set complete — nice.",
+    pickAnother: "Pick another activity from the list.",
+    footer: "Correctness is always deterministic. Robin is not needed to open, work on, or check an activity.",
+    guideTag: "How to use it",
+    guideHeading: "Slowly, and in order.",
+    guideIntro: "The goal is not to answer fast. Look for the data available, the change that happens, and an order that makes sense.",
+    guidePoints: "break the problem into small pieces|test the pattern against every example|trace one line at a time|diagnose the concept before fixing",
+    guideNote: "Correctness stays deterministic. Robin only helps with reasoning — it never re-grades your answer.",
+    sessionAria: "Thinking activity",
+    listAria: "Thinking activities",
+  },
+  id: {
+    heading: "Belajar mikir kayak programmer.",
+    intro: "Pecah masalah, cari pola, trace program, dan susun langkah. Bukan tes IQ—ini latihan cara kerja program.",
+    of: "dari",
+    complete: "selesai",
+    activities: "activity",
+    beginner: "Beginner",
+    checking: "Checking…",
+    check: "Check reasoning",
+    hideHint: "Sembunyikan hint",
+    hint: "Hint",
+    fixed: "Yang perlu dibenerin ·",
+    restored: "Attempt tersimpan:",
+    restoredNote: "Jawabannya dipulihkan setelah reload.",
+    aiHint: "One hint",
+    aiBreakDown: "Break it down",
+    aiExplain: "Explain the reasoning",
+    aiNote: "Robin nunjukin langkah penalaran berikutnya, bukan jawaban utuh. Hint deterministic di atas tetap jalan tanpa AI.",
+    next: "Activity berikutnya →",
+    setDone: "Thinking set selesai — mantap.",
+    pickAnother: "Pilih activity lain dari daftar.",
+    footer: "Correctness selalu deterministic. Robin tidak dibutuhkan untuk membuka, mengerjakan, atau memeriksa activity.",
+    guideTag: "How to use it",
+    guideHeading: "Pelan, terus urut.",
+    guideIntro: "Tujuannya bukan menjawab cepat. Cari data yang tersedia, perubahan yang terjadi, dan urutan yang masuk akal.",
+    guidePoints: "pecah masalah kecil-kecil|uji pola ke semua contoh|trace satu baris sekali|diagnosis konsep sebelum memperbaiki",
+    guideNote: "Correctness tetap deterministic. Robin cuma membantu penalaran — dia tidak menilai ulang jawaban lu.",
+    sessionAria: "Thinking activity",
+    listAria: "Thinking activities",
+  },
 };
 
 function ThinkingInteraction({ activity, submission, onChange }: {
@@ -85,7 +151,12 @@ function ThinkingInteraction({ activity, submission, onChange }: {
 }
 
 export function ThinkingLab() {
-  const activities = getThinkingActivities();
+  // Same locale source as the language switcher, read per mount of this route.
+  const [language] = useState<LessonLanguage>(() => getActiveLessonLanguage());
+  const t = copy[language];
+  const guidePoints = t.guidePoints.split("|");
+  const rawActivities = getThinkingActivities();
+  const activities = useMemo(() => localizeThinkingActivities(rawActivities, language), [language, rawActivities]);
   const practice = usePractice("thinking");
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [submission, setSubmission] = useState<ThinkingSubmission>(() => createEmptyThinkingSubmission(activities[0]));
@@ -161,7 +232,7 @@ export function ThinkingLab() {
     try {
       const response = await fetch("/api/practice/thinking/check", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activityId: activity.id, answer: submission, attemptId }),
+        body: JSON.stringify({ activityId: activity.id, answer: submission, attemptId, language }),
       });
       const data = await response.json();
       if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : "Check belum tersedia.");
@@ -188,22 +259,22 @@ export function ThinkingLab() {
     <TopBar breadcrumb={<><Link href="/practice">Practice</Link><span className="sep">/</span><b>Logic &amp; Thinking</b></>} />
     <div className="content">
       <header className="page-header thinking-header"><div>
-        <span className="eyebrow">Practice Lab · Logic &amp; Computational Thinking · {activities.length} activities</span>
-        <h1>Belajar mikir kayak programmer.</h1>
-        <p>Pecah masalah, cari pola, trace program, dan susun langkah. Bukan tes IQ—ini latihan cara kerja program.</p>
+        <span className="eyebrow">Practice Lab · Logic &amp; Computational Thinking · {activities.length} {t.activities}</span>
+        <h1>{t.heading}</h1>
+        <p>{t.intro}</p>
       </div></header>
 
       <PracticeModeNav active="thinking" />
 
       <div className="practice-topic-bar">
-        <span className="practice-count">{completedCount} of {activities.length} complete</span>
+        <span className="practice-count">{completedCount} {t.of} {activities.length} {t.complete}</span>
       </div>
 
       <div className="thinking-grid">
         <article className="practice-article">
           <ProgressBar value={Math.round((completedCount / activities.length) * 100)} />
-          <section className="practice-session thinking-session" aria-label="Thinking activity">
-            <span className="eyebrow">{thinkingTypeLabels[activity.type]} · Beginner</span>
+          <section className="practice-session thinking-session" aria-label={t.sessionAria}>
+            <span className="eyebrow">{thinkingTypeLabels[activity.type]} · {t.beginner}</span>
             <h2>{activity.title}</h2>
             <p className="practice-prompt">{activity.prompt}</p>
             {activity.code && <div className="code-block"><div className="code-head"><span>python / trace it</span></div><pre><code>{activity.code}</code></pre></div>}
@@ -211,16 +282,16 @@ export function ThinkingLab() {
             <ThinkingInteraction activity={activity} submission={submission} onChange={(next) => { setSubmission(next); setResult(null); }} />
 
             <div className="practice-actions">
-              <button className="button button-primary" type="button" disabled={checking || !isThinkingSubmissionComplete(activity, submission)} onClick={() => void check()}>{checking ? "Checking…" : "Check reasoning"}</button>
-              <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? "Hide hint" : "Hint"}</button>
+              <button className="button button-primary" type="button" disabled={checking || !isThinkingSubmissionComplete(activity, submission)} onClick={() => void check()}>{checking ? t.checking : t.check}</button>
+              <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? t.hideHint : t.hint}</button>
               {activity.sandboxCode && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>Try this in Sandbox</Link>}
             </div>
             {hintShown && <p className="practice-hint" role="note"><strong>Hint.</strong> {activity.hint}</p>}
             {result && <p className={`answer-note ${result.status === "correct" ? "is-correct" : "is-incorrect"}`} role="status">
-              <strong>{statusLabels[result.status]}</strong> {result.explanation}
-              {result.misconceptionNote && <span className="practice-misconception"><strong>Yang perlu dibenerin · {result.misconception}</strong> {result.misconceptionNote}</span>}
+              <strong>{statusLabels[result.status][language]}</strong> {result.explanation}
+              {result.misconceptionNote && <span className="practice-misconception"><strong>{t.fixed} {result.misconception}</strong> {result.misconceptionNote}</span>}
             </p>}
-            {!result && attempt && <p className="practice-restored" role="status">Attempt tersimpan: {attempt.status}. Jawabannya dipulihkan setelah reload.</p>}
+            {!result && attempt && <p className="practice-restored" role="status">{t.restored} {attempt.status}. {t.restoredNote}</p>}
             {checkError && <p className="robin-error" role="alert">{checkError}</p>}
 
             <PracticeAssist
@@ -228,18 +299,18 @@ export function ThinkingLab() {
               resetKey={activity.id}
               payload={{ activityId: activity.id, submission: serializeThinkingSubmission(submission) }}
               actions={[
-                { action: "hint", label: "One hint" },
-                { action: "break-down-problem", label: "Break it down" },
-                { action: "explain-reasoning", label: "Explain the reasoning", disabled: !result },
+                { action: "hint", label: t.aiHint },
+                { action: "break-down-problem", label: t.aiBreakDown },
+                { action: "explain-reasoning", label: t.aiExplain, disabled: !result },
               ]}
-              note="Robin nunjukin langkah penalaran berikutnya, bukan jawaban utuh. Hint deterministic di atas tetap jalan tanpa AI."
+              note={t.aiNote}
             />
 
-            <div className="practice-nav"><button className="button button-primary" disabled={!nextId} onClick={() => nextId && jumpTo(nextId)}>Next activity →</button>
-              {!nextId && <span className="practice-count">{completedCount === activities.length ? "Thinking set complete — mantap." : "Pilih activity lain dari daftar."}</span>}</div>
+            <div className="practice-nav"><button className="button button-primary" disabled={!nextId} onClick={() => nextId && jumpTo(nextId)}>{t.next}</button>
+              {!nextId && <span className="practice-count">{completedCount === activities.length ? t.setDone : t.pickAnother}</span>}</div>
           </section>
 
-          <nav className="practice-exercise-list" aria-label="Thinking activities">{ordered.map((item, index) => {
+          <nav className="practice-exercise-list" aria-label={t.listAria}>{ordered.map((item, index) => {
             const saved = practice.attempts[item.id];
             const done = practice.completedExerciseIds.includes(item.id);
             return <button key={item.id} type="button" className={`practice-exercise-row ${item.id === activity.id ? "now" : ""}`} onClick={() => jumpTo(item.id)}>
@@ -248,15 +319,15 @@ export function ThinkingLab() {
               <span className="practice-exercise-type">{thinkingTypeLabels[item.type]}{done ? " · done" : saved ? ` · ${saved.status}` : ""}</span>
             </button>;
           })}</nav>
-          <p className="panel-footnote">Correctness selalu deterministic. Robin tidak dibutuhkan untuk membuka, mengerjakan, atau memeriksa activity.</p>
+          <p className="panel-footnote">{t.footer}</p>
         </article>
 
-        <aside className="panel thinking-guide" aria-label="Thinking Lab guide">
-          <span className="tag acc">How to use it</span>
-          <h2>Pelan, terus urut.</h2>
-          <p>Tujuannya bukan menjawab cepat. Cari data yang tersedia, perubahan yang terjadi, dan urutan yang masuk akal.</p>
-          <ul><li>pecah masalah kecil-kecil</li><li>uji pola ke semua contoh</li><li>trace satu baris sekali</li><li>diagnosis konsep sebelum memperbaiki</li></ul>
-          <p className="thinking-guide-note">Correctness tetap deterministic. Robin cuma membantu penalaran — dia tidak menilai ulang jawaban lu.</p>
+        <aside className="panel thinking-guide" aria-label={t.guideTag}>
+          <span className="tag acc">{t.guideTag}</span>
+          <h2>{t.guideHeading}</h2>
+          <p>{t.guideIntro}</p>
+          <ul>{guidePoints.map((point) => <li key={point}>{point}</li>)}</ul>
+          <p className="thinking-guide-note">{t.guideNote}</p>
         </aside>
       </div>
     </div>
