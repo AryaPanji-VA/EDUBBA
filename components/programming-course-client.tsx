@@ -132,6 +132,15 @@ export function ProgrammingCourseClient() {
     return segments;
   }
 
+  // Learner-friendly mastery labels — never raw state codes like "coming-soon".
+  function masteryLabel(state: LessonPresentationState) {
+    if (state === "completed") return "completed";
+    if (state === "current") return "in progress";
+    if (state === "next") return "up next";
+    if (state === "available") return "not started";
+    return "coming soon";
+  }
+
   const courseData = course;
   const allLessons = courseData?.modules.flatMap(m => m.lessons) ?? [];
   const completedCount = allLessons.filter(l => lessonStates[l.slug] === "completed").length;
@@ -354,7 +363,7 @@ export function ProgrammingCourseClient() {
                     <li key={row.slug} className={`mast-item ${state === "current" ? "hot" : ""}`}>
                       <div className="mast-top">
                         <span className="mast-name">{row.label}</span>
-                        <span className="mast-pct">{state === "current" ? "in progress" : state}</span>
+                        <span className="mast-pct">{masteryLabel(state)}</span>
                       </div>
                       <div className="mbar2">
                         {Array.from({ length: row.segments }, (_, index) => (

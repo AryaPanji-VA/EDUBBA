@@ -126,11 +126,16 @@ test("learning_logs SQL migration follows project pattern", () => {
   assert.match(sql, /raise exception.*learning_logs.*must have no public policies/, "Must have fail-closed policy check");
 });
 
-// === 11. Dashboard integrates RecentLearning ===
-test("dashboard imports and renders RecentLearning", () => {
+// === 11. RecentLearning is retired from the dashboard surface ===
+test("dashboard no longer renders RecentLearning; the component and its data contracts remain", () => {
   const dashSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
-  assert.match(dashSource, /import.*RecentLearning/, "Must import RecentLearning component");
-  assert.match(dashSource, /<RecentLearning/, "Must render RecentLearning in the dashboard");
+  assert.doesNotMatch(dashSource, /RecentLearning/, "Dashboard surface is simplified — resume/path/mastery carry the info");
+  // Presentation-only removal: the component stays available and the
+  // learning-log API contract is untouched.
+  const component = readFileSync(new URL("../components/recent-learning.tsx", import.meta.url), "utf8");
+  assert.match(component, /export function RecentLearning/, "component file is kept for reuse");
+  const server = readFileSync(new URL("../lib/learning-log/server.ts", import.meta.url), "utf8");
+  assert.match(server, /learning_logs/, "learning log API contract unchanged");
 });
 
 // === 12. Current lesson resolution ===

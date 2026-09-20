@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { ProgressBar } from "@/components/progress-bar";
 import { courseOverviewRouteBySlug, type Course } from "@/data/courses";
+import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 
 type SemesterGroup = {
   number: number;
@@ -31,6 +32,7 @@ export function CoursesClient() {
   const [selectedSemester, setSelectedSemester] = useState(defaultSemesterNumber);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const current = useCurrentLesson();
 
   async function loadCourses() {
     setIsLoading(true);
@@ -114,15 +116,25 @@ export function CoursesClient() {
             <section className="courses-list" aria-label={`Semester ${selectedSemester} courses`}>
         {courses.map((course, index) => {
           const isProgramming = course.slug === "programming";
-          const learningState = course.progress > 0 ? "LEARNING" : "NOT STARTED";
+          const isCurrent = course.slug === current.courseSlug;
+          // Status language comes from the persisted state, with the existing
+          // progress value deciding completion. No invented states.
+          const statusLabel = course.progress >= 100 ? "Completed" : course.status;
+          const ctaLabel = isCurrent || course.progress > 0 ? "Continue" : "Start";
           const overviewHref = courseOverviewRouteBySlug[course.slug] ?? "/courses";
 
           return (
-            <Link className={`course-row ${isProgramming ? "featured" : ""}`} href={overviewHref} key={course.slug} aria-label={`${course.title}, ${course.progress}% complete`}>
+            <Link
+              className={`course-row ${isProgramming ? "featured" : ""} ${isCurrent ? "current" : ""}`}
+              href={overviewHref}
+              key={course.slug}
+              aria-label={`${course.title}, ${course.progress}% complete`}
+              aria-current={isCurrent ? "true" : undefined}
+            >
                     <span className="course-index">{String(index + 1).padStart(2, "0")}</span>
                     <span className="course-main"><span className="course-code">{course.code}</span><strong>{course.title}</strong><small>{course.description}</small></span>
-                    <span className="course-stats"><span>{course.lessons} lessons</span><span className={`status status-${course.status.toLowerCase().replaceAll(" ", "-")}`}>{learningState}</span></span>
-                    <span className="course-progress"><strong>{course.progress}%</strong><ProgressBar value={course.progress} /></span>
+                    <span className="course-stats"><span>{course.lessons} lessons</span><span className={`status status-${statusLabel.toLowerCase().replaceAll(" ", "-")}`}>{statusLabel}</span></span>
+                    <span className="course-progress"><strong>{course.progress}%</strong><ProgressBar value={course.progress} /><span className="course-cta">{ctaLabel} →</span></span>
                     <span className="row-arrow">→</span>
                   </Link>
                 );

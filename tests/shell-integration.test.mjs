@@ -145,14 +145,21 @@ test("dashboard page uses TopBar + mockup content structure", () => {
   assert.doesNotMatch(source, /mode-control/, "Must NOT have old .mode-control");
 });
 
-// === 14. TopBar component exists and uses ThemeSwitcher ===
-test("top-bar component renders breadcrumb and ThemeSwitcher", () => {
+// === 14. TopBar is wayfinding-only; appearance controls live in Settings ===
+test("top-bar renders breadcrumb and contextual controls, without theme switchers", () => {
   const source = readFileSync(new URL("../components/top-bar.tsx", import.meta.url), "utf8");
-  assert.match(source, /ThemeSwitcher/, "Must render ThemeSwitcher");
+  assert.doesNotMatch(source, /ThemeSwitcher/, "Appearance controls moved to Settings — header stays focused on wayfinding");
   assert.match(source, /className="topbar"/, "Must have .topbar class");
   assert.match(source, /className="crumb"/, "Must have .crumb for breadcrumb");
   assert.match(source, /className="top-right"/, "Must have .top-right for controls");
   assert.match(source, /contextual/, "Must accept contextual controls prop");
+});
+
+test("settings page hosts the ThemeSwitcher under an Appearance section", () => {
+  const settings = readFileSync(new URL("../app/settings/page.tsx", import.meta.url), "utf8");
+  assert.match(settings, /ThemeSwitcher/, "Theme/mode controls must be reachable from Settings");
+  assert.match(settings, /aria-label="Appearance"/, "Appearance section must be labelled");
+  assert.doesNotMatch(settings, /href="\/profile"/, "Profile is reached from the sidebar account control — no duplicate section in Settings");
 });
 
 // === 15. Lesson pages use TopBar with contextual controls ===
@@ -175,7 +182,7 @@ test("data-types-lesson uses TopBar with ID/EN and Source Mode contextual contro
 });
 
 // === 16. Sidebar no longer has ThemeSwitcher ===
-test("app-shell sidebar does not render ThemeSwitcher (moved to topbar)", () => {
+test("app-shell sidebar does not render ThemeSwitcher (lives in Settings)", () => {
   const source = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(source, /ThemeSwitcher/, "Sidebar must not import/render ThemeSwitcher");
   assert.match(source, /BrandTagline/, "Must still render BrandTagline");

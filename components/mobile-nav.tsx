@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 
-type MobileNavActive = "dashboard" | "courses" | "lesson" | "practice" | "profile";
+type MobileNavActive = "dashboard" | "courses" | "lesson" | "practice" | "settings" | "profile";
 
 // Phase 16.1: mobile-only floating navigation (≤430px). One FAB expands a
 // vertical stack upward. Tablet/desktop rendering is untouched: the wrapper
@@ -33,6 +33,12 @@ const PracticeIcon = () => (
 const ProfileIcon = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
     <circle cx="8" cy="5" r="2.5" /><path d="M3 13c.5-2.5 2.2-4 5-4s4.5 1.5 5 4" />
+  </svg>
+);
+const SettingsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <circle cx="8" cy="8" r="2.2" />
+    <path d="M8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M12.4 3.6l-1.2 1.2M4.8 11.2l-1.2 1.2" />
   </svg>
 );
 const MenuIcon = () => (
@@ -77,6 +83,7 @@ export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }
     { key: "courses", href: "/courses", label: "Courses", icon: <CoursesIcon /> },
     { key: "lesson", href: `/courses/${current.courseSlug}/${current.lessonSlug}`, label: "Lesson", icon: <LessonIcon /> },
     { key: "practice", href: "/practice", label: "Practice", icon: <PracticeIcon /> },
+    { key: "settings", href: "/settings", label: "Settings", icon: <SettingsIcon /> },
     { key: "profile", href: "/profile", label: "Profile", icon: <ProfileIcon /> },
   ];
 

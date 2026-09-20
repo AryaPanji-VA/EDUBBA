@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
-import { RecentLearning } from "@/components/recent-learning";
 import { implementedProgrammingLessonSlugs } from "@/data/courses";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 import type { CurrentLesson } from "@/lib/progress/types";
@@ -214,7 +213,7 @@ export default function DashboardPage() {
               <div className="continue-in">
                 <div>
                   <span className="tag acc">{currentLesson.completedAt ? "Completed" : "Continue"} · {lessonName}</span>
-                  <h2 className="lesson-title">{activityName}</h2>
+                  <h2 className="lesson-title-card">{activityName}</h2>
                   <p className="lesson-meta">CS-101 · step {step} of {currentLesson.totalActivities || "—"}</p>
                   <p className="lesson-x">Your last meaningful lesson position is saved. <em>tinggal lanjut, nggak perlu mulai ulang.</em></p>
                 </div>
@@ -234,8 +233,8 @@ export default function DashboardPage() {
               <ol className="mods">
                 <li className={`mod ${completedImplemented > 0 ? (completedImplemented === implementedTotal ? "done" : "open") : "dim"}`}>
                   <div className="mod-row">
-                    <span className="node" /><span className="mnum">03</span>
-                    <span className="mname">Programming Building Blocks</span>
+                    <span className="node" /><span className="mnum">CS101</span>
+                    <span className="mname">Foundations of Programming</span>
                     <span className={`mtag ${completedImplemented === implementedTotal && implementedTotal > 0 ? "master" : completedImplemented > 0 ? "now" : "lock"}`}>
                       {completedImplemented === implementedTotal && implementedTotal > 0 ? "completed" : completedImplemented > 0 ? "in progress" : "not started"}
                     </span>
@@ -246,12 +245,23 @@ export default function DashboardPage() {
                     {implementedProgrammingLessonSlugs.map((slug, index) => {
                       const state = stateFor(slug);
                       const label = slug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
+                      const nodeStyle = state === "completed"
+                        ? { background: "var(--ok)", borderColor: "var(--ok)" }
+                        : state === "current"
+                        ? { background: "var(--accent)", borderColor: "var(--accent)", boxShadow: "0 0 0 3px var(--now-glow)" }
+                        : undefined;
                       return (
-                        <li key={slug} className={`cmap-lesson ${state === "completed" ? "done" : state === "current" ? "now" : ""}`}>
-                          <span className="lnode" style={state === "completed" ? { background: "var(--ok)", borderColor: "var(--ok)" } : state === "current" ? { background: "var(--accent)", borderColor: "var(--accent)", boxShadow: "0 0 0 3px var(--now-glow)" } : undefined} />
-                          <span className="cmap-ltitle"><span className="cmap-lnum">3.{index + 1}</span>{label}</span>
-                          {state === "completed" && <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>}
-                          {state === "current" && <span className="cmap-laction">Resume →</span>}
+                        <li key={slug}>
+                          <Link
+                            className={`cmap-lesson ${state === "completed" ? "done" : state === "current" ? "current" : ""}`}
+                            href={`/courses/programming/${slug}`}
+                          >
+                            <span className="lnode" style={nodeStyle} />
+                            <span className="cmap-ltitle"><span className="cmap-lnum">{String(index + 1).padStart(2, "0")}</span>{label}</span>
+                            {state === "completed" && <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>}
+                            {state === "current" && <span className="cmap-laction">Resume →</span>}
+                            {state === "pending" && <span className="cmap-lock">start</span>}
+                          </Link>
                         </li>
                       );
                     })}
@@ -289,8 +299,6 @@ export default function DashboardPage() {
                 <span className="up">keep going</span>
               </div>
             </section>
-
-            <RecentLearning />
 
             <RobinMiniChat currentLesson={currentLesson} profileContext={toRobinProfileContext(profile)} />
           </div>
