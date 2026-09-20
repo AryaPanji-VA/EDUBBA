@@ -99,14 +99,15 @@ test("Module 06 lessons follow the standard registration architecture", () => {
 test("Module 06 order, grouped mastery row, and no-lock availability", () => {
   const courses = loadModule("data/courses.ts");
   const list = Array.from(courses.implementedProgrammingLessonSlugs);
-  const module06 = list.slice(list.indexOf("lists"));
+  const module06 = list.slice(list.indexOf("lists"), list.indexOf("sets") + 1);
   assert.deepEqual(module06, ["lists", "dictionaries", "tuples", "sets"]);
   assert.equal(list[list.indexOf("scope-basics") + 1], "lists", "Lists follows Scope Basics");
+  assert.equal(list[list.indexOf("sets") + 1], "try-except-basics", "Errors / Try Except Basics follows Sets");
 
   const client = read("components/programming-course-client.tsx");
   assert.match(client, /Module 06 · Collections/);
   const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
-  assert.equal(groups.length, 6, "six module groups exist");
+  assert.equal(groups.length, 7, "seven module groups exist");
   assert.deepEqual(
     groups[5].match(/"[a-z-]+"/g).map((token) => token.slice(1, -1)),
     ["lists", "dictionaries", "tuples", "sets"],

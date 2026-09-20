@@ -202,6 +202,15 @@ export function ProgrammingCourseClient() {
         "sets",
       ],
     },
+    {
+      label: "Module 07 · Putting It Together",
+      group: [
+        "try-except-basics",
+        "problem-decomposition",
+        "mini-project",
+        "course-review",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },

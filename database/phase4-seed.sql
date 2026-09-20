@@ -1,9 +1,9 @@
 -- Seed only the first fully structured ROBIN course.
 -- Every insert finds the existing course by slug, so no UUID is hardcoded.
 
--- This course now contains thirty lessons across three modules.
+-- This course now contains thirty-four lessons across four modules.
 update public.courses
-set total_lessons = 30
+set total_lessons = 34
 where slug = 'programming';
 
 insert into public.modules (course_id, slug, title, description, position)
@@ -18,7 +18,8 @@ cross join (
   values
     ('programming-fundamentals', 'Programming Fundamentals', 'Core ideas and vocabulary behind programming.', 1),
     ('how-programs-run', 'How Programs Run', 'Follow source code as a computer turns it into instructions.', 2),
-    ('programming-building-blocks', 'Programming Building Blocks', 'The reusable pieces found in everyday programs.', 3)
+    ('programming-building-blocks', 'Programming Building Blocks', 'The reusable pieces found in everyday programs.', 3),
+    ('programming-putting-it-together', 'Putting It Together', 'Handle expected failures, decompose problems, and combine the pieces into a working program.', 4)
 ) as module(slug, title, description, position)
 where c.slug = 'programming'
 on conflict (course_id, slug) do update set
@@ -67,7 +68,11 @@ join (
     ('programming-building-blocks', 'lists', 'Lists', 'Satu variable, banyak value berurutan — index mulai dari 0.', 12, 17),
     ('programming-building-blocks', 'dictionaries', 'Dictionaries', 'Simpan value dengan key bermakna, bukan posisi angka.', 12, 18),
     ('programming-building-blocks', 'tuples', 'Tuples', 'Kumpulan berurutan yang itemnya tidak berubah — fixed items.', 12, 19),
-    ('programming-building-blocks', 'sets', 'Sets', 'Kumpulan value unik — duplikat collapse, tanpa posisi.', 12, 20)
+    ('programming-building-blocks', 'sets', 'Sets', 'Kumpulan value unik — duplikat collapse, tanpa posisi.', 12, 20),
+    ('programming-putting-it-together', 'try-except-basics', 'Errors / Try Except Basics', 'Tangani kegagalan runtime yang diharapkan: try, except ValueError, dan fallback yang bermakna.', 12, 1),
+    ('programming-putting-it-together', 'problem-decomposition', 'Problem Decomposition', 'Pecah masalah jadi INPUT → PROCESS → OUTPUT dan langkah kecil yang bisa diselesaikan satu per satu.', 12, 2),
+    ('programming-putting-it-together', 'mini-project', 'Mini Project', 'Rakit Student Score Checker: input, konversi aman, keputusan, output, dan error handling.', 16, 3),
+    ('programming-putting-it-together', 'course-review', 'Course Review / Final Practice', 'Panggil balik enam keluarga konsep dan buktikan lewat final challenge — course complete.', 14, 4)
 ) as lesson(module_slug, slug, title, summary, estimated_minutes, position)
   on lesson.module_slug = m.slug
 where c.slug = 'programming'

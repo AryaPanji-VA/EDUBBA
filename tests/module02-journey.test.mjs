@@ -80,8 +80,9 @@ test("Module 02 order, implemented count, and no-lock availability", () => {
   ]);
   assert.equal(list[12], "operators", "Operators comes after the completed Module 02");
   // The full implemented list: 6 onboarding + 6 Values & Data + 3 Program
-  // Logic + 3 Repetition + 4 Reusable Code + 4 Collections.
-  assert.equal(list.length, 26);
+  // Logic + 3 Repetition + 4 Reusable Code + 4 Collections + 4 Putting It
+  // Together.
+  assert.equal(list.length, 30);
   assert.equal(courses.defaultCurrentLesson.lessonSlug, "what-is-programming");
   const client = read("components/programming-course-client.tsx");
   assert.match(client, /Module 02 · Values & Data/);

@@ -115,6 +115,32 @@ import { setsMasteryConfig, setsRelevance } from "@/content/lessons/programming/
 import { loadSetsLesson } from "@/lib/lessons/sets";
 import { setsCheckInstructions, setsFeedbackInstructions } from "@/content/lessons/programming/sets-instructions";
 
+// Phase 20.7: Module 07 — Putting It Together (Errors / Try Except Basics,
+// Problem Decomposition, Mini Project, Course Review / Final Practice).
+import { tryExceptBasicsActivities } from "@/content/lessons/programming/try-except-basics-activities";
+import { tryExceptBasicsLessonContent } from "@/content/lessons/programming/try-except-basics";
+import { tryExceptBasicsMasteryConfig, tryExceptBasicsRelevance } from "@/content/lessons/programming/try-except-basics-config";
+import { loadTryExceptBasicsLesson } from "@/lib/lessons/try-except-basics";
+import { tryExceptBasicsCheckInstructions, tryExceptBasicsFeedbackInstructions } from "@/content/lessons/programming/try-except-basics-instructions";
+
+import { problemDecompositionActivities } from "@/content/lessons/programming/problem-decomposition-activities";
+import { problemDecompositionLessonContent } from "@/content/lessons/programming/problem-decomposition";
+import { problemDecompositionMasteryConfig, problemDecompositionRelevance } from "@/content/lessons/programming/problem-decomposition-config";
+import { loadProblemDecompositionLesson } from "@/lib/lessons/problem-decomposition";
+import { problemDecompositionCheckInstructions, problemDecompositionFeedbackInstructions } from "@/content/lessons/programming/problem-decomposition-instructions";
+
+import { miniProjectActivities } from "@/content/lessons/programming/mini-project-activities";
+import { miniProjectLessonContent } from "@/content/lessons/programming/mini-project";
+import { miniProjectMasteryConfig, miniProjectRelevance } from "@/content/lessons/programming/mini-project-config";
+import { loadMiniProjectLesson } from "@/lib/lessons/mini-project";
+import { miniProjectCheckInstructions, miniProjectFeedbackInstructions } from "@/content/lessons/programming/mini-project-instructions";
+
+import { courseReviewActivities } from "@/content/lessons/programming/course-review-activities";
+import { courseReviewLessonContent } from "@/content/lessons/programming/course-review";
+import { courseReviewMasteryConfig, courseReviewRelevance } from "@/content/lessons/programming/course-review-config";
+import { loadCourseReviewLesson } from "@/lib/lessons/course-review";
+import { courseReviewCheckInstructions, courseReviewFeedbackInstructions } from "@/content/lessons/programming/course-review-instructions";
+
 // Phase 20.1A: beginner onboarding — the first lesson of Programming Fundamentals.
 import { whatIsProgrammingActivities } from "@/content/lessons/programming/what-is-programming-activities";
 import { whatIsProgrammingLessonContent } from "@/content/lessons/programming/what-is-programming";
@@ -621,6 +647,58 @@ const setsDefinition = standardLesson({
   feedbackMisconceptions: ["set_indexing_confusion", "duplicates_counted_confusion", "order_relied_on", "empty_braces_confusion"],
 });
 
+// Phase 20.7 — Module 07 · Putting It Together: Errors / Try Except Basics.
+const tryExceptBasicsDefinition = standardLesson({
+  slug: "try-except-basics", courseSlug: "programming",
+  activities: tryExceptBasicsActivities, lessonContent: tryExceptBasicsLessonContent, loadLesson: loadTryExceptBasicsLesson,
+  mastery: tryExceptBasicsMasteryConfig, relevance: tryExceptBasicsRelevance,
+  checkRubric: tryExceptBasicsCheckInstructions, checkQuestion: 'Jelasin pakai bahasa lu sendiri: kenapa int("hello") bikin program berhenti — dan apa yang try/except lakuin saat itu terjadi?',
+  contextLabel: "Errors / Try Except Basics lesson context (data only)",
+  checkConcepts: ["error_as_signal", "try_except_flow", "valueerror_handling"],
+  checkMisconceptions: ["bare_except_confusion", "fallback_without_try", "wrong_error_type", "conversion_always_fails"],
+  feedbackRubric: tryExceptBasicsFeedbackInstructions,
+  feedbackMisconceptions: ["bare_except_confusion", "fallback_without_try", "wrong_error_type", "conversion_always_fails"],
+});
+
+// Phase 20.7 — Module 07 · Putting It Together: Problem Decomposition.
+const problemDecompositionDefinition = standardLesson({
+  slug: "problem-decomposition", courseSlug: "programming",
+  activities: problemDecompositionActivities, lessonContent: problemDecompositionLessonContent, loadLesson: loadProblemDecompositionLesson,
+  mastery: problemDecompositionMasteryConfig, relevance: problemDecompositionRelevance,
+  checkRubric: problemDecompositionCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: kenapa program rata-rata dua nilai lebih gampang dipecah jadi langkah kecil — dan konsep apa yang dipakai di tiap langkah?",
+  contextLabel: "Problem Decomposition lesson context (data only)",
+  checkConcepts: ["identify_input_output", "step_decomposition", "concept_mapping"],
+  checkMisconceptions: ["step_order_confusion", "output_first_confusion", "new_syntax_needed", "monolithic_solution"],
+  feedbackRubric: problemDecompositionFeedbackInstructions,
+  feedbackMisconceptions: ["step_order_confusion", "output_first_confusion", "new_syntax_needed", "monolithic_solution"],
+});
+
+// Phase 20.7 — Module 07 · Putting It Together: Mini Project.
+const miniProjectDefinition = standardLesson({
+  slug: "mini-project", courseSlug: "programming",
+  activities: miniProjectActivities, lessonContent: miniProjectLessonContent, loadLesson: loadMiniProjectLesson,
+  mastery: miniProjectMasteryConfig, relevance: miniProjectRelevance,
+  checkRubric: miniProjectCheckInstructions, checkQuestion: "Ceritakan pakai bahasa lu sendiri: bagaimana Student Score Checker lu nggabungin input, casting, try/except, dan conditional — dari input sampai hasil tercetak?",
+  contextLabel: "Mini Project lesson context (data only)",
+  checkConcepts: ["project_inputs", "safe_conversion", "decision_output"],
+  checkMisconceptions: ["hardcoded_output", "conversion_skipped", "missing_result_line", "bare_except_confusion"],
+  feedbackRubric: miniProjectFeedbackInstructions,
+  feedbackMisconceptions: ["hardcoded_output", "conversion_skipped", "missing_result_line", "bare_except_confusion"],
+});
+
+// Phase 20.7 — Module 07 · Putting It Together: Course Review / Final Practice.
+const courseReviewDefinition = standardLesson({
+  slug: "course-review", courseSlug: "programming",
+  activities: courseReviewActivities, lessonContent: courseReviewLessonContent, loadLesson: loadCourseReviewLesson,
+  mastery: courseReviewMasteryConfig, relevance: courseReviewRelevance,
+  checkRubric: courseReviewCheckInstructions, checkQuestion: "Ceritakan pakai bahasa lu sendiri: keluarga konsep mana yang paling kuat buat lu sekarang — dan bagaimana lu menggabungkan beberapa konsep di satu program kecil?",
+  contextLabel: "Course Review / Final Practice lesson context (data only)",
+  checkConcepts: ["values_and_logic_recall", "repetition_and_reuse_recall", "collections_and_integration"],
+  checkMisconceptions: ["logic_trace_confusion", "loop_confusion", "collection_mismatch", "new_syntax_assumption"],
+  feedbackRubric: courseReviewFeedbackInstructions,
+  feedbackMisconceptions: ["logic_trace_confusion", "loop_confusion", "collection_mismatch", "new_syntax_assumption"],
+});
+
 const propositionsDefinition: LessonDefinition = {
   slug: "propositions",
   courseSlug: "discrete-math",
@@ -1033,6 +1111,10 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["dictionaries", dictionariesDefinition],
   ["tuples", tuplesDefinition],
   ["sets", setsDefinition],
+  ["try-except-basics", tryExceptBasicsDefinition],
+  ["problem-decomposition", problemDecompositionDefinition],
+  ["mini-project", miniProjectDefinition],
+  ["course-review", courseReviewDefinition],
   ["propositions", propositionsDefinition],
   ["implication", implicationDefinition],
   ["sets-intro", setsIntroDefinition],

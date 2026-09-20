@@ -177,7 +177,7 @@ test("the course mastery panel represents all completed modules as grouped rows"
   assert.match(client, /Module 04 · Repetition/);
   // All Module 01 lessons are members of the first group row.
   const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
-  assert.equal(groups.length, 6, "six module groups exist");
+  assert.equal(groups.length, 7, "seven module groups exist");
   for (const slug of ["what-is-programming", "hello-python", "print-output", "syntax-indentation", "comments", "understanding-errors"]) {
     assert.ok(groups[0].includes(`"${slug}"`), `${slug} must be a Module 01 group member`);
   }
@@ -202,6 +202,10 @@ test("the course mastery panel represents all completed modules as grouped rows"
   for (const slug of ["lists", "dictionaries", "tuples", "sets"]) {
     assert.ok(groups[5].includes(`"${slug}"`), `${slug} must be a Module 06 group member`);
   }
+  // Module 07 group covers exactly the Putting It Together lessons.
+  for (const slug of ["try-except-basics", "problem-decomposition", "mini-project", "course-review"]) {
+    assert.ok(groups[6].includes(`"${slug}"`), `${slug} must be a Module 07 group member`);
+  }
   const courses = read("data/courses.ts");
   const implemented = courses.match(/implementedProgrammingLessonSlugs = \[([\s\S]*?)\]/)?.[1] ?? "";
   const module03 = implemented.match(/"operators"[\s\S]*?"conditionals"/)?.[0] ?? "";
@@ -215,6 +219,9 @@ test("the course mastery panel represents all completed modules as grouped rows"
   const module06 = implemented.match(/"lists"[\s\S]*?"sets"/)?.[0] ?? "";
   assert.match(module06, /"lists"[\s\S]*?"dictionaries"[\s\S]*?"tuples"[\s\S]*?"sets"/, "Module 06 order is Lists → Dictionaries → Tuples → Sets");
   assert.match(courses, /Module 06 \(Collections\)/, "the roadmap comment names Module 06");
+  const module07 = implemented.match(/"try-except-basics"[\s\S]*?"course-review"/)?.[0] ?? "";
+  assert.match(module07, /"try-except-basics"[\s\S]*?"problem-decomposition"[\s\S]*?"mini-project"[\s\S]*?"course-review"/, "Module 07 order is Errors / Try Except Basics → Problem Decomposition → Mini Project → Course Review / Final Practice");
+  assert.match(courses, /Module 07 \(Putting It Together\)/, "the roadmap comment names Module 07");
   // The group state derives from the shared lessonStates (persisted progress)
   // — no parallel progress source and no fabricated completion.
   assert.match(client, /lessonStates\[slug\] \?\? "coming-soon"/);

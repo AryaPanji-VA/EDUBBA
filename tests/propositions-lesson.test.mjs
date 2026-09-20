@@ -359,8 +359,8 @@ test("all Programming lessons keep their registry course identity", () => {
   const programming = [...registry.matchAll(/courseSlug: "programming"/g)].length;
   // Phase 20.3A-B: the twelve frozen lessons plus Operators and User Input;
   // Phase 20.4 adds While Loops and Range & Loop Patterns (the legacy `loops`
-  // lesson keeps its identity as For Loops).
-  assert.equal(programming, 26);
+  // lesson keeps its identity as For Loops); Phase 20.7 adds Module 07.
+  assert.equal(programming, 30);
   // Phase 15: 7 non-programming lessons use the factory (16 standard lessons
   // + propositions written explicitly).
   const discrete = [...registry.matchAll(/courseSlug: "discrete-math"/g)].length;

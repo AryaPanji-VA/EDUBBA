@@ -102,7 +102,7 @@ test("Module 05 order, grouped mastery row, and no-lock availability", () => {
   const client = read("components/programming-course-client.tsx");
   assert.match(client, /Module 05 · Reusable Code/);
   const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
-  assert.equal(groups.length, 6, "six module groups exist");
+  assert.equal(groups.length, 7, "seven module groups exist");
   assert.deepEqual(
     groups[4].match(/"[a-z-]+"/g).map((token) => token.slice(1, -1)),
     ["functions", "parameters-arguments", "return-values", "scope-basics"],

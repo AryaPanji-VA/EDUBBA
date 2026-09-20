@@ -56,7 +56,9 @@ export type LessonPresentationState = "completed" | "current" | "next" | "availa
 // modernized `loops` lesson, While Loops, and Range & Loop Patterns);
 // Module 05 (Reusable Code) covers Functions (the modernized `functions`
 // lesson), Parameters & Arguments, Return Values, and Scope Basics;
-// Module 06 (Collections) covers Lists, Dictionaries, Tuples, and Sets.
+// Module 06 (Collections) covers Lists, Dictionaries, Tuples, and Sets;
+// Module 07 (Putting It Together) covers Errors / Try Except Basics, Problem
+// Decomposition, the Mini Project, and Course Review / Final Practice.
 export const implementedProgrammingLessonSlugs = [
   "what-is-programming",
   "hello-python",
@@ -84,6 +86,10 @@ export const implementedProgrammingLessonSlugs = [
   "dictionaries",
   "tuples",
   "sets",
+  "try-except-basics",
+  "problem-decomposition",
+  "mini-project",
+  "course-review",
 ] as const;
 
 // Implemented Discrete Mathematics lesson routes (Phase 14B golden lesson
@@ -188,4 +194,8 @@ export const programmingLessonStateBySlug: Record<string, LessonPresentationStat
   "dictionaries": "available",
   "tuples": "available",
   "sets": "available",
+  "try-except-basics": "available",
+  "problem-decomposition": "available",
+  "mini-project": "available",
+  "course-review": "available",
 };

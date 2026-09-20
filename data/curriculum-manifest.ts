@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 30,
+          totalLessons: 34,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -171,6 +171,19 @@ export const currentCurriculumManifest: CurriculumManifest = {
                 { slug: "dictionaries", title: "Dictionaries", summary: "Simpan value dengan key bermakna, bukan posisi angka.", estimatedMinutes: 12, position: 18, provenance: robinLearningStructure },
                 { slug: "tuples", title: "Tuples", summary: "Kumpulan berurutan yang itemnya tidak berubah — fixed items.", estimatedMinutes: 12, position: 19, provenance: robinLearningStructure },
                 { slug: "sets", title: "Sets", summary: "Kumpulan value unik — duplikat collapse, tanpa posisi.", estimatedMinutes: 12, position: 20, provenance: robinLearningStructure },
+              ],
+            },
+            {
+              slug: "programming-putting-it-together",
+              title: "Putting It Together",
+              description: "Handle expected failures, decompose problems, and combine the pieces into a working program.",
+              position: 4,
+              provenance: robinLearningStructure,
+              lessons: [
+                { slug: "try-except-basics", title: "Errors / Try Except Basics", summary: "Tangani kegagalan runtime yang diharapkan: try, except ValueError, dan fallback yang bermakna.", estimatedMinutes: 12, position: 1, provenance: robinLearningStructure },
+                { slug: "problem-decomposition", title: "Problem Decomposition", summary: "Pecah masalah jadi INPUT → PROCESS → OUTPUT dan langkah kecil yang bisa diselesaikan satu per satu.", estimatedMinutes: 12, position: 2, provenance: robinLearningStructure },
+                { slug: "mini-project", title: "Mini Project", summary: "Rakit Student Score Checker: input, konversi aman, keputusan, output, dan error handling.", estimatedMinutes: 16, position: 3, provenance: robinLearningStructure },
+                { slug: "course-review", title: "Course Review / Final Practice", summary: "Panggil balik enam keluarga konsep dan buktikan lewat final challenge — course complete.", estimatedMinutes: 14, position: 4, provenance: robinLearningStructure },
               ],
             },
           ],
