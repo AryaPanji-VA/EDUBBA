@@ -5,6 +5,7 @@ import { EnvironmentLayer } from "@/components/environment-layer";
 import { MobileNav } from "@/components/mobile-nav";
 import { LocalProfileSummary } from "@/components/local-profile-summary";
 import { BrandTagline } from "@/components/theme-switcher";
+import { UiText } from "@/components/ui-text";
 import type { ReactNode } from "react";
 
 type AppShellProps = {
@@ -56,22 +57,22 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
 
         <nav className="nav">
           <Link href="/" className={active === "dashboard" ? "on" : ""} aria-current={active === "dashboard" ? "page" : undefined}>
-            <DashboardIcon /> <span>Dashboard</span>
+            <DashboardIcon /> <span><UiText k="nav.dashboard" /></span>
           </Link>
           <Link href="/courses" className={active === "courses" ? "on" : ""} aria-current={active === "courses" ? "page" : undefined}>
-            <CoursesIcon /> <span>Courses</span>
+            <CoursesIcon /> <span><UiText k="nav.courses" /></span>
           </Link>
           <Link href="/practice" className={active === "practice" ? "on" : ""} aria-current={active === "practice" ? "page" : undefined}>
-            <PracticeIcon /> <span>Practice</span>
+            <PracticeIcon /> <span><UiText k="nav.practice" /></span>
           </Link>
           <CurrentLessonLink className={active === "lesson" ? "on" : ""} ariaCurrent={active === "lesson" ? "page" : undefined}>
-            <LessonIcon /> <span>Current lesson</span>
+            <LessonIcon /> <span><UiText k="nav.currentLesson" /></span>
           </CurrentLessonLink>
 
           {/* Flexible space pushes Settings toward the account area below. */}
           <div className="nav-spacer" aria-hidden="true" />
           <Link href="/settings" className={active === "settings" ? "on" : ""} aria-current={active === "settings" ? "page" : undefined}>
-            <SettingsIcon /> <span>Settings</span>
+            <SettingsIcon /> <span><UiText k="nav.settings" /></span>
           </Link>
         </nav>
 

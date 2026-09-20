@@ -8,7 +8,8 @@ import type { ReactNode } from "react";
 // live in Settings; the persistent header stays focused on wayfinding.
 type TopBarProps = {
   breadcrumb?: ReactNode;
-  // Contextual controls injected on the right (e.g., ID/EN, Source Mode)
+  // Contextual controls injected on the right (e.g., Robin/Source Mode).
+  // Language selection lives in Settings — the top-right stays quiet.
   contextual?: ReactNode;
 };
 

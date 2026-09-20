@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
 import { TopBar } from "@/components/top-bar";
-import { getVariablesActivities, localizeSourceNote, lessonCopy, lessonLanguageStorageKey, localizeVariablesContent, type LessonLanguage } from "@/content/lessons/variables-localization";
+import { getVariablesActivities, localizeSourceNote, lessonCopy, localizeVariablesContent } from "@/content/lessons/variables-localization";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { variablesReinforcement, variablesMasteryConceptLabels } from "@/content/lessons/programming/variables-lesson-config";
 import { RobinCheck } from "@/components/robin-check";
 import { useEffect, useMemo, useState } from "react";
@@ -32,7 +33,8 @@ export function VariablesLesson() {
   const [submittedChecks, setSubmittedChecks] = useState<Record<number, boolean>>({});
   const [showLogOffer, setShowLogOffer] = useState(false);
 
-  const [language, setLanguage] = useState<LessonLanguage>("id");
+  // Product-wide language preference (Settings → Language) — no header selector.
+  const { language } = useLanguage();
   const copy = lessonCopy[language];
   const content = lesson ? localizeVariablesContent(lesson.content, language) : null;
   const activities = useMemo(() => getVariablesActivities(language), [language]);
@@ -43,18 +45,6 @@ export function VariablesLesson() {
     setCheckComplete(progress.robinCheckComplete);
     setShowLogOffer(progress.complete && progress.learningLogStatus === "pending");
   }, [progress.complete, progress.isLoaded, progress.learningLogStatus, progress.robinCheckComplete]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(lessonLanguageStorageKey);
-      if (saved === "id" || saved === "en") setLanguage(saved);
-    } catch { /* Storage can be unavailable; Indonesian remains the default. */ }
-  }, []);
-
-  function changeLanguage(next: LessonLanguage) {
-    setLanguage(next);
-    try { localStorage.setItem(lessonLanguageStorageKey, next); } catch { /* Session still works. */ }
-  }
 
   async function loadLesson() {
     setIsLoading(true);
@@ -131,7 +121,6 @@ export function VariablesLesson() {
       <TopBar
         breadcrumb={<><Link href="/courses">{copy.courses}</Link><span className="sep">/</span><Link href="/courses/programming">CS-101</Link><span className="sep">/</span><b>Variables</b></>}
         contextual={<>
-          <div className="switcher" role="group" aria-label={copy.language}>{(["id", "en"] as const).map((value) => <button key={value} type="button" aria-pressed={language === value} className={language === value ? "on" : ""} onClick={() => changeLanguage(value)}>{value.toUpperCase()}</button>)}</div>
           <div className="switcher" role="group" aria-label={copy.mode}>
             <button type="button" className={!sourceMode ? "on" : ""} aria-pressed={!sourceMode} onClick={() => setSourceMode(false)}>Robin</button>
             <button type="button" className={sourceMode ? "on" : ""} aria-pressed={sourceMode} onClick={() => { setSourceMode(true); setRobinState("idle"); setSignalPulse(false); }}>Source</button>

@@ -6,9 +6,11 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 
 test("Practice mode navigation maps the three modes to their existing routes", () => {
   const nav = read("../components/practice-mode-nav.tsx");
-  assert.match(nav, /Guided Practice.*\/practice\/python/s);
-  assert.match(nav, /Sandbox.*\/practice\/python\/sandbox/s);
-  assert.match(nav, /Logic & Thinking.*\/practice\/thinking/s);
+  // Labels come from the shared UI dictionary; routes stay the existing ones.
+  assert.match(nav, /\{ id: "guided", labelKey: "practice\.guided", href: "\/practice\/python" \}/);
+  assert.match(nav, /\{ id: "sandbox", labelKey: "practice\.sandbox", href: "\/practice\/python\/sandbox" \}/);
+  assert.match(nav, /\{ id: "thinking", labelKey: "practice\.thinking", href: "\/practice\/thinking" \}/);
+  assert.match(nav, /\{copy\[mode\.labelKey\]\}/);
   assert.match(nav, /aria-current=\{isActive \? "page"/);
 });
 

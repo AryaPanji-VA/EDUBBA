@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { DEFAULT_THEME, DEFAULT_MODE } from "@/lib/theme/theme-state";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
 import { LocalUserGate } from "@/lib/local-user/local-user-provider";
 import "./globals.css";
 import "@/styles/themes.css";
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable}`}>
         <Script src="/theme-init.js" strategy="beforeInteractive" />
         <ThemeProvider>
-          <LocalUserGate>{children}</LocalUserGate>
+          <LanguageProvider>
+            <LocalUserGate>{children}</LocalUserGate>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -9,6 +9,8 @@ import {
   type LessonPresentationState,
 } from "@/data/courses";
 import { deriveLessonStates } from "@/lib/courses/lesson-access";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate, type UiCopyKey } from "@/lib/i18n/ui-copy";
 
 type Lesson = {
   slug: string;
@@ -54,6 +56,7 @@ const AssistantAvatar = () => (
 );
 
 export function ProgrammingCourseClient() {
+  const copy = useUiCopy();
   const [course, setCourse] = useState<ProgrammingCourse | null>(null);
   const [lessonStates, setLessonStates] = useState<Record<string, LessonPresentationState>>(
     programmingLessonStateBySlug,
@@ -134,11 +137,12 @@ export function ProgrammingCourseClient() {
 
   // Learner-friendly mastery labels — never raw state codes like "coming-soon".
   function masteryLabel(state: LessonPresentationState) {
-    if (state === "completed") return "completed";
-    if (state === "current") return "in progress";
-    if (state === "next") return "up next";
-    if (state === "available") return "not started";
-    return "coming soon";
+    const key: UiCopyKey = state === "completed" ? "status.completed"
+      : state === "current" ? "status.inProgress"
+      : state === "next" ? "status.upNext"
+      : state === "available" ? "status.notStarted"
+      : "status.comingSoon";
+    return copy[key];
   }
 
   const courseData = course;
@@ -196,11 +200,11 @@ export function ProgrammingCourseClient() {
   if (isLoading) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Foundations of Programming</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>Foundations of Programming</>} />
         <div className="content">
           <div className="course-request-state" role="status">
             <span className="typing-dots"><i /><i /><i /></span>
-            <strong>Loading course…</strong>
+            <strong>{copy["course.loading"]}</strong>
           </div>
         </div>
       </>
@@ -210,12 +214,12 @@ export function ProgrammingCourseClient() {
   if (error || !courseData) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Foundations of Programming</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>Foundations of Programming</>} />
         <div className="content">
           <div className="course-request-state is-error" role="alert">
-            <strong>Course signal putus.</strong>
-            <small>{error ?? "The backend returned no course."}</small>
-            <button className="button" onClick={() => void loadCourse()}>coba lagi</button>
+            <strong>{copy["course.error"]}</strong>
+            <small>{error ?? copy["course.errorFallback"]}</small>
+            <button className="button" onClick={() => void loadCourse()}>{copy["action.retry"]}</button>
           </div>
         </div>
       </>
@@ -224,13 +228,13 @@ export function ProgrammingCourseClient() {
 
   return (
     <>
-      <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>{courseData.title}</>} />
+      <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>{courseData.title}</>} />
       <div className="content">
         {/* Course hero */}
         <div className="page-hero">
-          <span className="tag blue">Course · CS-101 · Semester 1</span>
+          <span className="tag blue">{fillTemplate(copy["course.tag"], { code: "CS-101" })}</span>
           <h1 className="page-title">{courseData.title}</h1>
-          <p className="page-context">{courseData.modules.length} modules · {totalLessons} lessons · taught in ID &amp; EN</p>
+          <p className="page-context">{fillTemplate(copy["course.context"], { modules: courseData.modules.length, lessons: totalLessons })}</p>
           <p className="page-desc">Build the mental model behind code, from values and variables to functions. <em>slowly, precisely, and out loud.</em></p>
           <div className="course-progress">
             <div className="pxbar" aria-hidden="true">
@@ -238,18 +242,18 @@ export function ProgrammingCourseClient() {
                 <i key={i} className={filled ? "f" : ""} style={{ flex: 1 }} />
               ))}
             </div>
-            <span className="course-progress-meta">{completedCount} of {totalLessons} lessons · {progress}%</span>
+            <span className="course-progress-meta">{fillTemplate(copy["course.progressMeta"], { done: completedCount, total: totalLessons, pct: progress })}</span>
             {currentLesson && (
-              <Link className="btn-p" href={`/courses/programming/${currentLesson.slug}`}>Continue: {currentLesson.title} →</Link>
+              <Link className="btn-p" href={`/courses/programming/${currentLesson.slug}`}>{fillTemplate(copy["course.continue"], { title: currentLesson.title })} →</Link>
             )}
           </div>
         </div>
 
         {/* Content grid */}
         <div className="grid">
-          {/* Left column — curriculum signal map */}
+          {/* Left column " curriculum signal map */}
           <div className="col">
-            <section className="cmap" aria-label="Curriculum map">
+            <section className="cmap" aria-label={copy["course.curriculumMap"]}>
               {courseData.modules.map((module) => {
                 const lessonsInModule = module.lessons;
                 const completedInModule = lessonsInModule.filter(l => lessonStates[l.slug] === "completed").length;
@@ -267,7 +271,7 @@ export function ProgrammingCourseClient() {
                       <span className="cmap-mnum">{String(module.position).padStart(2, "0")}</span>
                       <span className="cmap-mtitle">{module.title}{module.description && <small>{module.description}</small>}</span>
                       <span className={`mtag ${hasCurrent ? "now" : completedInModule === lessonsInModule.length ? "master" : "lock"}`}>
-                        {hasCurrent ? "in progress" : hasNext ? "up next" : completedInModule === lessonsInModule.length ? "mastered" : "open"}
+                        {hasCurrent ? copy["status.inProgress"] : hasNext ? copy["status.upNext"] : completedInModule === lessonsInModule.length ? copy["status.mastered"] : copy["status.open"]}
                       </span>
                       <span className="mbar">
                         {buildMbarSegments(lessonsInModule).map((filled, i) => (
@@ -296,13 +300,13 @@ export function ProgrammingCourseClient() {
                                 <span className="cmap-lnum">{lessonNumber}</span>{lesson.title}
                                 {lesson.summary && <small>{lesson.summary}</small>}
                               </span>
-                              <span className="cmap-ldur">{lesson.estimatedMinutes} min</span>
+                              <span className="cmap-ldur">{lesson.estimatedMinutes} {copy["course.min"]}</span>
                               {state === "completed" ? (
-                                <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
+                                <span className="cmap-lock" style={{ color: "var(--ok)" }}>{copy["status.done"]}</span>
                               ) : state === "current" ? (
-                                <span className="cmap-laction">Resume →</span>
+                                <span className="cmap-laction">{copy["action.resume"]} →</span>
                               ) : (
-                                <span className="cmap-lock">{state === "coming-soon" ? "coming soon" : state === "available" ? "start" : "next"}</span>
+                                <span className="cmap-lock">{state === "coming-soon" ? copy["status.comingSoon"] : state === "available" ? copy["status.start"] : copy["status.next"]}</span>
                               )}
                             </>
                           );
@@ -329,12 +333,12 @@ export function ProgrammingCourseClient() {
             </section>
           </div>
 
-          {/* Right column — mastery + companion */}
+          {/* Right column " mastery + companion */}
           <div className="col side-col">
-            <section className="panel mastery" aria-label="Mastery">
+            <section className="panel mastery" aria-label={copy["dash.masteryAria"]}>
               <header className="shead" style={{ marginBottom: "6px" }}>
-                <span className="tag blue">Mastery</span>
-                <span className="shead-meta">by concept</span>
+                <span className="tag blue">{copy["dash.mastery"]}</span>
+                <span className="shead-meta">{copy["course.masteryByConcept"]}</span>
               </header>
               <ul className="mast-list">
                 {masteryRows.map((row) => {
@@ -343,7 +347,7 @@ export function ProgrammingCourseClient() {
                     const done = memberStates.filter((state) => state === "completed").length;
                     const hasCurrent = memberStates.some((state) => state === "current");
                     const hasNext = memberStates.some((state) => state === "next");
-                    const label = done === row.group.length ? "completed" : hasCurrent ? "in progress" : hasNext ? "up next" : `${done}/${row.group.length}`;
+                    const label = done === row.group.length ? copy["status.completed"] : hasCurrent ? copy["status.inProgress"] : hasNext ? copy["status.upNext"] : `${done}/${row.group.length}`;
                     return (
                       <li key={row.label} className={`mast-item ${hasCurrent ? "hot" : ""}`}>
                         <div className="mast-top">
@@ -376,8 +380,8 @@ export function ProgrammingCourseClient() {
               </ul>
               <div className="pxdiv" aria-hidden="true" />
               <div className="mast-foot">
-                <span>{completedCount} of {totalLessons} lessons · <b>{progress}%</b></span>
-                <span className="up">keep going</span>
+                <span>{fillTemplate(copy["course.countOnly"], { done: completedCount, total: totalLessons })} · <b>{progress}%</b></span>
+                <span className="up">{copy["action.keepGoing"]}</span>
               </div>
             </section>
 
@@ -391,10 +395,10 @@ export function ProgrammingCourseClient() {
                 <span className="companion-tag"><i />awake</span>
               </div>
               <p className="companion-note">
-                You're {completedCount} lesson{completedCount !== 1 ? "s" : ""} into <b>Foundations of Programming</b>.
+                {fillTemplate(copy["course.companionIntro"], { done: completedCount })} <b>Foundations of Programming</b>.
                 {currentLesson
-                  ? <> <b>{currentLesson.title}</b> is next — trace by hand before you run anything.</>
-                  : " Keep going."}
+                  ? <> {fillTemplate(copy["course.companionNext"], { title: currentLesson.title })}</>
+                  : copy["course.companionKeep"]}
               </p>
             </section>
           </div>

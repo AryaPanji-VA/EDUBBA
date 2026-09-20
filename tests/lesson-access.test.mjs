@@ -134,7 +134,7 @@ test("course page wiring: linkability is implementation-based, labels have no LO
   // restriction may appear in the linkability rule.
   assert.match(client, /const isLinkable = state !== "coming-soon" && implementedProgrammingLessonSlugs\.some\(\(slug\) => slug === lesson\.slug\);/);
   assert.doesNotMatch(client, /"locked"/, "no LOCKED label may remain on the programming course page");
-  assert.match(client, /"coming soon" : state === "available" \? "start" : "next"/);
+  assert.match(client, /state === "coming-soon" \? copy\["status\.comingSoon"\] : state === "available" \? copy\["status\.start"\] : copy\["status\.next"\]/);
   assert.match(client, /shouldShowLessons = hasOpen;/);
   // The fallback data carries no locked entries for module 01 either.
   const courses = loadModule("data/courses.ts");

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { implementedDiscreteMathLessonSlugs, type LessonPresentationState } from "@/data/courses";
 import { deriveLessonStates } from "@/lib/courses/lesson-access";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate } from "@/lib/i18n/ui-copy";
 
 type Lesson = {
   slug: string;
@@ -45,6 +47,7 @@ type ProgressResponse = {
 // implemented lesson stays open (no locks), one resume point, one
 // recommended next step.
 export function DiscreteMathCourseClient() {
+  const copy = useUiCopy();
   const [course, setCourse] = useState<DiscreteMathCourse | null>(null);
   const [lessonStates, setLessonStates] = useState<Record<string, LessonPresentationState>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -112,11 +115,11 @@ export function DiscreteMathCourseClient() {
   if (isLoading) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Discrete Mathematics</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>Discrete Mathematics</>} />
         <div className="content">
           <div className="course-request-state" role="status">
             <span className="typing-dots"><i /><i /><i /></span>
-            <strong>Loading course…</strong>
+            <strong>{copy["course.loading"]}</strong>
           </div>
         </div>
       </>
@@ -126,12 +129,12 @@ export function DiscreteMathCourseClient() {
   if (error || !course) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Discrete Mathematics</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>Discrete Mathematics</>} />
         <div className="content">
           <div className="course-request-state is-error" role="alert">
-            <strong>Course signal putus.</strong>
-            <small>{error ?? "The backend returned no course."}</small>
-            <button className="button" onClick={() => void loadCourse()}>coba lagi</button>
+            <strong>{copy["course.error"]}</strong>
+            <small>{error ?? copy["course.errorFallback"]}</small>
+            <button className="button" onClick={() => void loadCourse()}>{copy["action.retry"]}</button>
           </div>
         </div>
       </>
@@ -140,12 +143,12 @@ export function DiscreteMathCourseClient() {
 
   return (
     <>
-      <TopBar breadcrumb={<><Link href="/courses">Courses</Link><span className="sep">/</span><b>{course.title}</b></>} />
+      <TopBar breadcrumb={<><Link href="/courses">{copy["nav.courses"]}</Link><span className="sep">/</span><b>{course.title}</b></>} />
       <div className="content">
         <div className="page-hero">
-          <span className="tag blue">Course · MA-105 · Semester 1</span>
+          <span className="tag blue">{fillTemplate(copy["course.tag"], { code: "MA-105" })}</span>
           <h1 className="page-title">{course.title}</h1>
-          <p className="page-context">{course.modules.length} {course.modules.length === 1 ? "module" : "modules"} · {allLessons.length} {allLessons.length === 1 ? "lesson" : "lessons"}</p>
+          <p className="page-context">{fillTemplate(copy["course.context"], { modules: course.modules.length, lessons: allLessons.length })}</p>
           <p className="page-desc">{course.description} <em>slowly, precisely, and out loud.</em></p>
           <div className="course-progress">
             <div className="pxbar" aria-hidden="true">
@@ -153,16 +156,16 @@ export function DiscreteMathCourseClient() {
                 <i key={lesson.slug + i} className={lessonStates[lesson.slug] === "completed" ? "f" : ""} style={{ flex: 1 }} />
               ))}
             </div>
-            <span className="course-progress-meta">{completedCount} of {allLessons.length} lessons · {progress}%</span>
+            <span className="course-progress-meta">{fillTemplate(copy["course.progressMeta"], { done: completedCount, total: allLessons.length, pct: progress })}</span>
             {currentLesson && (
-              <Link className="btn-p" href={`/courses/discrete-math/${currentLesson.slug}`}>Continue: {currentLesson.title} →</Link>
+              <Link className="btn-p" href={`/courses/discrete-math/${currentLesson.slug}`}>{fillTemplate(copy["course.continue"], { title: currentLesson.title })} →</Link>
             )}
           </div>
         </div>
 
         <div className="grid">
           <div className="col">
-            <section className="cmap" aria-label="Curriculum map">
+            <section className="cmap" aria-label={copy["course.curriculumMap"]}>
               {course.modules.map((module) => {
                 const completedInModule = module.lessons.filter((lesson) => lessonStates[lesson.slug] === "completed").length;
                 const hasCurrent = module.lessons.some((lesson) => lessonStates[lesson.slug] === "current");
@@ -178,7 +181,7 @@ export function DiscreteMathCourseClient() {
                       <span className="cmap-mnum">{String(module.position).padStart(2, "0")}</span>
                       <span className="cmap-mtitle">{module.title}{module.description && <small>{module.description}</small>}</span>
                       <span className={`mtag ${hasCurrent ? "now" : completedInModule === module.lessons.length ? "master" : "lock"}`}>
-                        {hasCurrent ? "in progress" : hasNext ? "up next" : completedInModule === module.lessons.length ? "mastered" : "open"}
+                        {hasCurrent ? copy["status.inProgress"] : hasNext ? copy["status.upNext"] : completedInModule === module.lessons.length ? copy["status.mastered"] : copy["status.open"]}
                       </span>
                       <span className="mbar">
                         {module.lessons.map((lesson) => (
@@ -204,13 +207,13 @@ export function DiscreteMathCourseClient() {
                               <span className="cmap-lnum">{lessonNumber}</span>{lesson.title}
                               {lesson.summary && <small>{lesson.summary}</small>}
                             </span>
-                            <span className="cmap-ldur">{lesson.estimatedMinutes} min</span>
+                            <span className="cmap-ldur">{lesson.estimatedMinutes} {copy["course.min"]}</span>
                             {state === "completed" ? (
-                              <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
+                              <span className="cmap-lock" style={{ color: "var(--ok)" }}>{copy["status.done"]}</span>
                             ) : state === "current" ? (
-                              <span className="cmap-laction">Resume →</span>
+                              <span className="cmap-laction">{copy["action.resume"]} →</span>
                             ) : (
-                              <span className="cmap-lock">{state === "coming-soon" ? "coming soon" : state === "available" ? "start" : "next"}</span>
+                              <span className="cmap-lock">{state === "coming-soon" ? copy["status.comingSoon"] : state === "available" ? copy["status.start"] : copy["status.next"]}</span>
                             )}
                           </>
                         );
@@ -239,10 +242,8 @@ export function DiscreteMathCourseClient() {
           <div className="col side-col">
             <section className="panel companion" aria-label="Robin">
               <p className="companion-note">
-                Discrete Mathematics pakai learning engine yang sama seperti Programming — tanpa Sandbox atau Python Practice.
-                {currentLesson
-                  ? <> Mulai dari <b>{currentLesson.title}</b>: baca pelan, isi prediksi, coba tabel kebenarannya.</>
-                  : ""}
+                {copy["course.companionGeneric"]}
+                {currentLesson ? fillTemplate(copy["course.companionNextTruth"], { title: currentLesson.title }) : ""}
               </p>
             </section>
           </div>

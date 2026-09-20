@@ -9,6 +9,8 @@ import { PracticeAssist } from "@/components/practice-assist";
 import { TopBar } from "@/components/top-bar";
 import type { ThinkingActivity, ThinkingSubmission } from "@/content/practice/thinking/types";
 import type { PracticeCheckResult } from "@/content/practice/types";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate } from "@/lib/i18n/ui-copy";
 import {
   checkThinkingActivity, createEmptyThinkingSubmission, deserializeThinkingSubmission,
   isThinkingSubmissionComplete, serializeThinkingSubmission,
@@ -18,11 +20,7 @@ import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHand
 import { usePractice } from "@/lib/progress/use-practice";
 import { resolvePracticeAttemptId } from "@/lib/practice/state";
 
-const statusLabels: Record<PracticeCheckResult["status"], string> = {
-  correct: "Reasoning-nya pas",
-  partial: "Sebagian sudah nyambung",
-  incorrect: "Belum pas",
-};
+
 
 function ThinkingInteraction({ activity, submission, onChange }: {
   activity: ThinkingActivity;
@@ -85,6 +83,12 @@ function ThinkingInteraction({ activity, submission, onChange }: {
 }
 
 export function ThinkingLab() {
+  const copy = useUiCopy();
+  const statusLabels: Record<PracticeCheckResult["status"], string> = {
+    correct: copy["think.status.correct"],
+    partial: copy["think.status.partial"],
+    incorrect: copy["think.status.incorrect"],
+  };
   const activities = getThinkingActivities();
   const practice = usePractice("thinking");
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -164,14 +168,14 @@ export function ThinkingLab() {
         body: JSON.stringify({ activityId: activity.id, answer: submission, attemptId }),
       });
       const data = await response.json();
-      if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : "Check belum tersedia.");
+      if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : copy["think.checkUnavailable"]);
       setResult(data.result as PracticeCheckResult);
       practice.recordAttempt(activity.id, {
         attemptId, status: data.result.status, misconception: data.result.misconception ?? null,
         answer: serializedSubmission,
       });
     } catch (error) {
-      setCheckError(error instanceof Error ? error.message : "Check belum tersedia.");
+      setCheckError(error instanceof Error ? error.message : copy["think.checkUnavailable"]);
     } finally {
       setChecking(false);
     }
@@ -188,39 +192,39 @@ export function ThinkingLab() {
     <TopBar breadcrumb={<><Link href="/practice">Practice</Link><span className="sep">/</span><b>Logic &amp; Thinking</b></>} />
     <div className="content">
       <header className="page-header thinking-header"><div>
-        <span className="eyebrow">Practice Lab · Logic &amp; Computational Thinking · {activities.length} activities</span>
-        <h1>Belajar mikir kayak programmer.</h1>
-        <p>Pecah masalah, cari pola, trace program, dan susun langkah. Bukan tes IQ—ini latihan cara kerja program.</p>
+        <span className="eyebrow">{fillTemplate(copy["think.eyebrow"], { count: activities.length })}</span>
+        <h1>{copy["think.title"]}</h1>
+        <p>{copy["think.sub"]}</p>
       </div></header>
 
       <PracticeModeNav active="thinking" />
 
       <div className="practice-topic-bar">
-        <span className="practice-count">{completedCount} of {activities.length} complete</span>
+        <span className="practice-count">{fillTemplate(copy["practice.count"], { done: completedCount, total: activities.length })}</span>
       </div>
 
       <div className="thinking-grid">
         <article className="practice-article">
           <ProgressBar value={Math.round((completedCount / activities.length) * 100)} />
-          <section className="practice-session thinking-session" aria-label="Thinking activity">
+          <section className="practice-session thinking-session" aria-label={copy["think.ariaActivity"]}>
             <span className="eyebrow">{thinkingTypeLabels[activity.type]} · Beginner</span>
             <h2>{activity.title}</h2>
             <p className="practice-prompt">{activity.prompt}</p>
-            {activity.code && <div className="code-block"><div className="code-head"><span>python / trace it</span></div><pre><code>{activity.code}</code></pre></div>}
+            {activity.code && <div className="code-block"><div className="code-head"><span>{copy["think.codeLabel"]}</span></div><pre><code>{activity.code}</code></pre></div>}
             <p className="thinking-instruction">{activity.instruction}</p>
             <ThinkingInteraction activity={activity} submission={submission} onChange={(next) => { setSubmission(next); setResult(null); }} />
 
             <div className="practice-actions">
-              <button className="button button-primary" type="button" disabled={checking || !isThinkingSubmissionComplete(activity, submission)} onClick={() => void check()}>{checking ? "Checking…" : "Check reasoning"}</button>
-              <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? "Hide hint" : "Hint"}</button>
-              {activity.sandboxCode && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>Try this in Sandbox</Link>}
+              <button className="button button-primary" type="button" disabled={checking || !isThinkingSubmissionComplete(activity, submission)} onClick={() => void check()}>{checking ? copy["think.checking"] : copy["think.checkBtn"]}</button>
+              <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? copy["practice.hideHint"] : copy["practice.hint"]}</button>
+              {activity.sandboxCode && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>{copy["think.trySandbox"]}</Link>}
             </div>
-            {hintShown && <p className="practice-hint" role="note"><strong>Hint.</strong> {activity.hint}</p>}
+            {hintShown && <p className="practice-hint" role="note"><strong>{copy["practice.hintStrong"]}</strong> {activity.hint}</p>}
             {result && <p className={`answer-note ${result.status === "correct" ? "is-correct" : "is-incorrect"}`} role="status">
               <strong>{statusLabels[result.status]}</strong> {result.explanation}
-              {result.misconceptionNote && <span className="practice-misconception"><strong>Yang perlu dibenerin · {result.misconception}</strong> {result.misconceptionNote}</span>}
+              {result.misconceptionNote && <span className="practice-misconception"><strong>{fillTemplate(copy["think.misLabel"], { name: result.misconception ?? "" })}</strong> {result.misconceptionNote}</span>}
             </p>}
-            {!result && attempt && <p className="practice-restored" role="status">Attempt tersimpan: {attempt.status}. Jawabannya dipulihkan setelah reload.</p>}
+            {!result && attempt && <p className="practice-restored" role="status">{fillTemplate(copy["think.restored"], { status: attempt.status })}</p>}
             {checkError && <p className="robin-error" role="alert">{checkError}</p>}
 
             <PracticeAssist
@@ -228,18 +232,18 @@ export function ThinkingLab() {
               resetKey={activity.id}
               payload={{ activityId: activity.id, submission: serializeThinkingSubmission(submission) }}
               actions={[
-                { action: "hint", label: "One hint" },
-                { action: "break-down-problem", label: "Break it down" },
-                { action: "explain-reasoning", label: "Explain the reasoning", disabled: !result },
+                { action: "hint", label: copy["think.assistHint"] },
+                { action: "break-down-problem", label: copy["think.assistBreakDown"] },
+                { action: "explain-reasoning", label: copy["think.assistExplain"], disabled: !result },
               ]}
-              note="Robin nunjukin langkah penalaran berikutnya, bukan jawaban utuh. Hint deterministic di atas tetap jalan tanpa AI."
+              note={copy["think.assistNote"]}
             />
 
-            <div className="practice-nav"><button className="button button-primary" disabled={!nextId} onClick={() => nextId && jumpTo(nextId)}>Next activity →</button>
-              {!nextId && <span className="practice-count">{completedCount === activities.length ? "Thinking set complete — mantap." : "Pilih activity lain dari daftar."}</span>}</div>
+            <div className="practice-nav"><button className="button button-primary" disabled={!nextId} onClick={() => nextId && jumpTo(nextId)}>{copy["think.next"]}</button>
+              {!nextId && <span className="practice-count">{completedCount === activities.length ? copy["think.setComplete"] : copy["think.pickOther"]}</span>}</div>
           </section>
 
-          <nav className="practice-exercise-list" aria-label="Thinking activities">{ordered.map((item, index) => {
+          <nav className="practice-exercise-list" aria-label={copy["think.ariaList"]}>{ordered.map((item, index) => {
             const saved = practice.attempts[item.id];
             const done = practice.completedExerciseIds.includes(item.id);
             return <button key={item.id} type="button" className={`practice-exercise-row ${item.id === activity.id ? "now" : ""}`} onClick={() => jumpTo(item.id)}>
@@ -248,15 +252,15 @@ export function ThinkingLab() {
               <span className="practice-exercise-type">{thinkingTypeLabels[item.type]}{done ? " · done" : saved ? ` · ${saved.status}` : ""}</span>
             </button>;
           })}</nav>
-          <p className="panel-footnote">Correctness selalu deterministic. Robin tidak dibutuhkan untuk membuka, mengerjakan, atau memeriksa activity.</p>
+          <p className="panel-footnote">{copy["think.footnote"]}</p>
         </article>
 
-        <aside className="panel thinking-guide" aria-label="Thinking Lab guide">
-          <span className="tag acc">How to use it</span>
-          <h2>Pelan, terus urut.</h2>
-          <p>Tujuannya bukan menjawab cepat. Cari data yang tersedia, perubahan yang terjadi, dan urutan yang masuk akal.</p>
-          <ul><li>pecah masalah kecil-kecil</li><li>uji pola ke semua contoh</li><li>trace satu baris sekali</li><li>diagnosis konsep sebelum memperbaiki</li></ul>
-          <p className="thinking-guide-note">Correctness tetap deterministic. Robin cuma membantu penalaran — dia tidak menilai ulang jawaban lu.</p>
+        <aside className="panel thinking-guide" aria-label={copy["think.guide.aria"]}>
+          <span className="tag acc">{copy["think.guide.tag"]}</span>
+          <h2>{copy["think.guide.title"]}</h2>
+          <p>{copy["think.guide.body"]}</p>
+          <ul><li>{copy["think.guide.b1"]}</li><li>{copy["think.guide.b2"]}</li><li>{copy["think.guide.b3"]}</li><li>{copy["think.guide.b4"]}</li></ul>
+          <p className="thinking-guide-note">{copy["think.guide.note"]}</p>
         </aside>
       </div>
     </div>

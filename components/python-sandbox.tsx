@@ -17,8 +17,21 @@ import {
 } from "@/lib/sandbox/handoff";
 import {
   acceptSandboxStdinRequest, createSandboxStdinResponse, isSandboxRunResult,
-  sandboxRuntimeLabel, type SandboxRunResult, type SandboxRuntimeStatus, type SandboxStdinRequest,
+  type SandboxRunResult, type SandboxRuntimeStatus, type SandboxStdinRequest,
 } from "@/lib/sandbox/runtime";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import type { SandboxRuntimeStatus as RuntimeStatus } from "@/lib/sandbox/runtime";
+
+// Runtime status chrome follows the product language (Settings → Language);
+// the lib label stays for tooling/tests.
+function runtimeLabel(status: RuntimeStatus, copy: Record<string, string>): string {
+  if (status === "loading") return copy["sbox.status.loading"];
+  if (status === "running") return copy["sbox.status.running"];
+  if (status === "waiting-input") return copy["sbox.status.waiting"];
+  if (status === "ready") return copy["sbox.status.ready"];
+  if (status === "error") return copy["sbox.status.error"];
+  return copy["sbox.status.idle"];
+}
 
 const EXECUTION_LIMIT_MS = 5_000;
 
@@ -30,6 +43,7 @@ type PendingRun = {
 };
 
 export function PythonSandbox() {
+  const copy = useUiCopy();
   const [draft, setDraft] = useState<SandboxDraft>(() => createSandboxDraft());
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftWarning, setDraftWarning] = useState<string | null>(null);
@@ -56,10 +70,11 @@ export function PythonSandbox() {
         window.sessionStorage.removeItem(SANDBOX_HANDOFF_STORAGE_KEY);
       }
     } catch {
-      setDraftWarning("Draft browser tidak tersedia. Kode tetap bisa dijalankan.");
+      setDraftWarning(copy["sbox.warnUnavailable"]);
     }
     setDraft(next);
     setDraftLoaded(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-time copy only
   }, []);
 
   useEffect(() => {
@@ -68,9 +83,9 @@ export function PythonSandbox() {
       window.localStorage.setItem(SANDBOX_DRAFT_STORAGE_KEY, serializeSandboxDraft(draft));
       setDraftWarning(null);
     } catch {
-      setDraftWarning("Draft belum bisa disimpan di browser ini.");
+      setDraftWarning(copy["sbox.warnCantSave"]);
     }
-  }, [draft, draftLoaded]);
+  }, [draft, draftLoaded, copy]);
 
   useEffect(() => () => {
     const pending = pendingRef.current;
@@ -133,7 +148,7 @@ export function PythonSandbox() {
           return;
         }
         if (message?.type === "init-error") {
-          const error = new Error(typeof message.error === "string" ? message.error : "Python runtime gagal dimuat.");
+          const error = new Error(typeof message.error === "string" ? message.error : copy["sbox.errRuntimeLoad"]);
           reject(error);
           disposeWorker();
           setRuntimeStatus("error");
@@ -159,7 +174,7 @@ export function PythonSandbox() {
         }
       };
       worker.onerror = () => {
-        const error = new Error("Python runtime gagal dimuat. Periksa koneksi lalu coba lagi.");
+        const error = new Error(copy["sbox.errRuntimeLoadNet"]);
         if (pendingRef.current) {
           if (pendingRef.current.timeoutId !== null) window.clearTimeout(pendingRef.current.timeoutId);
           pendingRef.current.reject(error);
@@ -197,7 +212,7 @@ export function PythonSandbox() {
         id: "runtime-error",
         stdout: "",
         stderr: "",
-        error: error instanceof Error ? error.message : "Python runtime gagal digunakan.",
+        error: error instanceof Error ? error.message : copy["sbox.errRuntimeUse"],
       });
       setRuntimeStatus("error");
     }
@@ -228,8 +243,8 @@ export function PythonSandbox() {
   }
 
   const outputText = result
-    ? [result.stdout, result.stderr, result.error].filter(Boolean).join("\n") || "Program selesai tanpa output."
-    : "Belum ada output. Tekan Run saat kodenya siap.";
+    ? [result.stdout, result.stderr, result.error].filter(Boolean).join("\n") || copy["sbox.ranNoOutput"]
+    : copy["sbox.noOutputYet"];
 
   return (
     <AppShell active="practice">
@@ -237,16 +252,16 @@ export function PythonSandbox() {
       <div className="content">
         <header className="page-header sandbox-header">
           <div>
-            <span className="eyebrow">Practice Lab · Python Sandbox</span>
-            <h1>Coba sendiri. Rusak dikit nggak apa.</h1>
-            <p>Tempat kecil buat eksperimen Python dasar. Semuanya jalan di browser—nggak ada server yang mengeksekusi kode lu.</p>
+            <span className="eyebrow">{copy["sbox.eyebrow"]}</span>
+            <h1>{copy["sbox.title"]}</h1>
+            <p>{copy["sbox.sub"]}</p>
           </div>
         </header>
 
         <PracticeModeNav active="sandbox" />
 
-        <section className="sandbox-starters" aria-label="Starter snippets">
-          <span className="practice-count">Start from</span>
+        <section className="sandbox-starters" aria-label={copy["sbox.ariaStarters"]}>
+          <span className="practice-count">{copy["sbox.startFrom"]}</span>
           <div className="sandbox-starter-list">
             {pythonStarters.map((starter) => (
               <button key={starter.id} type="button" className={draft.starterId === starter.id ? "on" : ""}
@@ -256,39 +271,39 @@ export function PythonSandbox() {
         </section>
 
         <div className="sandbox-grid">
-          <section className="panel sandbox-panel" aria-label="Python editor">
+          <section className="panel sandbox-panel" aria-label={copy["sbox.ariaEditor"]}>
             <div className="sandbox-panel-head">
               <div><span className="eyebrow">Editor</span><strong>main.py</strong></div>
-              <span className={`sandbox-runtime-status is-${runtimeStatus}`}>{sandboxRuntimeLabel(runtimeStatus)}</span>
+              <span className={`sandbox-runtime-status is-${runtimeStatus}`}>{runtimeLabel(runtimeStatus, copy)}</span>
             </div>
-            <label className="sr-only" htmlFor="sandbox-code">Python code</label>
+            <label className="sr-only" htmlFor="sandbox-code">{copy["sbox.codeLabel"]}</label>
             <textarea id="sandbox-code" className="sandbox-editor" spellCheck={false} autoComplete="off"
               value={draft.code} maxLength={20_000}
               onChange={(event) => setDraft((current) => updateSandboxDraft(current, event.target.value))} />
             <div className="sandbox-actions">
               <button className="button button-primary" type="button" disabled={!draft.code.trim() || runtimeStatus === "loading" || runtimeStatus === "running" || runtimeStatus === "waiting-input"}
-                onClick={() => void runCode()}>{runtimeStatus === "loading" ? "Loading Python…" : runtimeStatus === "running" ? "Running…" : "Run"}</button>
-              <button className="practice-ghost" type="button" disabled={runtimeStatus === "loading"} onClick={resetEditor}>{runtimeStatus === "running" || runtimeStatus === "waiting-input" ? "Stop & Reset" : "Reset"}</button>
-              <span className="sandbox-save-state">{draftWarning ?? (draftLoaded ? "draft saved locally" : "loading draft…")}</span>
+                onClick={() => void runCode()}>{runtimeStatus === "loading" ? copy["sbox.loading"] : runtimeStatus === "running" ? copy["sbox.running"] : copy["sbox.run"]}</button>
+              <button className="practice-ghost" type="button" disabled={runtimeStatus === "loading"} onClick={resetEditor}>{runtimeStatus === "running" || runtimeStatus === "waiting-input" ? copy["sbox.stopReset"] : copy["sbox.reset"]}</button>
+              <span className="sandbox-save-state">{draftWarning ?? (draftLoaded ? copy["sbox.saveState"] : copy["sbox.loadingDraft"])}</span>
             </div>
             {stdinRequest && (
-              <form className="sandbox-stdin" onSubmit={submitStdin} aria-label="Python input request">
-                <span className="eyebrow">Program needs input</span>
-                <label htmlFor="sandbox-stdin-value">{stdinRequest.prompt || "Input value"}</label>
+              <form className="sandbox-stdin" onSubmit={submitStdin} aria-label={copy["sbox.ariaInput"]}>
+                <span className="eyebrow">{copy["sbox.stdinNeed"]}</span>
+                <label htmlFor="sandbox-stdin-value">{stdinRequest.prompt || copy["sbox.stdinFallback"]}</label>
                 <div>
                   <input id="sandbox-stdin-value" type="text" value={stdinValue} maxLength={10_000}
                     autoComplete="off" autoFocus onChange={(event) => setStdinValue(event.target.value)} />
-                  <button className="button button-primary" type="submit">Submit</button>
+                  <button className="button button-primary" type="submit">{copy["sbox.submit"]}</button>
                 </div>
-                <p>Nilai dikirim sebagai teks. Python yang menangani konversinya.</p>
+                <p>{copy["sbox.stdinNote"]}</p>
               </form>
             )}
           </section>
 
-          <section className="panel sandbox-panel sandbox-output-panel" aria-label="Python output">
-            <div className="sandbox-panel-head"><div><span className="eyebrow">Result</span><strong>Output</strong></div></div>
+          <section className="panel sandbox-panel sandbox-output-panel" aria-label={copy["sbox.ariaOutput"]}>
+            <div className="sandbox-panel-head"><div><span className="eyebrow">{copy["sbox.resultTag"]}</span><strong>Output</strong></div></div>
             <pre className={`sandbox-output ${result?.error ? "has-error" : ""}`} role="log" aria-live="polite">{outputText}</pre>
-            <p className="panel-footnote">Runs stop after 5 seconds. Imports, packages, network tools, shell, and files are disabled in this beginner sandbox.</p>
+            <p className="panel-footnote">{copy["sbox.outputNote"]}</p>
           </section>
         </div>
 
@@ -297,11 +312,11 @@ export function PythonSandbox() {
           resetKey="sandbox"
           payload={{ sandboxCode: draft.code, sandboxError: result?.error || result?.stderr || undefined }}
           actions={[
-            { action: "explain-code", label: "Explain my code", disabled: !draft.code.trim() },
-            { action: "explain-error", label: "Explain this error", disabled: !(result && (result.error || result.stderr)) },
-            { action: "next-step", label: "What should I try next?", disabled: !draft.code.trim() },
+            { action: "explain-code", label: copy["sbox.assistExplainCode"], disabled: !draft.code.trim() },
+            { action: "explain-error", label: copy["sbox.assistExplainError"], disabled: !(result && (result.error || result.stderr)) },
+            { action: "next-step", label: copy["sbox.assistNextStep"], disabled: !draft.code.trim() },
           ]}
-          note="Bantuan Robin bersifat opsional. Run, Reset, dan draft lu tetap jalan tanpa dia."
+          note={copy["sbox.assistNote"]}
         />
       </div>
     </AppShell>

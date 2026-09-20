@@ -12,8 +12,9 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("nav labels are wrapped in spans for the tablet icon rail", () => {
   const shell = read("components/app-shell.tsx");
   // Every nav label needs a span: the ≤1120px rail hides .nav a span.
-  for (const label of ["Dashboard", "Courses", "Practice", "Current lesson"]) {
-    assert.match(shell, new RegExp(`<span>${label}</span>`), `${label} must be span-wrapped`);
+  // Labels are localized via UiText; the span wrapping is the structural part.
+  for (const key of ["nav.dashboard", "nav.courses", "nav.practice", "nav.currentLesson"]) {
+    assert.match(shell, new RegExp(`<span><UiText k="${key}" /></span>`), `${key} must be span-wrapped`);
   }
   // Active state is also exposed to assistive tech.
   assert.match(shell, /aria-current=\{active === "dashboard" \? "page" : undefined\}/);
@@ -100,8 +101,8 @@ test("dashboard path and mastery panels derive from real progress", () => {
   assert.doesNotMatch(dash, /2 of 11 lessons/);
   assert.doesNotMatch(dash, /mcount">4\/4/);
   assert.doesNotMatch(dash, /11 lessons · 3 modules/);
-  // Counts derive from the implemented list.
-  assert.match(dash, /completedImplemented of \{implementedTotal\}|completedImplemented\} of \{implementedTotal\}/);
+  // Counts derive from the implemented list via the localized path-count template.
+  assert.match(dash, /fillTemplate\(copy\["dash\.pathCount"\], \{ done: completedImplemented, total: implementedTotal, pct: pathPercent \}\)/);
 });
 
 // === 10. Empty sources get a quiet note instead of a blank list ===

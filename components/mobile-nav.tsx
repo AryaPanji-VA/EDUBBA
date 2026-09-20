@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
+import { useUiCopy } from "@/lib/i18n/language-provider";
 
 type MobileNavActive = "dashboard" | "courses" | "lesson" | "practice" | "settings" | "profile";
 
@@ -55,6 +56,7 @@ const CloseIcon = () => (
 export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }) {
   const [open, setOpen] = useState(false);
   const current = useCurrentLesson();
+  const copy = useUiCopy();
   const rootRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
@@ -79,17 +81,17 @@ export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }
   }, [open]);
 
   const items: { key: MobileNavActive; href: string; label: string; icon: React.ReactNode }[] = [
-    { key: "dashboard", href: "/", label: "Dashboard", icon: <DashboardIcon /> },
-    { key: "courses", href: "/courses", label: "Courses", icon: <CoursesIcon /> },
-    { key: "lesson", href: `/courses/${current.courseSlug}/${current.lessonSlug}`, label: "Lesson", icon: <LessonIcon /> },
-    { key: "practice", href: "/practice", label: "Practice", icon: <PracticeIcon /> },
-    { key: "settings", href: "/settings", label: "Settings", icon: <SettingsIcon /> },
-    { key: "profile", href: "/profile", label: "Profile", icon: <ProfileIcon /> },
+    { key: "dashboard", href: "/", label: copy["nav.dashboard"], icon: <DashboardIcon /> },
+    { key: "courses", href: "/courses", label: copy["nav.courses"], icon: <CoursesIcon /> },
+    { key: "lesson", href: `/courses/${current.courseSlug}/${current.lessonSlug}`, label: copy["nav.lesson"], icon: <LessonIcon /> },
+    { key: "practice", href: "/practice", label: copy["nav.practice"], icon: <PracticeIcon /> },
+    { key: "settings", href: "/settings", label: copy["nav.settings"], icon: <SettingsIcon /> },
+    { key: "profile", href: "/profile", label: copy["nav.profile"], icon: <ProfileIcon /> },
   ];
 
   return (
     <div className="mobile-nav" ref={rootRef}>
-      <nav className="mobile-menu" id="mobile-nav-menu" aria-label="Navigasi utama" hidden={!open}>
+      <nav className="mobile-menu" id="mobile-nav-menu" aria-label={copy["nav.main"]} hidden={!open}>
         {items.map((item) => (
           <Link
             key={item.key}
@@ -108,7 +110,7 @@ export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }
         className="mobile-fab"
         aria-expanded={open}
         aria-controls="mobile-nav-menu"
-        aria-label={open ? "Tutup menu navigasi" : "Buka menu navigasi"}
+        aria-label={open ? copy["nav.closeMenu"] : copy["nav.openMenu"]}
         onClick={() => setOpen((value) => !value)}
       >
         {open ? <CloseIcon /> : <MenuIcon />}

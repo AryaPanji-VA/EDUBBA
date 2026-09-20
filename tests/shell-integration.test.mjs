@@ -162,22 +162,26 @@ test("settings page hosts the ThemeSwitcher under an Appearance section", () => 
   assert.doesNotMatch(settings, /href="\/profile"/, "Profile is reached from the sidebar account control — no duplicate section in Settings");
 });
 
-// === 15. Lesson pages use TopBar with contextual controls ===
-test("variables-lesson uses TopBar with ID/EN and Source Mode contextual controls", () => {
+// === 15. Lesson pages use TopBar with contextual controls; language is global ===
+test("variables-lesson uses TopBar with Source Mode contextual controls, no ID/EN header selector", () => {
   const source = readFileSync(new URL("../components/variables-lesson.tsx", import.meta.url), "utf8");
   assert.match(source, /TopBar/, "Must use TopBar");
   assert.match(source, /contextual/, "Must pass contextual controls");
-  assert.match(source, /changeLanguage/, "Must include language toggle in contextual");
+  assert.match(source, /useLanguage/, "Must read the product-wide language from the provider");
   assert.match(source, /setSourceMode/, "Must include Source Mode in contextual");
+  assert.doesNotMatch(source, /changeLanguage/, "Lesson header must not own an ID/EN selector");
+  assert.doesNotMatch(source, /lessonLanguageStorageKey/, "Lesson header must not manage its own language persistence");
   assert.doesNotMatch(source, /lesson-topbar/, "Must NOT have old .lesson-topbar");
 });
 
-test("data-types-lesson uses TopBar with ID/EN and Source Mode contextual controls", () => {
+test("data-types-lesson uses TopBar with Source Mode contextual controls, no ID/EN header selector", () => {
   const source = readFileSync(new URL("../components/data-types-lesson.tsx", import.meta.url), "utf8");
   assert.match(source, /TopBar/, "Must use TopBar");
   assert.match(source, /contextual/, "Must pass contextual controls");
-  assert.match(source, /changeLanguage/, "Must include language toggle in contextual");
+  assert.match(source, /useLanguage/, "Must read the product-wide language from the provider");
   assert.match(source, /setSourceMode/, "Must include Source Mode in contextual");
+  assert.doesNotMatch(source, /changeLanguage/, "Lesson header must not own an ID/EN selector");
+  assert.doesNotMatch(source, /lessonLanguageStorageKey/, "Lesson header must not manage its own language persistence");
   assert.doesNotMatch(source, /lesson-topbar/, "Must NOT have old .lesson-topbar");
 });
 

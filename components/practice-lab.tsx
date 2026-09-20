@@ -14,28 +14,35 @@ import { getPracticeTrack } from "@/lib/practice/registry";
 import { resolvePracticeAttemptId } from "@/lib/practice/state";
 import { createSandboxHandoff, SANDBOX_HANDOFF_STORAGE_KEY, serializeSandboxHandoff } from "@/lib/sandbox/handoff";
 import { usePractice } from "@/lib/progress/use-practice";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate } from "@/lib/i18n/ui-copy";
 import type { PracticeCheckResult, PracticeExerciseType } from "@/content/practice/types";
 import type { RobinState } from "@/lib/robin/types";
 
-const typeLabels: Record<PracticeExerciseType, string> = {
-  predict_output: "Predict Output",
-  fix_code: "Fix the Code",
-  write_code: "Write Code",
-};
-
-const statusLabels: Record<PracticeCheckResult["status"], string> = {
-  correct: "Correct",
-  incorrect: "Not yet",
-  partial: "Partly there",
-};
-
-const placeholders: Record<PracticeExerciseType, string> = {
-  predict_output: "Tulis persis output yang muncul…",
-  fix_code: "Perbaiki kodenya di sini…",
-  write_code: "Tulis kodenya di sini…",
-};
+// Practice chrome follows the product-wide language (Settings → Language);
+// exercise content stays untouched.
+function useGuidedCopy(copy: Record<string, string>) {
+  const typeLabels: Record<PracticeExerciseType, string> = {
+    predict_output: copy["guided.type.predict"],
+    fix_code: copy["guided.type.fix"],
+    write_code: copy["guided.type.write"],
+  };
+  const statusLabels: Record<PracticeCheckResult["status"], string> = {
+    correct: copy["guided.status.correct"],
+    incorrect: copy["guided.status.incorrect"],
+    partial: copy["guided.status.partial"],
+  };
+  const placeholders: Record<PracticeExerciseType, string> = {
+    predict_output: copy["guided.placeholder.predict"],
+    fix_code: copy["guided.placeholder.fix"],
+    write_code: copy["guided.placeholder.write"],
+  };
+  return { typeLabels, statusLabels, placeholders };
+}
 
 export function PracticeLab() {
+  const copy = useUiCopy();
+  const { typeLabels, statusLabels, placeholders } = useGuidedCopy(copy);
   const track = getPracticeTrack("python");
   const [topicSlug, setTopicSlug] = useState<string>(track?.topics[0]?.lessonSlug ?? "variables");
   const practice = usePractice("python");
@@ -171,7 +178,7 @@ export function PracticeLab() {
         body: JSON.stringify({ exerciseId: exercise.id, answer: submission, attemptId }),
       });
       const data = await response.json();
-      if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : "Check belum tersedia. Coba lagi.");
+      if (!response.ok || !data.result?.status) throw new Error(typeof data.error === "string" ? data.error : copy["guided.checkUnavailable"]);
       setResult(data.result as PracticeCheckResult);
       practice.recordAttempt(exercise.id, {
         attemptId,
@@ -181,7 +188,7 @@ export function PracticeLab() {
       });
       pulseSignal();
     } catch (failure) {
-      setCheckError(failure instanceof Error ? failure.message : "Check belum tersedia. Coba lagi.");
+      setCheckError(failure instanceof Error ? failure.message : copy["guided.checkUnavailable"]);
     } finally {
       setChecking(false);
     }
@@ -209,22 +216,22 @@ export function PracticeLab() {
       <div className="content">
         <header className="page-header">
           <div>
-            <span className="eyebrow">Practice Lab · Python Fundamentals · {track ? topicExercises.length : 0} exercises per topic</span>
-            <h1>Kecil, fokus, ngoding.</h1>
-            <p>Latihan pendek dari konsep lesson — predict, fix, write. Check-nya deterministic; Robin duduk di samping kalau perlu dijelaskan ulang.</p>
+            <span className="eyebrow">{fillTemplate(copy["guided.eyebrow"], { count: track ? topicExercises.length : 0 })}</span>
+            <h1>{copy["guided.title"]}</h1>
+            <p>{copy["guided.sub"]}</p>
           </div>
         </header>
 
         <PracticeModeNav active="guided" />
 
         <div className="practice-topic-bar">
-          <div className="switcher" role="group" aria-label="Practice topic">
+          <div className="switcher" role="group" aria-label={copy["guided.ariaTopic"]}>
             {(track?.topics ?? []).map((item) => (
               <button key={item.lessonSlug} type="button" aria-pressed={item.lessonSlug === topicSlug} className={item.lessonSlug === topicSlug ? "on" : ""} onClick={() => switchTopic(item.lessonSlug)}>{item.title}</button>
             ))}
           </div>
           <div className="practice-topic-actions">
-            <span className="practice-count">{completedCount} of {topicExercises.length} complete</span>
+            <span className="practice-count">{fillTemplate(copy["practice.count"], { done: completedCount, total: topicExercises.length })}</span>
           </div>
         </div>
 
@@ -233,37 +240,37 @@ export function PracticeLab() {
             <ProgressBar value={topicExercises.length ? Math.round((completedCount / topicExercises.length) * 100) : 0} />
 
             {exercise && <>
-              <section className="practice-session" aria-label="Practice exercise">
+              <section className="practice-session" aria-label={copy["guided.ariaExercise"]}>
                 <span className="eyebrow">{topic?.title} · {typeLabels[exercise.type]}</span>
                 <h2>{exercise.concept}</h2>
                 <p className="practice-prompt">{exercise.prompt}</p>
 
                 {exercise.type !== "write_code" && exercise.code && (
                   <div className="code-block">
-                    <div className="code-head"><span>python / read it</span></div>
+                    <div className="code-head"><span>{copy["guided.codeLabel"]}</span></div>
                     <pre><code>{exercise.code}</code></pre>
                   </div>
                 )}
 
                 <form onSubmit={(event) => { event.preventDefault(); void check(); }}>
-                  <label className="practice-editor-label" htmlFor="practice-answer">Your code</label>
+                  <label className="practice-editor-label" htmlFor="practice-answer">{copy["guided.editorLabel"]}</label>
                   <textarea id="practice-answer" className="practice-editor" rows={exercise.type === "predict_output" ? 2 : 6} spellCheck={false} autoComplete="off"
                     placeholder={placeholders[exercise.type]} value={submission}
                     onChange={(event) => setSubmission(event.target.value)} />
                   <div className="practice-actions">
-                    <button className="button button-primary" type="submit" disabled={checking || !submission.trim()}>{checking ? "Menyusun…" : "Check"}</button>
-                    <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? "Hide hint" : "Hint"}</button>
-                    {canOpenInSandbox && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>Open in Sandbox</Link>}
+                    <button className="button button-primary" type="submit" disabled={checking || !submission.trim()}>{checking ? copy["guided.checking"] : copy["practice.check"]}</button>
+                    <button className="practice-ghost" type="button" onClick={() => setHintShown((shown) => !shown)}>{hintShown ? copy["practice.hideHint"] : copy["practice.hint"]}</button>
+                    {canOpenInSandbox && <Link className="practice-ghost" href="/practice/python/sandbox" onClick={prepareSandbox}>{copy["guided.openSandbox"]}</Link>}
                   </div>
                 </form>
 
-                {hintShown && <p className="practice-hint" role="note"><strong>Hint.</strong> {exercise.hint}</p>}
+                {hintShown && <p className="practice-hint" role="note"><strong>{copy["practice.hintStrong"]}</strong> {exercise.hint}</p>}
 
                 {result && <p className={`answer-note ${result.status === "correct" ? "is-correct" : "is-incorrect"}`} role="status">
                   <strong>{statusLabels[result.status]}</strong> {result.explanation}
-                  {result.misconceptionNote && <span className="practice-misconception"><strong>Misconception · {result.misconception}</strong> {result.misconceptionNote}</span>}
+                  {result.misconceptionNote && <span className="practice-misconception"><strong>{fillTemplate(copy["guided.misLabel"], { name: result.misconception ?? "" })}</strong> {result.misconceptionNote}</span>}
                 </p>}
-                {!result && attempt && <p className="practice-restored" role="status">Attempt dipulihkan: {attempt.status}. Retake bebas — check lagi untuk attempt baru.</p>}
+                {!result && attempt && <p className="practice-restored" role="status">{fillTemplate(copy["guided.restored"], { status: attempt.status })}</p>}
                 {checkError && <p className="robin-error" role="alert">{checkError}</p>}
 
                 <PracticeAssist
@@ -271,19 +278,19 @@ export function PracticeLab() {
                   resetKey={exercise.id}
                   payload={{ exerciseId: exercise.id, learnerAnswer: submission.trim() || undefined }}
                   actions={[
-                    { action: "hint", label: "Give me a hint" },
-                    { action: "explain-result", label: "Explain why this is wrong", disabled: !result || result.status === "correct" },
+                    { action: "hint", label: copy["guided.assistHint"] },
+                    { action: "explain-result", label: copy["guided.assistExplain"], disabled: !result || result.status === "correct" },
                   ]}
-                  note="Hint Robin bertahap — dia nggak langsung nyerahin jawaban. Hint deterministic di atas tetap jalan tanpa AI."
+                  note={copy["guided.assistNote"]}
                 />
 
                 <div className="practice-nav">
-                  <button className="button button-primary" disabled={!nextId} onClick={next}>Next exercise →</button>
-                  {!nextId && <span className="practice-count">{topicComplete ? "Topic complete — nice." : "Latihan lain lewat daftar di bawah."}</span>}
+                  <button className="button button-primary" disabled={!nextId} onClick={next}>{copy["guided.next"]}</button>
+                  {!nextId && <span className="practice-count">{topicComplete ? copy["guided.topicComplete"] : copy["guided.otherExercises"]}</span>}
                 </div>
               </section>
 
-              <nav className="practice-exercise-list" aria-label="Exercises in this topic">
+              <nav className="practice-exercise-list" aria-label={copy["guided.ariaList"]}>
                 {ordered.map((item, itemIndex) => {
                   const itemAttempt = practice.attempts[item.id];
                   const done = practice.completedExerciseIds.includes(item.id);
@@ -298,10 +305,10 @@ export function PracticeLab() {
 
             {topicComplete && logStatus === "pending" &&
               <LearningLogOffer lessonSlug={topicSlug} onDecision={(decision) => practice.markLog(topicSlug, decision)} />}
-            {topicComplete && logStatus === "saved" && <p className="panel-footnote" role="status">Practice session ini udah tersimpan di Learning Log.</p>}
-            {topicComplete && logStatus === "skipped" && <p className="panel-footnote" role="status">Log untuk sesi ini dilewati. Robin tetap siap kalau mau catat lewat panel.</p>}
+            {topicComplete && logStatus === "saved" && <p className="panel-footnote" role="status">{copy["guided.logSaved"]}</p>}
+            {topicComplete && logStatus === "skipped" && <p className="panel-footnote" role="status">{copy["guided.logSkipped"]}</p>}
 
-            <p className="panel-footnote">Check itu deterministic dan jalan tanpa AI. Hint tersimpan di tiap exercise; Robin di panel samping menjelaskan pakai konteks lesson.</p>
+            <p className="panel-footnote">{copy["guided.footnote"]}</p>
           </article>
 
           <RobinCompanion lessonSlug={topicSlug} sourceMode={false} onStateChange={updateRobinState} />

@@ -315,7 +315,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .cmap-ldur { display: none; }
 }
 .eyebrow, .card-kicker, .course-code { font-family: var(--sans); text-transform: uppercase; letter-spacing: .12em; }.eyebrow { color: var(--accent-text); font: 600 12px var(--sans); letter-spacing: .12em; }.card-kicker { color: var(--dim); font: 600 10px var(--sans); letter-spacing: .16em; }
-.button { position: relative; border: 0; border-radius: 4px; padding: 11px 20px; cursor: pointer; font-weight: 700; display: inline-flex; justify-content: center; align-items: center; gap: 10px; transition: transform .16s, box-shadow .16s, background .16s; overflow: hidden; }.button::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg,transparent 30%,rgba(255,255,255,.34),transparent 70%); transform: translateX(-120%); transition: transform .45s; }.button:hover::after { transform: translateX(120%); }.button:hover { transform: translateY(-2px); }.button:active { transform: translateY(0) scale(.98); }.button-primary { background: var(--cyan); color: var(--btn-ink, #031013); box-shadow: 0 1px 2px var(--btn-shadow); }.button-primary:hover { background: var(--btn-hover); }
+.button { position: relative; border: 0; border-radius: 7px; padding: 11px 20px; cursor: pointer; font-weight: 700; display: inline-flex; justify-content: center; align-items: center; gap: 10px; transition: transform .16s, box-shadow .16s, background .16s; overflow: hidden; }.button::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg,transparent 30%,rgba(255,255,255,.34),transparent 70%); transform: translateX(-120%); transition: transform .45s; }.button:hover::after { transform: translateX(120%); }.button:hover { transform: translateY(-2px); }.button:active { transform: translateY(0) scale(.98); }.button-primary { background: var(--cyan); color: var(--btn-ink, #031013); box-shadow: 0 1px 2px var(--btn-shadow); }.button-primary:hover { background: var(--btn-hover); }
 .card { background: rgba(13,16,19,.7); border: 1px solid var(--line); }
 .bar { height: 3px; background: var(--track, #1a2025); border-radius: 9px; overflow: hidden; }
 .bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--violet),var(--cyan)); box-shadow: 0 0 8px rgba(98,230,255,.55); transition: width .6s; }
@@ -648,6 +648,82 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .learning-activity .answer-options { flex-wrap: wrap; }
 }
 
+/* --- Lesson experience polish: readability, hierarchy, completion ---
+   Appended after the base lesson rules so earlier rules stay the fallback;
+   same selectors, token-only. Body text reads at full strength, helpers
+   stay softer, light mode loses the washed-out feel. */
+.lesson-section p { color: var(--text); font-size: 15px; line-height: 1.78; margin: 0 0 13px; }
+.lesson-section p:last-child { margin-bottom: 0; }
+.lesson-section .lead { font-size: 15.5px; line-height: 1.7; }
+.learning-activity p { color: var(--text); }
+.learning-activity .panel-footnote { color: var(--mut); }
+
+/* Hero → first section: intentional, compact. */
+.lesson-title { padding: 48px 0 34px; }
+.lesson-title h1 { margin: 18px 0 14px; }
+.lesson-meta span { font-size: 14px; }
+.lesson-meta span:last-child { border-right: 0; padding-right: 0; margin-right: 0; }
+
+/* Section rhythm: where am I → heading → body. */
+.lesson-section { padding: 40px 0 38px; }
+.section-number { color: var(--mut); font-size: 11px; letter-spacing: .14em; padding-top: 5px; }
+.lesson-section h2 { font-size: 21px; font-weight: 600; }
+.lesson-box dd, .mistakes li { font-size: 13px; line-height: 1.6; }
+.learning-activity h2 { font-size: 21px; }
+.learning-flow-meta .eyebrow { color: var(--mut); letter-spacing: .14em; }
+.learning-flow-meta a { color: var(--accent-text); }
+
+/* Activity surfaces: distinct without noise. */
+.activity-options legend, .activity-practice label { color: var(--mut); font-weight: 500; font-size: 12.5px; letter-spacing: .04em; }
+.answer-note { font-size: 13px; }
+.answer-note strong { color: var(--text); }
+.answer-note.is-correct strong { color: var(--ok); }
+.answer-note.is-incorrect strong { color: var(--danger); }
+.answer-options button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.quick-check { box-shadow: var(--shadow); }
+.bin-check { box-shadow: var(--shadow); }
+
+/* Sources / accordions stay readable. */
+.activity-supplement summary, details.references summary { color: var(--text); }
+.source-intro { color: var(--mut); font-size: .8rem; }
+.source-item p { color: var(--mut); font-size: .78rem; }
+.source-item a { color: var(--text); }
+.source-item a:hover { color: var(--accent-text); }
+.references li span { color: var(--mut); }
+.references .source-meta span { color: var(--mut); }
+
+/* Completion: obvious what happened, clear next action. */
+.mock-feedback { padding: 12px 16px; border-radius: 0 8px 8px 0; color: var(--text); font-size: 13.5px; }
+.mock-feedback strong { color: var(--ok); }
+.learning-flow-nav { padding: 18px 0; gap: 14px; }
+
+@media (max-width: 760px) {
+  .lesson-title { padding: 32px 0 28px; }
+  .lesson-section { padding: 32px 0; }
+}
+@media (max-width: 430px) {
+  .lesson-title { padding: 34px 0 26px; }
+  .lesson-title h1 { margin: 14px 0 12px; font-size: clamp(2rem, 9vw, 2.6rem); }
+  .lesson-section { padding: 30px 0 28px; }
+}
+
+/* --- Lesson decoration safety: skyline/waves stay ambient, never under text.
+   The environment canvas already sits at z-index 0 behind .content (z 3);
+   this backing makes long-form lesson surfaces readable where the decoration
+   is densest (viewport bottom: completion, "Your understanding", nav). The
+   tint follows the active theme's own veil color — skyline stays visible
+   around the article column, softened behind it. */
+.lesson-grid > article {
+  background: rgba(var(--veil-rgb), .72);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 28px 26px 32px;
+  margin: 0 -26px 20px;
+}
+@media (max-width: 430px) {
+  .lesson-grid > article { padding: 20px 16px 24px; margin: 0 -16px 16px; }
+}
+
 /* Phase 11B: Practice Lab — small coding gym, consistent with Phase 10 tokens. */
 .practice-mode-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .practice-mode-card { display: flex; min-width: 0; min-height: 230px; flex-direction: column; padding: 22px; color: var(--text); text-decoration: none; }
@@ -675,7 +751,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
 .practice-editor:focus { border-color: var(--input-focus); outline: none; }
 .practice-actions { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
 .practice-actions .button { flex: 0 0 auto; }
-.practice-ghost { padding: 11px 16px; border: 1px solid var(--line-bright); border-radius: 4px; background: var(--surface); color: var(--text); font-weight: 600; font-size: 13px; }
+.practice-ghost { padding: 11px 16px; border: 1px solid var(--line-bright); border-radius: 7px; background: var(--surface); color: var(--text); font-weight: 600; font-size: 13px; }
 .practice-ghost:hover { color: var(--text); border-color: var(--ghost-bd-h, var(--line-bright)); background: var(--hover-bg); }
 .practice-hint { margin: 14px 0 0; padding: 10px 14px; border-left: 2px solid var(--accent-text); border-radius: 0 8px 8px 0; background: var(--now-bg); color: var(--mut); font-size: 13px; line-height: 1.6; }
 .practice-hint strong { color: var(--accent-text); }
@@ -952,3 +1028,83 @@ code { font-family: var(--mono); font-size: .92em; color: var(--code-ink); backg
   .local-user-create > div { align-items: stretch; flex-direction: column; }
   .local-user-list i { display: none; }
 }
+
+/* --- Learning search / discovery (upper main content area) --- */
+.lsearch { position: relative; width: 100%; max-width: 480px; margin: 18px 0 4px; }
+.lsearch-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--dim); pointer-events: none; }
+.lsearch-input { width: 100%; padding: 11px 14px 11px 34px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font: 400 13.5px var(--sans); box-shadow: var(--shadow); transition: border-color .15s ease; }
+.lsearch-input::placeholder { color: var(--dim); }
+.lsearch-input:focus-visible { outline: none; border-color: var(--accent); }
+.lsearch-panel { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; }
+.lsearch-empty { margin: 0; padding: 14px 16px; color: var(--mut); font-size: 12.5px; line-height: 1.6; }
+.lsearch-list { list-style: none; margin: 0; padding: 6px; max-height: 320px; overflow-y: auto; }
+.lsearch-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--text); text-decoration: none; min-height: 44px; }
+.lsearch-item:hover, .lsearch-item.active { background: rgba(var(--nav-rgb), var(--nav-on)); }
+.lsearch-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.lsearch-item.is-soon { color: var(--dim); cursor: default; }
+.lsearch-badge { flex: none; font: 600 9px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-text); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; }
+.lsearch-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lsearch-main strong { font-size: 13px; font-weight: 600; }
+.lsearch-main small { color: var(--mut); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lsearch-soon { margin-left: auto; flex: none; font: 500 10px/1 var(--mono); color: var(--dim); }
+
+/* Compact returning-user trigger: a labelled pill that reveals the same search
+   in an anchored popover. Secondary utility — never visually dominant. */
+.lsearch-trigger { position: relative; width: auto; max-width: none; margin: 0; }
+.lsearch-pill { display: inline-flex; align-items: center; gap: 8px; height: 42px; min-width: 176px; padding: 0 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); color: var(--mut); font: 400 13px var(--sans); cursor: pointer; transition: border-color .15s ease, color .15s ease, background-color .15s ease; }
+.lsearch-pill:hover { color: var(--text); border-color: var(--accent); background: rgba(var(--nav-rgb), var(--nav-on)); }
+.lsearch-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lsearch-pill[aria-expanded="true"] { color: var(--text); border-color: var(--accent); }
+.lsearch-pill .lsearch-icon { position: static; transform: none; flex: none; }
+.lsearch-label-short { display: none; }
+.lsearch-popover { position: absolute; z-index: 40; top: calc(100% + 8px); right: 0; width: 440px; max-width: calc(100vw - 36px); padding: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); animation: lsearch-in .16s ease-out; }
+.lsearch-popover .lsearch { width: 100%; max-width: none; margin: 0; }
+.lsearch-popover .lsearch-icon { top: 22px; left: 20px; transform: none; }
+.lsearch-popover .lsearch-panel { position: static; top: auto; margin-top: 6px; border: 0; box-shadow: none; background: transparent; }
+@keyframes lsearch-in { from { opacity: 0; transform: translateY(-4px); } }
+
+@media (max-width: 600px) {
+  /* The search trigger takes the full topbar row when controls grid up. */
+  .top-right .lsearch-trigger { grid-column: 1 / -1; }
+}
+
+@media (max-width: 430px) {
+  .lsearch { max-width: 100%; }
+  .lsearch-panel { max-width: calc(100vw - 36px); }
+  /* Phones: short localized trigger; the revealed search takes the content width. */
+  .lsearch-trigger { width: 100%; }
+  .lsearch-pill { min-width: 0; height: 44px; width: 100%; justify-content: center; }
+  .lsearch-label-full { display: none; }
+  .lsearch-label-short { display: inline; }
+  .lsearch-popover { position: fixed; left: 18px; right: 18px; width: auto; max-width: none; }
+  .lsearch-popover .lsearch-panel { max-width: none; }
+}
+
+
+/* --- First-run dashboard: centered guided start --- */
+.first-run { max-width: 660px; margin: 0 auto; padding-top: clamp(24px, 7vh, 72px); }
+.first-hero { padding-bottom: 0; }
+.first-hero .hero-date { margin-bottom: 6px; }
+.first-hero h1 { margin-bottom: 10px; }
+.first-sub { color: var(--mut); font-size: 14.5px; line-height: 1.7; max-width: 46ch; }
+.first-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 24px; }
+.first-start { min-height: 46px; padding-inline: 22px; font-size: 14.5px; }
+.first-browse { color: var(--mut); font-size: 13px; text-decoration: none; border-bottom: 1px solid transparent; transition: color .15s ease, border-color .15s ease; }
+.first-browse:hover { color: var(--text); border-bottom-color: var(--line); }
+.first-browse:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.first-hero .lsearch { margin-top: 26px; }
+.path-quiet { margin-top: 36px; }
+.path-empty { margin: 12px 4px 0; color: var(--mut); font-size: 13px; line-height: 1.7; max-width: 52ch; }
+
+@media (max-width: 430px) {
+  .first-run { padding-top: 18px; }
+  .first-actions { flex-direction: column; align-items: stretch; gap: 14px; }
+  .first-start { width: 100%; justify-content: center; }
+  .first-browse { align-self: center; }
+  .first-hero .lsearch { margin-top: 22px; }
+  .path-quiet { margin-top: 28px; }
+}
+
+/* --- Settings: Language section as a sibling of Appearance --- */
+.settings-head-section { padding-top: 24px; }
+.settings-title-section { font-size: clamp(1.2rem, 2.4vw, 1.7rem); }

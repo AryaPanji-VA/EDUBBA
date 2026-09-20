@@ -11,7 +11,7 @@ import { TopBar } from "@/components/top-bar";
 import { propositionsMasteryConceptLabels, propositionsReinforcement } from "@/content/lessons/discrete-math/propositions-lesson-config";
 import { getPropositionsActivities, localizePropositionsContent, propositionsCopy, type LessonLanguage } from "@/content/lessons/discrete-math/propositions-localization";
 import type { DeliveredLesson } from "@/content/lessons/types";
-import { lessonLanguageStorageKey } from "@/content/lessons/variables-localization";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { useProgress } from "@/lib/progress/use-progress";
 import type { RobinState } from "@/lib/robin/types";
 
@@ -29,7 +29,7 @@ export function PropositionsLesson() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [submittedChecks, setSubmittedChecks] = useState<Record<number, boolean>>({});
   const [showLogOffer, setShowLogOffer] = useState(false);
-  const [language, setLanguage] = useState<LessonLanguage>("id");
+  const { language } = useLanguage();
 
   const copy = propositionsCopy[language];
   const content = lesson ? localizePropositionsContent(lesson.content, language) : null;
@@ -41,18 +41,6 @@ export function PropositionsLesson() {
     setCheckComplete(progress.robinCheckComplete);
     setShowLogOffer(progress.complete && progress.learningLogStatus === "pending");
   }, [progress.complete, progress.isLoaded, progress.learningLogStatus, progress.robinCheckComplete]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(lessonLanguageStorageKey);
-      if (saved === "id" || saved === "en") setLanguage(saved);
-    } catch { /* Indonesian remains the safe default. */ }
-  }, []);
-
-  function changeLanguage(next: LessonLanguage) {
-    setLanguage(next);
-    try { localStorage.setItem(lessonLanguageStorageKey, next); } catch { /* Session still works. */ }
-  }
 
   async function loadLesson() {
     setIsLoading(true);
@@ -119,7 +107,6 @@ export function PropositionsLesson() {
       <TopBar
         breadcrumb={<><Link href="/courses">{copy.courses}</Link><span className="sep">/</span><Link href="/courses/discrete-math">MA-105</Link><span className="sep">/</span><b>Propositions</b></>}
         contextual={<>
-          <div className="switcher" role="group" aria-label={copy.language}>{(["id", "en"] as const).map((value) => <button key={value} type="button" aria-pressed={language === value} className={language === value ? "on" : ""} onClick={() => changeLanguage(value)}>{value.toUpperCase()}</button>)}</div>
           <div className="switcher" role="group" aria-label={copy.mode}>
             <button type="button" className={!sourceMode ? "on" : ""} aria-pressed={!sourceMode} onClick={() => setSourceMode(false)}>Robin</button>
             <button type="button" className={sourceMode ? "on" : ""} aria-pressed={sourceMode} onClick={() => { setSourceMode(true); setRobinState("idle"); setSignalPulse(false); }}>Source</button>
@@ -161,7 +148,7 @@ export function PropositionsLesson() {
             </LessonActivityRenderer>
 
             {showLogOffer && <LearningLogOffer lessonSlug="propositions" onDecision={handleLogDecision} />}
-            <details className="references" id="lesson-references"><summary>{copy.sourceAccess}</summary><span className="card-kicker">{copy.sourceSupport}</span><p className="source-intro">{copy.sourceIntro}</p><ol>{lesson.sources.length === 0 ? <li className="source-item"><span>—</span><div><p>Belum ada sumber yang ditautkan untuk lesson ini. Materinya tetap bisa dipelajari; sumber akan muncul setelah basis datanya diperbarui.</p></div></li> : lesson.sources.map((source, index) => <li className="source-item" key={source.url}><span>{String(index + 1).padStart(2, "0")}</span><div><a href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong> ↗</a><div className="source-meta"><span>{source.publisher ?? copy.unknownPublisher}</span><span>{language === "id" ? ({ documentation: "dokumentasi", textbook: "buku teks", course: "materi kuliah", article: "artikel" }[source.sourceType]) : source.sourceType}</span></div>{source.relevanceNote && <p>{source.relevanceNote}</p>}</div></li>)}</ol></details>
+            <details className="references" id="lesson-references"><summary>{copy.sourceAccess}</summary><span className="card-kicker">{copy.sourceSupport}</span><p className="source-intro">{copy.sourceIntro}</p><ol>{lesson.sources.length === 0 ? <li className="source-item"><span>—</span><div><p>{language === "id" ? "Belum ada sumber yang ditautkan untuk lesson ini. Materinya tetap bisa dipelajari; sumber akan muncul setelah basis datanya diperbarui." : "No sources are linked to this lesson yet. The material is still fully learnable; sources appear once the dataset is updated."}</p></div></li> : lesson.sources.map((source, index) => <li className="source-item" key={source.url}><span>{String(index + 1).padStart(2, "0")}</span><div><a href={source.url} target="_blank" rel="noreferrer"><strong>{source.title}</strong> ↗</a><div className="source-meta"><span>{source.publisher ?? copy.unknownPublisher}</span><span>{language === "id" ? ({ documentation: "dokumentasi", textbook: "buku teks", course: "materi kuliah", article: "artikel" }[source.sourceType]) : source.sourceType}</span></div>{source.relevanceNote && <p>{source.relevanceNote}</p>}</div></li>)}</ol></details>
           </article>
           <RobinCompanion lessonSlug="propositions" sourceMode={sourceMode} onStateChange={updateRobinState} />
         </div>}

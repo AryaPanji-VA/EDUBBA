@@ -64,7 +64,7 @@ test("course overview resolves persisted states and links all non-locked impleme
   assert.match(source, /progress\?\.completed_at/);
   assert.match(source, /state !== "coming-soon"/);
   assert.match(source, /shouldShowLessons/);
-  assert.match(source, /<span className="cmap-laction">Resume →<\/span>/);
+  assert.match(source, /<span className="cmap-laction">\{copy\["action\.resume"\]\} →<\/span>/);
 });
 
 test("Guided Practice covers each implemented topic with a 2/2/2 progression", () => {

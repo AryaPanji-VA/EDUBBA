@@ -4,29 +4,47 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { TopBar } from "@/components/top-bar";
-import { implementedProgrammingLessonSlugs } from "@/data/courses";
+import { LearningSearch } from "@/components/learning-search";
+import { implementedLessonSlugsByCourse, implementedProgrammingLessonSlugs, defaultCurrentLesson } from "@/data/courses";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
 import type { CurrentLesson } from "@/lib/progress/types";
+import { useLanguage, useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate, type UiCopyKey } from "@/lib/i18n/ui-copy";
 import { toRobinProfileContext, type RobinProfileContext } from "@/lib/profile/local-profile";
 import { useLocalProfile } from "@/lib/profile/use-local-profile";
 
+type Copy = Record<UiCopyKey, string>;
+
+const DAYS = {
+  id: ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"],
+  en: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+};
+const MONTHS = {
+  id: ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"],
+  en: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
+};
+
 function useGreeting(preferredName: string) {
-  const [greeting, setGreeting] = useState(`Good evening, ${preferredName}.`);
+  const { language } = useLanguage();
+  const copy = useUiCopy();
+  const [greeting, setGreeting] = useState(fillTemplate(copy["dash.greeting.evening"], { name: preferredName }));
   const [date, setDate] = useState("");
   useEffect(() => {
     const hr = new Date().getHours();
-    if (hr >= 23 || hr < 5) setGreeting(`The night is yours, ${preferredName}.`);
-    else if (hr < 12) setGreeting(`Good morning, ${preferredName}.`);
-    else if (hr < 18) setGreeting(`Good afternoon, ${preferredName}.`);
-    else setGreeting(`Good evening, ${preferredName}.`);
+    const key: UiCopyKey = hr >= 23 || hr < 5
+      ? "dash.greeting.night"
+      : hr < 12
+      ? "dash.greeting.morning"
+      : hr < 18
+      ? "dash.greeting.afternoon"
+      : "dash.greeting.evening";
+    setGreeting(fillTemplate(copy[key], { name: preferredName }));
     const d = new Date();
-    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
     const h12 = (hr % 12 || 12).toString();
     const ampm = hr < 12 ? "AM" : "PM";
     const min = d.getMinutes().toString().padStart(2, "0");
-    setDate(`${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()} · ${h12}:${min} ${ampm}`);
-  }, [preferredName]);
+    setDate(`${DAYS[language][d.getDay()]} · ${MONTHS[language][d.getMonth()]} ${d.getDate()} · ${h12}:${min} ${ampm}`);
+  }, [preferredName, language, copy]);
   return { greeting, date };
 }
 
@@ -42,7 +60,7 @@ const AssistantAvatar = () => (
 
 type MiniMessage = { role: "user" | "assistant"; content: string };
 
-function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: CurrentLesson; profileContext: RobinProfileContext }) {
+function RobinMiniChat({ currentLesson, profileContext, copy }: { currentLesson: CurrentLesson; profileContext: RobinProfileContext; copy: Copy }) {
   const [messages, setMessages] = useState<MiniMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -74,12 +92,12 @@ function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: Curre
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Robin belum bisa jawab.");
+      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : copy["robin.errorOffline"]);
       if (controller.current !== requestController) return;
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
     } catch {
       if (controller.current === requestController) {
-        setError(requestController.signal.aborted ? "Robin kelamaan mikir. Coba lagi." : "Robin lagi nggak bisa nyambung. Materi tetap aman.");
+        setError(requestController.signal.aborted ? copy["robin.errorTimeout"] : copy["robin.errorOffline"]);
       }
     } finally {
       window.clearTimeout(timeout);
@@ -90,22 +108,22 @@ function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: Curre
   const lastRobin = messages.filter((m) => m.role === "assistant").at(-1);
 
   return (
-    <section className="panel assist" aria-label="Robin mini-chat">
+    <section className="panel assist" aria-label={copy["dash.robinAria"]}>
       <div className="a-head">
         <AssistantAvatar />
         <div>
           <div className="a-name">Robin</div>
           <div className="a-sub">study companion</div>
         </div>
-        <span className="a-status"><i />{busy ? "thinking…" : "online"}</span>
+        <span className="a-status"><i />{busy ? copy["robin.thinking"] : copy["robin.online"]}</span>
       </div>
       <div className="chat">
         {messages.length === 0 && (
           <div className="msg-l">
             <AssistantAvatar />
             <div>
-              <p>oi, bagian mana yang bikin nyangkut? gas, tanya aja.</p>
-              <span className="mmeta">Robin · answers, never grades</span>
+              <p>{copy["robin.miniIntro"]}</p>
+              <span className="mmeta">{copy["robin.miniMeta"]}</span>
             </div>
           </div>
         )}
@@ -114,7 +132,7 @@ function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: Curre
             {message.role === "assistant" && <AssistantAvatar />}
             <div>
               {message.role === "user" ? <p>{message.content}</p> : <p>{message.content}</p>}
-              <span className="mmeta">{message.role === "user" ? "you" : "Robin"}</span>
+              <span className="mmeta">{message.role === "user" ? copy["robin.you"] : "Robin"}</span>
             </div>
           </div>
         ))}
@@ -131,58 +149,70 @@ function RobinMiniChat({ currentLesson, profileContext }: { currentLesson: Curre
           type="text"
           value={draft}
           maxLength={500}
-          placeholder="tanya Robin…"
-          aria-label="Ask Robin"
+          placeholder={copy["robin.miniPlaceholder"]}
+          aria-label={copy["companion.ask"]}
           disabled={busy}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void send(); } }}
         />
-        <button className="a-send" type="button" aria-label="Send to Robin" disabled={busy || !draft.trim()} onClick={() => void send()}>↑</button>
+        <button className="a-send" type="button" aria-label={copy["companion.send"]} disabled={busy || !draft.trim()} onClick={() => void send()}>↑</button>
       </div>
       {lastRobin && (
         <div className="companion-actions companion-actions-flush">
-          <Link href={`/courses/${currentLesson.courseSlug}/${currentLesson.lessonSlug}`}>Continue lesson →</Link>
-          <Link href={`/courses/${currentLesson.courseSlug}`}>Open course map →</Link>
+          <Link href={`/courses/${currentLesson.courseSlug}/${currentLesson.lessonSlug}`}>{copy["robin.continueLesson"]} →</Link>
+          <Link href={`/courses/${currentLesson.courseSlug}`}>{copy["robin.openCourseMap"]} →</Link>
         </div>
       )}
-      <p className="a-note">session only · full companion ada di dalam lesson</p>
+      <p className="a-note">{copy["robin.miniNote"]}</p>
     </section>
   );
 }
 
+const allImplementedSlugs = Object.values(implementedLessonSlugsByCourse).flat();
+
 export default function DashboardPage() {
+  const copy = useUiCopy();
   const { profile } = useLocalProfile();
   const { greeting, date } = useGreeting(profile.preferredName);
   const currentLesson = useCurrentLesson();
   const lessonName = currentLesson.lessonSlug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
   const activityName = currentLesson.currentActivityId
     ? currentLesson.currentActivityId.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ")
-    : "Start the learning flow";
+    : copy["dash.startFlow"];
   const step = currentLesson.completedAt
     ? currentLesson.totalActivities
     : Math.min(currentLesson.completedActivityIds.length + 1, currentLesson.totalActivities || 1);
   const progressPercent = currentLesson.totalActivities ? Math.round((currentLesson.completedActivityIds.length / currentLesson.totalActivities) * 100) : 0;
 
-  // Honest path states: derived from persisted progress when available.
-  // Unknown (e.g. progress API unavailable) stays a neutral "not started".
+  // Honest path states + first-run derivation: both come from persisted
+  // progress records. A first-run user has NO meaningful learning history —
+  // not merely "completedLessons === 0" (a started lesson counts as history).
   const [pathStates, setPathStates] = useState<Record<string, "completed" | "current" | "pending">>({});
+  const [hasHistory, setHasHistory] = useState<boolean | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     (async () => {
       const states: Record<string, "completed" | "current" | "pending"> = {};
       try {
         const responses = await Promise.all(
-          implementedProgrammingLessonSlugs.map((slug) =>
+          allImplementedSlugs.map((slug) =>
             fetch(`/api/learning/progress?lesson=${encodeURIComponent(slug)}`, { signal: controller.signal })
               .then((response) => response.ok ? response.json() as Promise<{ progress?: { completed_at: string | null } | null }> : null)
               .catch(() => null),
           ),
         );
+        // Any non-null progress row means the learner has started or finished
+        // something — that is meaningful history, regardless of completion.
+        const started = responses.some((response) => response?.progress);
         implementedProgrammingLessonSlugs.forEach((slug, index) => {
-          states[slug] = responses[index]?.progress?.completed_at ? "completed" : "pending";
+          const position = allImplementedSlugs.indexOf(slug);
+          states[slug] = responses[position]?.progress?.completed_at ? "completed" : "pending";
         });
-      } catch { /* Neutral states remain honest. */ }
-      if (!controller.signal.aborted) setPathStates(states);
+        if (!controller.signal.aborted) { setPathStates(states); setHasHistory(started); }
+      } catch {
+        // Unknown (e.g. progress API unavailable): stay neutral, never fake history.
+        if (!controller.signal.aborted) setHasHistory(false);
+      }
     })();
     return () => controller.abort();
   }, []);
@@ -195,40 +225,82 @@ export default function DashboardPage() {
   const completedImplemented = implementedProgrammingLessonSlugs.filter((slug) => stateFor(slug) === "completed").length;
   const implementedTotal = implementedProgrammingLessonSlugs.length;
   const pathPercent = implementedTotal > 0 ? Math.round((completedImplemented / implementedTotal) * 100) : 0;
+  const currentHasProgress = Boolean(currentLesson.completedAt || currentLesson.currentActivityId || currentLesson.completedActivityIds.length > 0);
+  const isFirstRun = hasHistory === false && !currentHasProgress;
+  const isUndetermined = hasHistory === null && !currentHasProgress;
+
+  if (isFirstRun) {
+    return (
+      <AppShell active="dashboard">
+        <TopBar breadcrumb={<><b>{copy["nav.dashboard"]}</b><span className="sep">/</span>Foundations of Programming</>} />
+        <div className="content first-run">
+          <div className="hero first-hero">
+            <p className="hero-date">{date}</p>
+            <h1>{copy["dash.firstTitle"]}</h1>
+            <p className="first-sub">{copy["dash.firstSub"]}</p>
+            <div className="first-actions">
+              <Link className="btn-p first-start" href={`/courses/${defaultCurrentLesson.courseSlug}/${defaultCurrentLesson.lessonSlug}`}>{copy["dash.firstStart"]} →</Link>
+              <Link className="first-browse" href="/courses">{copy["dash.firstCta"]}</Link>
+            </div>
+            <LearningSearch />
+          </div>
+
+          <section className="path path-quiet" aria-label={copy["dash.pathAria"]}>
+            <header className="shead">
+              <span className="tag blue">{fillTemplate(copy["dash.pathTag"], { course: "Foundations of Programming" })}</span>
+            </header>
+            <p className="path-empty">{copy["dash.firstPathEmpty"]}</p>
+          </section>
+
+          <footer className="foot">
+            <div className="pxdiv" aria-hidden="true" />
+            <div className="foot-row">
+              <span>{copy["dash.footer"]}</span>
+            </div>
+          </footer>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell active="dashboard">
-      <TopBar breadcrumb={<><b>Dashboard</b><span className="sep">/</span>Foundations of Programming</>} />
+      <TopBar
+        breadcrumb={<><b>{copy["nav.dashboard"]}</b><span className="sep">/</span>Foundations of Programming</>}
+        contextual={<LearningSearch presentation="trigger" />}
+      />
       <div className="content">
         <div className="hero">
           <p className="hero-date">{date}</p>
           <h1>{greeting}</h1>
-          <p>Everything is where you left it — <span className="hl">{lessonName}</span>{currentLesson.totalActivities ? `, step ${step} of ${currentLesson.totalActivities}.` : "."}</p>
+          <p>{copy["dash.heroLeft"]} — <span className="hl">{lessonName}</span>{currentLesson.totalActivities ? fillTemplate(copy["dash.heroStep"], { step, total: currentLesson.totalActivities }) : "."}</p>
         </div>
+
+        {isUndetermined ? null : (
 
         <div className="grid">
           {/* left column */}
           <div className="col">
-            <section className="panel cut continue" aria-label="Continue learning">
+            <section className="panel cut continue" aria-label={copy["dash.continueAria"]}>
               <div className="continue-in">
                 <div>
-                  <span className="tag acc">{currentLesson.completedAt ? "Completed" : "Continue"} · {lessonName}</span>
+                  <span className="tag acc">{currentLesson.completedAt ? copy["dash.continueTag.completed"] : copy["dash.continueTag.continue"]} · {lessonName}</span>
                   <h2 className="lesson-title-card">{activityName}</h2>
-                  <p className="lesson-meta">CS-101 · step {step} of {currentLesson.totalActivities || "—"}</p>
-                  <p className="lesson-x">Your last meaningful lesson position is saved. <em>tinggal lanjut, nggak perlu mulai ulang.</em></p>
+                  <p className="lesson-meta">{fillTemplate(copy["dash.stepOf"], { course: "CS-101", step, total: currentLesson.totalActivities || "—" })}</p>
+                  <p className="lesson-x">{copy["dash.continueNote"]} <em>{copy["dash.continueNoteEm"]}</em></p>
                 </div>
                 <div className="continue-actions">
-                  <Link className="btn-p" href={`/courses/${currentLesson.courseSlug}/${currentLesson.lessonSlug}`}>Resume lesson →</Link>
-                  <Link className="btn-g" href={`/courses/${currentLesson.courseSlug}`}>Course map →</Link>
+                  <Link className="btn-p" href={`/courses/${currentLesson.courseSlug}/${currentLesson.lessonSlug}`}>{copy["dash.resumeLesson"]} →</Link>
+                  <Link className="btn-g" href={`/courses/${currentLesson.courseSlug}`}>{copy["dash.courseMap"]} →</Link>
                 </div>
               </div>
               <div className="cbar" aria-hidden="true"><i style={{ width: `${currentLesson.completedAt ? 100 : progressPercent}%` }} /></div>
             </section>
 
-            <section className="path" aria-label="Learning path">
+            <section className="path" aria-label={copy["dash.pathAria"]}>
               <header className="shead">
-                <span className="tag blue">Your path — Foundations of Programming</span>
-                <span className="shead-meta">{completedImplemented} of {implementedTotal} lessons · {pathPercent}%</span>
+                <span className="tag blue">{fillTemplate(copy["dash.pathTag"], { course: "Foundations of Programming" })}</span>
+                <span className="shead-meta">{fillTemplate(copy["dash.pathCount"], { done: completedImplemented, total: implementedTotal, pct: pathPercent })}</span>
               </header>
               <ol className="mods">
                 <li className={`mod ${completedImplemented > 0 ? (completedImplemented === implementedTotal ? "done" : "open") : "dim"}`}>
@@ -236,7 +308,7 @@ export default function DashboardPage() {
                     <span className="node" /><span className="mnum">CS101</span>
                     <span className="mname">Foundations of Programming</span>
                     <span className={`mtag ${completedImplemented === implementedTotal && implementedTotal > 0 ? "master" : completedImplemented > 0 ? "now" : "lock"}`}>
-                      {completedImplemented === implementedTotal && implementedTotal > 0 ? "completed" : completedImplemented > 0 ? "in progress" : "not started"}
+                      {completedImplemented === implementedTotal && implementedTotal > 0 ? copy["status.completed"] : completedImplemented > 0 ? copy["status.inProgress"] : copy["status.notStarted"]}
                     </span>
                     <span className="mbar">{implementedProgrammingLessonSlugs.map((slug) => <i key={slug} className={stateFor(slug) === "completed" ? "f" : ""} />)}</span>
                     <span className="mcount">{completedImplemented}/{implementedTotal}</span>
@@ -258,9 +330,9 @@ export default function DashboardPage() {
                           >
                             <span className="lnode" style={nodeStyle} />
                             <span className="cmap-ltitle"><span className="cmap-lnum">{String(index + 1).padStart(2, "0")}</span>{label}</span>
-                            {state === "completed" && <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>}
-                            {state === "current" && <span className="cmap-laction">Resume →</span>}
-                            {state === "pending" && <span className="cmap-lock">start</span>}
+                            {state === "completed" && <span className="cmap-lock" style={{ color: "var(--ok)" }}>{copy["status.done"]}</span>}
+                            {state === "current" && <span className="cmap-laction">{copy["action.resume"]} →</span>}
+                            {state === "pending" && <span className="cmap-lock">{copy["status.start"]}</span>}
                           </Link>
                         </li>
                       );
@@ -269,17 +341,17 @@ export default function DashboardPage() {
                 </li>
               </ol>
               <p className="panel-footnote" style={{ border: 0, padding: "10px 4px 0" }}>
-                Lesson pertama dan kedua modul lain ada di <Link href="/courses/programming" style={{ color: "var(--accent-text)" }}>course map</Link>.
+                {copy["dash.pathFoot"]} <Link href="/courses/programming" style={{ color: "var(--accent-text)" }}>{copy["dash.pathFootLink"]}</Link>.
               </p>
             </section>
           </div>
 
           {/* right column — mastery + mini-chat */}
           <div className="col side-col">
-            <section className="panel mastery" aria-label="Mastery">
+            <section className="panel mastery" aria-label={copy["dash.masteryAria"]}>
               <header className="shead" style={{ marginBottom: "6px" }}>
-                <span className="tag blue">Mastery</span>
-                <span className="shead-meta">grows as you practice</span>
+                <span className="tag blue">{copy["dash.mastery"]}</span>
+                <span className="shead-meta">{copy["dash.masteryNote"]}</span>
               </header>
               <ul className="mast-list">
                 {implementedProgrammingLessonSlugs.slice(0, 4).map((slug) => {
@@ -287,7 +359,7 @@ export default function DashboardPage() {
                   const label = slug.split("-").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
                   return (
                     <li key={slug} className={`mast-item ${state === "current" ? "hot" : ""}`}>
-                      <div className="mast-top"><span className="mast-name">{label}</span><span className="mast-pct">{state === "completed" ? "done" : state === "current" ? "in progress" : "not started"}</span></div>
+                      <div className="mast-top"><span className="mast-name">{label}</span><span className="mast-pct">{state === "completed" ? copy["status.done"] : state === "current" ? copy["status.inProgress"] : copy["status.notStarted"]}</span></div>
                       <div className="mbar2">{implementedProgrammingLessonSlugs.slice(0, 6).map((_, bar) => <i key={bar} className={state === "completed" || (state === "current" && bar === 0) ? "f" : ""} />)}</div>
                     </li>
                   );
@@ -295,19 +367,20 @@ export default function DashboardPage() {
               </ul>
               <div className="pxdiv" aria-hidden="true" />
               <div className="mast-foot">
-                <span>{completedImplemented} of {implementedTotal} lessons · <b>{pathPercent}%</b></span>
-                <span className="up">keep going</span>
+                <span>{fillTemplate(copy["dash.pathCount"], { done: completedImplemented, total: implementedTotal, pct: pathPercent })}</span>
+                <span className="up">{copy["action.keepGoing"]}</span>
               </div>
             </section>
 
-            <RobinMiniChat currentLesson={currentLesson} profileContext={toRobinProfileContext(profile)} />
+            <RobinMiniChat currentLesson={currentLesson} profileContext={toRobinProfileContext(profile)} copy={copy} />
           </div>
         </div>
+        )}
 
         <footer className="foot">
           <div className="pxdiv" aria-hidden="true" />
           <div className="foot-row">
-            <span>edubba — a place to learn computer science slowly, with robin.</span>
+            <span>{copy["dash.footer"]}</span>
           </div>
         </footer>
       </div>
