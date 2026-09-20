@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { ProgressBar } from "@/components/progress-bar";
 import { courseOverviewRouteBySlug, type Course } from "@/data/courses";
+import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate, type UiCopyKey } from "@/lib/i18n/ui-copy";
 
 type SemesterGroup = {
   number: number;
@@ -27,10 +30,12 @@ function padSemester(number: number): string {
 }
 
 export function CoursesClient() {
+  const copy = useUiCopy();
   const [data, setData] = useState<CoursesResponse | null>(null);
   const [selectedSemester, setSelectedSemester] = useState(defaultSemesterNumber);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const current = useCurrentLesson();
 
   async function loadCourses() {
     setIsLoading(true);
@@ -47,7 +52,7 @@ export function CoursesClient() {
       setData(data);
       setSelectedSemester(defaultSemesterNumber);
     } catch {
-      setError("Course signal putus. Backend-nya belum jawab.");
+      setError(copy["courses.error"]);
     } finally {
       setIsLoading(false);
     }
@@ -66,15 +71,15 @@ export function CoursesClient() {
 
   return (
     <>
-      <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>Semester {selectedSemester}</>} />
+      <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>Semester {selectedSemester}</>} />
       <div className="content">
         <header className="page-header">
           <div>
-            <span className="eyebrow">Semester {padSemester(selectedSemester)} · {courseCount} {courseCount === 1 ? "course" : "courses"}</span>
-            <h1>Your course shelf.</h1>
-            <p>Nggak semuanya harus ditaklukkan malam ini. Pilih satu, terus beneran masuk.</p>
+            <span className="eyebrow">{fillTemplate(copy["courses.eyebrow"], { sem: padSemester(selectedSemester), count: courseCount })}</span>
+            <h1>{copy["courses.title"]}</h1>
+            <p>{copy["courses.sub"]}</p>
           </div>
-          <div className="semester-stamp"><span>SEM / {padSemester(selectedSemester)}</span><strong>{overallProgress === null ? "—" : `${overallProgress}%`}</strong><small>overall</small></div>
+          <div className="semester-stamp"><span>SEM / {padSemester(selectedSemester)}</span><strong>{overallProgress === null ? "—" : `${overallProgress}%`}</strong><small>{copy["courses.overall"]}</small></div>
         </header>
 
         {data && (
@@ -101,34 +106,51 @@ export function CoursesClient() {
         )}
 
         {isLoading ? (
-          <div className="course-request-state" role="status"><span className="typing-dots"><i /><i /><i /></span><strong>requesting /api/courses</strong><small>Browser lagi nunggu JSON dari backend.</small></div>
+          <div className="course-request-state" role="status"><span className="typing-dots"><i /><i /><i /></span><strong>{copy["courses.loading"]}</strong><small>{copy["courses.loadingNote"]}</small></div>
         ) : error || !data ? (
-          <div className="course-request-state is-error" role="alert"><strong>{error ?? "Course signal putus."}</strong><small>Request gagal sebelum data course sampai ke browser.</small><button className="button" onClick={() => void loadCourses()}>coba lagi</button></div>
+          <div className="course-request-state is-error" role="alert"><strong>{error ?? copy["courses.error"]}</strong><small>{copy["courses.errorNote"]}</small><button className="button" onClick={() => void loadCourses()}>{copy["action.retry"]}</button></div>
         ) : courseCount === 0 ? (
-          <section className="semester-empty" aria-label={`Semester ${selectedSemester} kosong`} role="status">
-            <strong>Belum ada course yang dimasukin ke semester ini.</strong>
-            <small>Materi kurikulumnya belum ditambahkan. Begitu resmi masuk, course-nya muncul di sini — nggak ada yang difabricate.</small>
+          <section className="semester-empty" aria-label={`Semester ${selectedSemester}`} role="status">
+            <strong>{copy["courses.empty"]}</strong>
+            <small>{copy["courses.emptyNote"]}</small>
           </section>
         ) : (
           <>
             <section className="courses-list" aria-label={`Semester ${selectedSemester} courses`}>
         {courses.map((course, index) => {
           const isProgramming = course.slug === "programming";
-          const learningState = course.progress > 0 ? "LEARNING" : "NOT STARTED";
+          const isCurrent = course.slug === current.courseSlug;
+          // Status language comes from the persisted state, with the existing
+          // progress value deciding completion. No invented states.
+          // Status label follows the product language; the CSS class keeps the
+          // canonical English state so styling never depends on localization.
+          const canonicalStatus = course.progress >= 100 ? "Completed" : course.status;
+          const statusKey: UiCopyKey = canonicalStatus === "Completed" ? "status.completed"
+            : canonicalStatus === "In progress" ? "status.inProgress"
+            : canonicalStatus === "Up next" ? "status.upNext"
+            : "status.notStarted";
+          const statusLabel = copy[statusKey];
+          const ctaLabel = isCurrent || course.progress > 0 ? copy["action.continue"] : copy["action.start"];
           const overviewHref = courseOverviewRouteBySlug[course.slug] ?? "/courses";
 
           return (
-            <Link className={`course-row ${isProgramming ? "featured" : ""}`} href={overviewHref} key={course.slug} aria-label={`${course.title}, ${course.progress}% complete`}>
+            <Link
+              className={`course-row ${isProgramming ? "featured" : ""} ${isCurrent ? "current" : ""}`}
+              href={overviewHref}
+              key={course.slug}
+              aria-label={fillTemplate(copy["courses.ariaProgress"], { title: course.title, pct: course.progress })}
+              aria-current={isCurrent ? "true" : undefined}
+            >
                     <span className="course-index">{String(index + 1).padStart(2, "0")}</span>
                     <span className="course-main"><span className="course-code">{course.code}</span><strong>{course.title}</strong><small>{course.description}</small></span>
-                    <span className="course-stats"><span>{course.lessons} lessons</span><span className={`status status-${course.status.toLowerCase().replaceAll(" ", "-")}`}>{learningState}</span></span>
-                    <span className="course-progress"><strong>{course.progress}%</strong><ProgressBar value={course.progress} /></span>
+                    <span className="course-stats"><span>{course.lessons} {copy["status.lessons"]}</span><span className={`status status-${canonicalStatus.toLowerCase().replaceAll(" ", "-")}`}>{statusLabel}</span></span>
+                    <span className="course-progress"><strong>{course.progress}%</strong><ProgressBar value={course.progress} /><span className="course-cta">{ctaLabel} →</span></span>
                     <span className="row-arrow">→</span>
                   </Link>
                 );
               })}
             </section>
-            <p className="quiet-note">Loaded from GET /api/courses · {data.count} records received as JSON · {data.semesters.length} semesters</p>
+            <p className="quiet-note">{fillTemplate(copy["courses.loadedNote"], { count: data.count, semesters: data.semesters.length })}</p>
           </>
         )}
       </div>

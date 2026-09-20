@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TopBar } from "@/components/top-bar";
 import { implementedLessonSlugsByCourse, type LessonPresentationState } from "@/data/courses";
+import { deriveLessonStates } from "@/lib/courses/lesson-access";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import { fillTemplate } from "@/lib/i18n/ui-copy";
 
 type Lesson = {
   slug: string;
@@ -34,14 +37,18 @@ type CourseResponse = {
 };
 
 type ProgressResponse = {
+  current?: { lessonSlug?: string; completedAt?: string | null };
   progress?: { lesson_slug: string; completed_at: string | null } | null;
 };
 
 // Shared minimal course overview (Phase 15), generalized from the Phase 14B
 // Discrete Mathematics pattern. Truthful module/lesson listing, real persisted
 // progress only — no presentation-fallback percentages, no cloned
-// Programming-only tools.
+// Programming-only tools. Presentation states derive through the same
+// lesson-access rules as Programming: every implemented lesson stays open
+// (no locks), one resume point, one recommended next step.
 export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: string; courseCode: string }) {
+  const copy = useUiCopy();
   const implemented = implementedLessonSlugsByCourse[courseSlug] ?? [];
   const [course, setCourse] = useState<GenericCourse | null>(null);
   const [lessonStates, setLessonStates] = useState<Record<string, LessonPresentationState>>({});
@@ -58,24 +65,38 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
       setCourse(data.course);
 
       // Persisted lesson progress is authoritative; unavailable progress falls
-      // back to the first implemented lesson being simply "current".
+      // back to the shared derivation with no completions (first lesson is the
+      // recommended next step).
       try {
-        const persisted = await Promise.all(
-          implemented.map((slug) =>
+        const [currentResponse, ...persisted] = await Promise.all([
+          fetch("/api/learning/progress"),
+          ...implemented.map((slug) =>
             fetch(`/api/learning/progress?lesson=${encodeURIComponent(slug)}`)
               .then((progressResponse) => progressResponse.ok ? progressResponse.json() as Promise<ProgressResponse> : null),
           ),
+        ]);
+        const currentData = currentResponse.ok
+          ? await currentResponse.json() as ProgressResponse
+          : null;
+        const completedSlugs = implemented.filter(
+          (slug, index) => persisted[index]?.progress?.completed_at,
         );
-        const nextStates: Record<string, LessonPresentationState> = {};
-        for (const slug of implemented) nextStates[slug] = "current";
-        implemented.forEach((slug, index) => {
-          if (persisted[index]?.progress?.completed_at) nextStates[slug] = "completed";
+        const derived = deriveLessonStates({
+          fallbackStates: {},
+          implementedSlugs: implemented,
+          completedSlugs,
+          resumeSlug: currentData?.current?.lessonSlug ?? null,
         });
-        setLessonStates(nextStates);
+        setLessonStates(derived.states);
       } catch {
-        const fallback: Record<string, LessonPresentationState> = {};
-        for (const slug of implemented) fallback[slug] = "current";
-        setLessonStates(fallback);
+        setLessonStates(
+          deriveLessonStates({
+            fallbackStates: {},
+            implementedSlugs: implemented,
+            completedSlugs: [],
+            resumeSlug: null,
+          }).states,
+        );
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Course request failed.");
@@ -88,17 +109,19 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
 
   const allLessons = course?.modules.flatMap((module) => module.lessons) ?? [];
   const completedCount = allLessons.filter((lesson) => lessonStates[lesson.slug] === "completed").length;
-  const currentLesson = allLessons.find((lesson) => lessonStates[lesson.slug] === "current");
+  // Resume point first; otherwise the recommended next step drives "Continue".
+  const currentLesson = allLessons.find((lesson) => lessonStates[lesson.slug] === "current")
+    ?? allLessons.find((lesson) => lessonStates[lesson.slug] === "next");
   const progress = allLessons.length === 0 ? 0 : Math.round((completedCount / allLessons.length) * 100);
 
   if (isLoading) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>{courseCode}</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>{courseCode}</>} />
         <div className="content">
           <div className="course-request-state" role="status">
             <span className="typing-dots"><i /><i /><i /></span>
-            <strong>Loading course…</strong>
+            <strong>{copy["course.loading"]}</strong>
           </div>
         </div>
       </>
@@ -108,12 +131,12 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
   if (error || !course) {
     return (
       <>
-        <TopBar breadcrumb={<><b>Courses</b><span className="sep">/</span>{courseCode}</>} />
+        <TopBar breadcrumb={<><b>{copy["nav.courses"]}</b><span className="sep">/</span>{courseCode}</>} />
         <div className="content">
           <div className="course-request-state is-error" role="alert">
-            <strong>Course signal putus.</strong>
-            <small>{error ?? "The backend returned no course."}</small>
-            <button className="button" onClick={() => void loadCourse()}>coba lagi</button>
+            <strong>{copy["course.error"]}</strong>
+            <small>{error ?? copy["course.errorFallback"]}</small>
+            <button className="button" onClick={() => void loadCourse()}>{copy["action.retry"]}</button>
           </div>
         </div>
       </>
@@ -122,12 +145,12 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
 
   return (
     <>
-      <TopBar breadcrumb={<><Link href="/courses">Courses</Link><span className="sep">/</span><b>{course.title}</b></>} />
+      <TopBar breadcrumb={<><Link href="/courses">{copy["nav.courses"]}</Link><span className="sep">/</span><b>{course.title}</b></>} />
       <div className="content">
         <div className="page-hero">
-          <span className="tag blue">Course · {courseCode} · Semester 1</span>
+          <span className="tag blue">{fillTemplate(copy["course.tag"], { code: courseCode })}</span>
           <h1 className="page-title">{course.title}</h1>
-          <p className="page-context">{course.modules.length} {course.modules.length === 1 ? "module" : "modules"} · {allLessons.length} {allLessons.length === 1 ? "lesson" : "lessons"}</p>
+          <p className="page-context">{fillTemplate(copy["course.context"], { modules: course.modules.length, lessons: allLessons.length })}</p>
           <p className="page-desc">{course.description} <em>slowly, precisely, and out loud.</em></p>
           <div className="course-progress">
             <div className="pxbar" aria-hidden="true">
@@ -135,29 +158,32 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
                 <i key={lesson.slug + i} className={lessonStates[lesson.slug] === "completed" ? "f" : ""} style={{ flex: 1 }} />
               ))}
             </div>
-            <span className="course-progress-meta">{completedCount} of {allLessons.length} lessons · {progress}%</span>
+            <span className="course-progress-meta">{fillTemplate(copy["course.progressMeta"], { done: completedCount, total: allLessons.length, pct: progress })}</span>
             {currentLesson && (
-              <Link className="btn-p" href={`/courses/${courseSlug}/${currentLesson.slug}`}>Continue: {currentLesson.title} →</Link>
+              <Link className="btn-p" href={`/courses/${courseSlug}/${currentLesson.slug}`}>{fillTemplate(copy["course.continue"], { title: currentLesson.title })} →</Link>
             )}
           </div>
         </div>
 
         <div className="grid">
           <div className="col">
-            <section className="cmap" aria-label="Curriculum map">
+            <section className="cmap" aria-label={copy["course.curriculumMap"]}>
               {course.modules.map((module) => {
                 const completedInModule = module.lessons.filter((lesson) => lessonStates[lesson.slug] === "completed").length;
                 const hasCurrent = module.lessons.some((lesson) => lessonStates[lesson.slug] === "current");
+                const hasNext = module.lessons.some((lesson) => lessonStates[lesson.slug] === "next");
                 const moduleState = completedInModule === module.lessons.length && !hasCurrent ? "done" : hasCurrent ? "open" : "dim";
-                const shouldShowLessons = hasCurrent || completedInModule > 0;
+                // Show the lesson list for every module that has implemented
+                // content — never hide open lessons behind a collapsed row.
+                const shouldShowLessons = module.lessons.some((lesson) => (lessonStates[lesson.slug] ?? "coming-soon") !== "coming-soon");
                 return (
                   <section key={module.slug} className="cmap-module">
                     <div className="cmap-mrow">
                       <span className="node" style={moduleState === "done" ? { background: "var(--ok)", borderColor: "var(--ok)" } : hasCurrent ? { background: "var(--accent)", borderColor: "var(--accent)" } : undefined} />
                       <span className="cmap-mnum">{String(module.position).padStart(2, "0")}</span>
                       <span className="cmap-mtitle">{module.title}{module.description && <small>{module.description}</small>}</span>
-                      <span className={`mtag ${completedInModule === module.lessons.length && !hasCurrent ? "master" : hasCurrent ? "now" : "lock"}`}>
-                        {completedInModule === module.lessons.length && !hasCurrent ? "mastered" : hasCurrent ? "in progress" : "locked"}
+                      <span className={`mtag ${hasCurrent ? "now" : completedInModule === module.lessons.length ? "master" : "lock"}`}>
+                        {hasCurrent ? copy["status.inProgress"] : hasNext ? copy["status.upNext"] : completedInModule === module.lessons.length ? copy["status.mastered"] : copy["status.open"]}
                       </span>
                       <span className="mbar">
                         {module.lessons.map((lesson) => (
@@ -169,7 +195,7 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
                     {shouldShowLessons && (
                       <ul className="cmap-lessons">
                         {module.lessons.map((lesson) => {
-                          const state: LessonPresentationState = lessonStates[lesson.slug] ?? "locked";
+                          const state: LessonPresentationState = lessonStates[lesson.slug] ?? "coming-soon";
                           const lessonNumber = `${module.position}.${lesson.position}`;
                           const isImplemented = implemented.includes(lesson.slug);
                           const nodeStyle = state === "completed"
@@ -183,14 +209,14 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
                                 <span className="cmap-lnum">{lessonNumber}</span>{lesson.title}
                                 {lesson.summary && <small>{lesson.summary}</small>}
                               </span>
-                              <span className="cmap-ldur">{lesson.estimatedMinutes} min</span>
-                              {state === "completed" ? (
-                                <span className="cmap-lock" style={{ color: "var(--ok)" }}>done</span>
-                              ) : state === "current" ? (
-                                <span className="cmap-laction">Resume →</span>
-                              ) : (
-                                <span className="cmap-lock">locked</span>
-                              )}
+                            <span className="cmap-ldur">{lesson.estimatedMinutes} {copy["course.min"]}</span>
+                            {state === "completed" ? (
+                              <span className="cmap-lock" style={{ color: "var(--ok)" }}>{copy["status.done"]}</span>
+                            ) : state === "current" ? (
+                              <span className="cmap-laction">{copy["action.resume"]} →</span>
+                            ) : (
+                              <span className="cmap-lock">{state === "coming-soon" ? copy["status.comingSoon"] : state === "available" ? copy["status.start"] : copy["status.next"]}</span>
+                            )}
                             </>
                           );
                           return (
@@ -218,10 +244,8 @@ export function GenericCourseClient({ courseSlug, courseCode }: { courseSlug: st
           <div className="col side-col">
             <section className="panel companion" aria-label="Robin">
               <p className="companion-note">
-                Course ini pakai learning engine yang sama seperti Programming — tanpa Sandbox atau Python Practice.
-                {currentLesson
-                  ? <> Mulai dari <b>{currentLesson.title}</b>: baca pelan, isi interaksinya, cek pemahaman lu.</>
-                  : ""}
+                {copy["course.companionGeneric"]}
+                {currentLesson ? fillTemplate(copy["course.companionNextRead"], { title: currentLesson.title }) : ""}
               </p>
             </section>
           </div>

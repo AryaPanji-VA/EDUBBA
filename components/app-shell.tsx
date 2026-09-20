@@ -5,11 +5,12 @@ import { EnvironmentLayer } from "@/components/environment-layer";
 import { MobileNav } from "@/components/mobile-nav";
 import { LocalProfileSummary } from "@/components/local-profile-summary";
 import { BrandTagline } from "@/components/theme-switcher";
+import { UiText } from "@/components/ui-text";
 import type { ReactNode } from "react";
 
 type AppShellProps = {
   children: ReactNode;
-  active?: "dashboard" | "courses" | "lesson" | "practice" | "profile";
+  active?: "dashboard" | "courses" | "lesson" | "practice" | "settings" | "profile";
   signalMode?: "calm" | "active" | "quiet" | "error";
   signalPulse?: boolean;
 };
@@ -36,9 +37,10 @@ const PracticeIcon = () => (
     <path d="M5.5 8h5" /><rect x="2" y="5.5" width="2.5" height="5" rx="0.75" /><rect x="11.5" y="5.5" width="2.5" height="5" rx="0.75" />
   </svg>
 );
-const ProfileIcon = () => (
+const SettingsIcon = () => (
   <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-    <circle cx="8" cy="5" r="2.5" /><path d="M3 13c.5-2.5 2.2-4 5-4s4.5 1.5 5 4" />
+    <circle cx="8" cy="8" r="2.2" />
+    <path d="M8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M12.4 3.6l-1.2 1.2M4.8 11.2l-1.2 1.2" />
   </svg>
 );
 
@@ -55,19 +57,22 @@ function ShellInner({ children, active = "dashboard", signalMode = "calm" }: App
 
         <nav className="nav">
           <Link href="/" className={active === "dashboard" ? "on" : ""} aria-current={active === "dashboard" ? "page" : undefined}>
-            <DashboardIcon /> <span>Dashboard</span>
+            <DashboardIcon /> <span><UiText k="nav.dashboard" /></span>
           </Link>
           <Link href="/courses" className={active === "courses" ? "on" : ""} aria-current={active === "courses" ? "page" : undefined}>
-            <CoursesIcon /> <span>Courses</span>
+            <CoursesIcon /> <span><UiText k="nav.courses" /></span>
           </Link>
           <Link href="/practice" className={active === "practice" ? "on" : ""} aria-current={active === "practice" ? "page" : undefined}>
-            <PracticeIcon /> <span>Practice</span>
+            <PracticeIcon /> <span><UiText k="nav.practice" /></span>
           </Link>
-          <CurrentLessonLink className={active === "lesson" ? "on" : ""}>
-            <LessonIcon /> <span>Current lesson</span>
+          <CurrentLessonLink className={active === "lesson" ? "on" : ""} ariaCurrent={active === "lesson" ? "page" : undefined}>
+            <LessonIcon /> <span><UiText k="nav.currentLesson" /></span>
           </CurrentLessonLink>
-          <Link href="/profile" className={active === "profile" ? "on" : ""} aria-current={active === "profile" ? "page" : undefined}>
-            <ProfileIcon /> <span>Profile</span>
+
+          {/* Flexible space pushes Settings toward the account area below. */}
+          <div className="nav-spacer" aria-hidden="true" />
+          <Link href="/settings" className={active === "settings" ? "on" : ""} aria-current={active === "settings" ? "page" : undefined}>
+            <SettingsIcon /> <span><UiText k="nav.settings" /></span>
           </Link>
         </nav>
 

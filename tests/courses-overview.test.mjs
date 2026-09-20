@@ -155,15 +155,19 @@ test("the courses client renders eight semester controls and defaults to semeste
 // === 8. Empty semesters show the calm empty state, not fake cards ===
 test("empty semesters render the empty state with honest copy", () => {
   const source = read("components/courses-client.tsx");
-  assert.match(source, /Belum ada course yang dimasukin ke semester ini\./);
+  assert.match(source, /copy\["courses\.empty"\]/);
   assert.match(source, /semester-empty/);
   assert.doesNotMatch(source, /Coming Soon/i);
+  // The honest copy itself lives in the shared UI dictionary.
+  const uiCopy = read("lib/i18n/ui-copy.ts");
+  assert.match(uiCopy, /Belum ada course yang dimasukin ke semester ini\./);
+  assert.match(uiCopy, /No courses are assigned to this semester yet\./);
 });
 
 // === 9. Semester hero reflects the selected semester with actual counts ===
 test("the hero uses the selected semester and its actual course count", () => {
   const source = read("components/courses-client.tsx");
-  assert.match(source, /Semester \{padSemester\(selectedSemester\)\} · \{courseCount\}/);
+  assert.match(source, /copy\["courses\.eyebrow"\], \{ sem: padSemester\(selectedSemester\), count: courseCount \}/);
   assert.match(source, /SEM \/ \{padSemester\(selectedSemester\)\}/);
   assert.match(source, /courses\.length \?|courseCount > 0/);
   assert.match(source, /overallProgress === null \? "—"/);
@@ -191,7 +195,7 @@ test("course card markup, slugs, and navigation stay data-driven", () => {
   assert.match(source, /ProgressBar value=\{course\.progress\}/);
   assert.match(source, /role="status"/);
   assert.match(source, /course-request-state is-error/);
-  assert.match(source, /coba lagi/);
+  assert.match(source, /copy\["action\.retry"\]/);
   // Only courses with implemented overview pages are deep-linked.
   const courseData = read("data/courses.ts");
   assert.match(courseData, /programming: "\/courses\/programming"/);
@@ -216,13 +220,13 @@ test("no semester 2-8 course content is invented in data or client", () => {
   assert.doesNotMatch(client, /href="\/courses\/[a-z-]+"/);
 });
 
-// === 14. Semester labels stay language-neutral; copy follows existing ID conventions ===
-test("semester labels are language-neutral and the page keeps its existing copy conventions", () => {
+// === 14. Semester labels stay language-neutral; chrome copy follows the global language provider ===
+test("semester labels stay language-neutral and chrome copy uses the shared UI copy provider", () => {
   const source = read("components/courses-client.tsx");
   assert.match(source, /SEM \{padSemester/);
   assert.match(source, /Semester \{selectedSemester\}/);
-  assert.match(source, /Your course shelf\./);
-  // /courses does not participate in the lesson language switcher system.
+  assert.match(source, /useUiCopy/, "Chrome copy must come from the global language provider");
+  // /courses never manages its own lesson-language persistence.
   assert.doesNotMatch(source, /lessonLanguageStorageKey/);
   assert.doesNotMatch(source, /shared-copy/);
 });

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PracticeAssistAction, PracticeAssistHintStage, PracticeAssistMode } from "@/lib/practice/assistance";
 import { getActiveLessonLanguage } from "@/lib/robin/locale";
+import { useUiCopy } from "@/lib/i18n/language-provider";
 
 // Compact contextual Robin assistance for all Practice modes (Phase 11B.4).
 // Not a chat window: one click sends one minimal, task-specific payload and
@@ -34,6 +35,7 @@ type Props = {
 };
 
 export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props) {
+  const copy = useUiCopy();
   const [state, setState] = useState<AssistState>("idle");
   const [reply, setReply] = useState<string | null>(null);
   const [replyAction, setReplyAction] = useState<PracticeAssistAction | null>(null);
@@ -71,7 +73,7 @@ export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props
       });
       const data = await response.json();
       if (!response.ok || typeof data.reply !== "string" || !data.reply.trim()) {
-        throw new Error(typeof data.error === "string" ? data.error : "Robin belum bisa menjawab.");
+        throw new Error(typeof data.error === "string" ? data.error : copy["robin.errorGeneric"]);
       }
       if (controller.current !== requestController) return;
       setReply(data.reply as string);
@@ -81,8 +83,8 @@ export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props
     } catch (failure) {
       if (controller.current !== requestController) return;
       setError(requestController.signal.aborted
-        ? "Robin kelamaan mikir. Practice tetap jalan normal—coba lagi."
-        : failure instanceof Error ? failure.message : "Robin belum bisa nyambung. Practice tetap jalan normal.");
+        ? copy["assist.errorTimeout"]
+        : failure instanceof Error ? failure.message : copy["assist.errorOffline"]);
       setState("error");
     } finally {
       window.clearTimeout(timeout);
@@ -91,7 +93,7 @@ export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props
   }
 
   return (
-    <div className="practice-assist" role="region" aria-label="Robin practice assistance">
+    <div className="practice-assist" role="region" aria-label={copy["assist.aria"]}>
       <span className="message-label">ROBIN // PRACTICE</span>
       <div className="practice-assist-actions">
         {actions.map(({ action, label, disabled }) =>
@@ -101,9 +103,9 @@ export function PracticeAssist({ mode, payload, actions, resetKey, note }: Props
             className="practice-ghost"
             disabled={disabled || state === "loading"}
             onClick={() => void run(action)}
-          >{action === "hint" && replyAction === "hint" && state === "success" ? "More help" : label}</button>)}
+          >{action === "hint" && replyAction === "hint" && state === "success" ? copy["assist.moreHelp"] : label}</button>)}
       </div>
-      {state === "loading" && <p className="practice-assist-state" role="status"><span className="typing-dots"><i /><i /><i /></span> Robin lagi mikir…</p>}
+      {state === "loading" && <p className="practice-assist-state" role="status"><span className="typing-dots"><i /><i /><i /></span>{copy["assist.thinking"]}</p>}
       {state === "success" && reply && <p className="practice-assist-reply">{reply}</p>}
       {state === "error" && error && <p className="practice-assist-error" role="alert">{error}</p>}
       {note && <p className="panel-footnote">{note}</p>}

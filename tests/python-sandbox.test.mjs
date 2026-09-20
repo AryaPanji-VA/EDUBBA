@@ -138,7 +138,8 @@ test("Sandbox route, lazy loading, persistence, timeout, and Guided handoff are 
   assert.match(component, /pending\.timeoutId = null/, "the compute timeout pauses while the learner types");
   assert.match(component, /cancelActiveExecution\(\)/, "reset settles the active run and clears pending input");
   assert.doesNotMatch(component, /localStorage\.setItem\([^\n]+stdin|sessionStorage\.setItem\([^\n]+stdin/i);
-  assert.match(guided, /Open in Sandbox/);
+  assert.match(guided, /copy\["guided\.openSandbox"\]/, "the Guided → Sandbox handoff label follows the product language");
+  assert.match(guided, /href="\/practice\/python\/sandbox"/, "the handoff route is uniform across languages");
   assert.match(guided, /sessionStorage\.setItem\(SANDBOX_HANDOFF_STORAGE_KEY/);
   assert.match(landing, /href="\/practice\/python\/sandbox"/);
 });

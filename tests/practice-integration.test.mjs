@@ -157,9 +157,12 @@ test("practice routes and the nav entry fit the existing shell", () => {
   assert.ok(readFileSync(new URL("../app/practice/page.tsx", import.meta.url), "utf8"));
   assert.ok(readFileSync(new URL("../app/practice/python/page.tsx", import.meta.url), "utf8"));
   const landing = readFileSync(new URL("../app/practice/page.tsx", import.meta.url), "utf8");
-  assert.match(landing, /Guided Practice/);
+  // Mode names come from the localized dictionary; proper names stay literal.
+  assert.match(landing, /copy\["practice\.guided"\]/);
   assert.match(landing, /Python Sandbox/);
   assert.match(landing, /Logic &amp; Thinking/);
+  assert.match(landing, /copy\["practice\.sandboxDesc"\]/);
+  assert.match(landing, /copy\["practice\.thinkingDesc"\]/);
   // The shell keeps its existing nav architecture: no extra state, plain links.
   assert.doesNotMatch(shell, /useState|useEffect/);
 });

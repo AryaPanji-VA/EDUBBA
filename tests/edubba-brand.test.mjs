@@ -132,11 +132,19 @@ test("metadata titles EDUBBA and wires an existing appicon without generating as
 
 // === 9. Footers state the platform/companion relationship ===
 test("footer lines say EDUBBA with robin as companion", () => {
-  for (const file of ["app/page.tsx", "components/programming-course-client.tsx", "components/discrete-math-course-client.tsx", "components/generic-course-client.tsx"]) {
+  // Course pages keep the literal footer; the dashboard renders the same
+  // line from the shared UI dictionary so it localizes with the language.
+  for (const file of ["components/programming-course-client.tsx", "components/discrete-math-course-client.tsx", "components/generic-course-client.tsx"]) {
     const source = read(file);
     assert.match(source, /edubba — a place to learn computer science slowly, with robin\./, `${file} footer`);
     assert.doesNotMatch(source, /robin — a place to learn/, `${file} must not brand robin as the platform`);
   }
+  const dash = read("app/page.tsx");
+  assert.match(dash, /copy\["dash\.footer"\]/, "Dashboard footer uses the localized dictionary entry");
+  const uiCopy = read("lib/i18n/ui-copy.ts");
+  assert.match(uiCopy, /"dash\.footer": "edubba — a place to learn computer science slowly, with robin\."/);
+  assert.match(uiCopy, /"dash\.footer": "edubba — tempat belajar computer science pelan-pelan, bareng robin\."/);
+  assert.doesNotMatch(uiCopy, /robin — a place to learn/);
 });
 
 // === 10. Hydration safety follows the existing pattern ===

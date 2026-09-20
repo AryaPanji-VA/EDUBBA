@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCurrentLesson } from "@/lib/progress/use-current-lesson";
+import { useUiCopy } from "@/lib/i18n/language-provider";
 
-type MobileNavActive = "dashboard" | "courses" | "lesson" | "practice" | "profile";
+type MobileNavActive = "dashboard" | "courses" | "lesson" | "practice" | "settings" | "profile";
 
 // Phase 16.1: mobile-only floating navigation (≤430px). One FAB expands a
 // vertical stack upward. Tablet/desktop rendering is untouched: the wrapper
@@ -35,6 +36,12 @@ const ProfileIcon = () => (
     <circle cx="8" cy="5" r="2.5" /><path d="M3 13c.5-2.5 2.2-4 5-4s4.5 1.5 5 4" />
   </svg>
 );
+const SettingsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <circle cx="8" cy="8" r="2.2" />
+    <path d="M8 1.8v1.7M8 12.5v1.7M1.8 8h1.7M12.5 8h1.7M3.6 3.6l1.2 1.2M11.2 11.2l1.2 1.2M12.4 3.6l-1.2 1.2M4.8 11.2l-1.2 1.2" />
+  </svg>
+);
 const MenuIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
     <path d="M3.5 6h13M3.5 10h13M3.5 14h13" />
@@ -49,6 +56,7 @@ const CloseIcon = () => (
 export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }) {
   const [open, setOpen] = useState(false);
   const current = useCurrentLesson();
+  const copy = useUiCopy();
   const rootRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
 
@@ -73,16 +81,17 @@ export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }
   }, [open]);
 
   const items: { key: MobileNavActive; href: string; label: string; icon: React.ReactNode }[] = [
-    { key: "dashboard", href: "/", label: "Dashboard", icon: <DashboardIcon /> },
-    { key: "courses", href: "/courses", label: "Courses", icon: <CoursesIcon /> },
-    { key: "lesson", href: `/courses/${current.courseSlug}/${current.lessonSlug}`, label: "Lesson", icon: <LessonIcon /> },
-    { key: "practice", href: "/practice", label: "Practice", icon: <PracticeIcon /> },
-    { key: "profile", href: "/profile", label: "Profile", icon: <ProfileIcon /> },
+    { key: "dashboard", href: "/", label: copy["nav.dashboard"], icon: <DashboardIcon /> },
+    { key: "courses", href: "/courses", label: copy["nav.courses"], icon: <CoursesIcon /> },
+    { key: "lesson", href: `/courses/${current.courseSlug}/${current.lessonSlug}`, label: copy["nav.lesson"], icon: <LessonIcon /> },
+    { key: "practice", href: "/practice", label: copy["nav.practice"], icon: <PracticeIcon /> },
+    { key: "settings", href: "/settings", label: copy["nav.settings"], icon: <SettingsIcon /> },
+    { key: "profile", href: "/profile", label: copy["nav.profile"], icon: <ProfileIcon /> },
   ];
 
   return (
     <div className="mobile-nav" ref={rootRef}>
-      <nav className="mobile-menu" id="mobile-nav-menu" aria-label="Navigasi utama" hidden={!open}>
+      <nav className="mobile-menu" id="mobile-nav-menu" aria-label={copy["nav.main"]} hidden={!open}>
         {items.map((item) => (
           <Link
             key={item.key}
@@ -101,7 +110,7 @@ export function MobileNav({ active = "dashboard" }: { active?: MobileNavActive }
         className="mobile-fab"
         aria-expanded={open}
         aria-controls="mobile-nav-menu"
-        aria-label={open ? "Tutup menu navigasi" : "Buka menu navigasi"}
+        aria-label={open ? copy["nav.closeMenu"] : copy["nav.openMenu"]}
         onClick={() => setOpen((value) => !value)}
       >
         {open ? <CloseIcon /> : <MenuIcon />}

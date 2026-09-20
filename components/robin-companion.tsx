@@ -5,14 +5,29 @@ import type { ChatMessage, LogPreview, RobinReply, RobinState } from "@/lib/robi
 import { getActiveLessonLanguage } from "@/lib/robin/locale";
 import { toRobinProfileContext } from "@/lib/profile/local-profile";
 import { useLocalProfile } from "@/lib/profile/use-local-profile";
+import { useLanguage, useUiCopy } from "@/lib/i18n/language-provider";
+import type { UiLanguage } from "@/lib/i18n/ui-copy";
 
-const shortcuts = {
-  "jelasin lebih goblok": "bin, jelasin yang ini lebih simpel dong. mulai dari intinya dulu.",
-  "kasih analogi": "bin, kasih analogi lain biar kebayang.",
-  "contoh kode": "kasih satu contoh kode kecil dong, terus tunjukin jalannya.",
-  "gue ngerti setengah": "gue ngerti setengah, bin. bantu cari bagian yang masih ketuker.",
-  "quiz gue": "quiz gue satu soal Variables dong. tahan jawabannya dulu.",
-  "catat belajar": "catat apa yang gue pelajarin hari ini",
+// Robin stays casual, friendly, and campus-safe. Quick prompts are UI chrome
+// and follow the product language; the payload wording keeps Robin's tone.
+// No rude/degrading language is allowed anywhere in these prompts.
+const shortcutsByLanguage: Record<UiLanguage, { label: string; message: string }[]> = {
+  id: [
+    { label: "Jelasin lebih sederhana", message: "bin, jelasin yang ini lebih simpel dong. mulai dari intinya dulu." },
+    { label: "Kasih analogi", message: "bin, kasih analogi lain biar kebayang." },
+    { label: "Kasih contoh kode", message: "kasih satu contoh kode kecil dong, terus tunjukin jalannya." },
+    { label: "Gue ngerti setengah", message: "gue ngerti setengah, bin. bantu cari bagian yang masih ketuker." },
+    { label: "Quiz gue", message: "quiz gue satu soal Variables dong. tahan jawabannya dulu." },
+    { label: "Catat pembelajaran", message: "catat apa yang gue pelajarin hari ini" },
+  ],
+  en: [
+    { label: "Explain it simpler", message: "hey Robin, explain this one more simply — start from the core idea." },
+    { label: "Give an analogy", message: "Robin, give me another analogy so I can picture it." },
+    { label: "Show a code example", message: "give me one small code example and walk through what it does." },
+    { label: "I half get it", message: "I half get it, Robin — help me find the part I'm still mixing up." },
+    { label: "Quiz me", message: "quiz me with one question on Variables. hold the answer back first." },
+    { label: "Save what I learned", message: "save what I learned today" },
+  ],
 };
 
 type DisplayMessage = ChatMessage & { result?: RobinReply };
@@ -24,6 +39,9 @@ type Props = {
 
 export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props) {
   const { profile } = useLocalProfile();
+  const copy = useUiCopy();
+  const { language } = useLanguage();
+  const shortcuts = shortcutsByLanguage[language];
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [state, setState] = useState<RobinState>("idle");
@@ -74,11 +92,11 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
         signal: requestController.signal,
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Robin belum bisa menjawab.");
+      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : copy["robin.errorGeneric"]);
       if (typeof data.reply !== "string" || !data.reply.trim() ||
         !["grounded", "general"].includes(data.grounding?.status) ||
         data.grounding?.lesson !== lessonSlug || !Number.isInteger(data.sourceCount)) {
-        throw new Error("Jawaban Robin belum terbaca. Coba lagi.");
+        throw new Error(copy["robin.errorUnreadable"]);
       }
       if (controller.current !== requestController) return;
       if (["saved", "updated", "deleted"].includes(data.memoryAction?.type)) {
@@ -101,8 +119,8 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
       if (controller.current !== requestController) return;
       setDraft(message);
       setError(requestController.signal.aborted
-        ? "Robin kelamaan mikir. Materinya tetap aman—coba lagi."
-        : failure instanceof Error ? failure.message : "Robin belum bisa nyambung. Materinya tetap aman.");
+        ? copy["robin.errorTimeout"]
+        : failure instanceof Error ? failure.message : copy["robin.errorOffline"]);
       setState("error");
       onStateChange("error");
     } finally {
@@ -112,7 +130,7 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
   }
 
   async function savePreview(preview: LogPreview) {
-    setLogStatus({ kind: "saving", text: "menyimpan…" });
+    setLogStatus({ kind: "saving", text: copy["companion.savingLog"] });
     try {
       const response = await fetch("/api/learning/logs", {
         method: "POST",
@@ -126,36 +144,36 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
           nextStep: preview.nextStep,
         }),
       });
-      if (!response.ok) throw new Error("Gagal simpan log.");
-      setLogStatus({ kind: "saved", text: "Learning log tersimpan." });
+      if (!response.ok) throw new Error(copy["companion.logFailed"]);
+      setLogStatus({ kind: "saved", text: copy["companion.logSaved"] });
       setActivePreview(null);
       setEditingPreview(false);
     } catch {
-      setLogStatus({ kind: "idle", text: "Gagal simpan. Coba lagi." });
+      setLogStatus({ kind: "idle", text: copy["companion.logFailed"] });
     }
   }
 
   // Stay mounted to retain this page's conversation, but expose no AI controls in Source Mode.
   if (sourceMode) return null;
   return (
-    <aside className="robin-panel" aria-label="Ask Robin">
+    <aside className="robin-panel" aria-label={copy["companion.ask"]}>
       <div className="robin-panel-head">
         <div className="robin-identity"><span className="bin-face">R</span><span><strong>Robin</strong><small><i /> Robin Companion</small></span></div>
         <span className="mock-badge">AI v1</span>
       </div>
       <div className="robin-conversation" ref={conversation} aria-live="polite" aria-busy={state === "thinking"}>
-        {!messages.length && <div className="robin-message"><span className="message-label">ROBIN // ONLINE</span><p>bagian mana yang bikin nyangkut? gas, tanya aja.</p></div>}
+        {!messages.length && <div className="robin-message"><span className="message-label">{copy["companion.online"]}</span><p>{copy["companion.intro"]}</p></div>}
         {messages.map((message, index) => (
           <div className={`robin-message chat-${message.role}`} key={index}>
             <span className="message-label">{message.role === "user" ? profile.preferredName : "Robin"}</span>
             <p>{message.content}</p>
             {message.result && <div className={`grounding-badge ${message.result.grounding.status}`}>
-              <span>{message.result.grounding.status === "grounded" ? "GROUNDED IN LESSON" : "GENERAL AI KNOWLEDGE"}</span>
-              {message.result.grounding.status === "grounded" && <small>{message.result.sourceCount} lesson sources available</small>}
+              <span>{message.result.grounding.status === "grounded" ? copy["companion.grounded"] : copy["companion.general"]}</span>
+              {message.result.grounding.status === "grounded" && <small>{message.result.sourceCount} {copy["companion.sources"]}</small>}
             </div>}
           </div>
         ))}
-        {state === "thinking" && <div className="robin-message typing-state"><span className="typing-dots"><i /><i /><i /></span><small>otaknya lagi compile...</small></div>}
+        {state === "thinking" && <div className="robin-message typing-state"><span className="typing-dots"><i /><i /><i /></span><small>{copy["companion.thinking"]}</small></div>}
       </div>
       {error && <p className="robin-error" role="alert">{error}</p>}
       {memoryNotice && <p className="panel-footnote" role="status">{memoryNotice}</p>}
@@ -183,28 +201,28 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
               {activePreview.weakConcepts.map((c) => <span key={c} className="log-chip weak">{c}</span>)}
             </div>
           )}
-          {activePreview.nextStep && <p className="log-next">Next: {activePreview.nextStep}</p>}
+          {activePreview.nextStep && <p className="log-next">{copy["companion.next"]} {activePreview.nextStep}</p>}
           <div className="companion-actions companion-actions-flush">
             {editingPreview ? (
               <button
                 disabled={logStatus.kind === "saving"}
                 onClick={() => { setActivePreview({ ...activePreview, summary: editedSummary.trim() }); setEditingPreview(false); }}
-              >Apply edit</button>
+              >{copy["companion.applyEdit"]}</button>
             ) : (
               <>
                 <button
                   className="active"
                   disabled={logStatus.kind === "saving"}
                   onClick={() => void savePreview({ ...activePreview, summary: editedSummary.trim() || activePreview.summary })}
-                >{logStatus.kind === "saving" ? "Menyimpan…" : "Save log"}</button>
+                >{logStatus.kind === "saving" ? copy["companion.saving"] : copy["companion.saveLog"]}</button>
                 <button
                   disabled={logStatus.kind === "saving"}
                   onClick={() => { setEditingPreview(true); setEditedSummary(activePreview.summary); }}
-                >Edit summary</button>
+                >{copy["companion.editSummary"]}</button>
                 <button
                   disabled={logStatus.kind === "saving"}
-                  onClick={() => { setActivePreview(null); setEditingPreview(false); setLogStatus({ kind: "skipped", text: "Log dilewati. Tidak ada yang disimpan." }); }}
-                >Skip</button>
+                  onClick={() => { setActivePreview(null); setEditingPreview(false); setLogStatus({ kind: "skipped", text: copy["companion.logSkipped"] }); }}
+                >{copy["companion.skip"]}</button>
               </>
             )}
           </div>
@@ -214,21 +232,21 @@ export function RobinCompanion({ lessonSlug, sourceMode, onStateChange }: Props)
       {logStatus.kind === "skipped" && !activePreview && (
         <p className="panel-footnote" role="status">{logStatus.text}</p>
       )}
-      <div className="companion-actions">{Object.entries(shortcuts).map(([label, message]) =>
+      <div className="companion-actions">{shortcuts.map(({ label, message }) =>
         <button key={label} disabled={state === "thinking"} onClick={() => void sendMessage(message)}>{label}</button>
       )}</div>
       <form className="robin-ask" onSubmit={(event) => { event.preventDefault(); void sendMessage(draft); }}>
-        <label htmlFor="robin-question">Ask Robin</label>
+        <label htmlFor="robin-question">{copy["companion.ask"]}</label>
         <textarea id="robin-question" rows={3} maxLength={2000} value={draft} disabled={state === "thinking"}
-          placeholder="oi bin, gue mau nanya..." onChange={(event) => setDraft(event.target.value)}
+          placeholder={copy["companion.placeholder"]} onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
               event.preventDefault(); void sendMessage(draft);
             }
           }} />
-        <button className="button button-primary" disabled={state === "thinking" || !draft.trim()}>Send to Robin</button>
+        <button className="button button-primary" disabled={state === "thinking" || !draft.trim()}>{copy["companion.send"]}</button>
       </form>
-      <p className="panel-footnote">8 pesan terakhir · reset saat reload. Memory belajar hanya disimpan lewat perintah eksplisit; kelola di ROBIN LAB. Grounding adalah penilaian AI, bukan verifikasi per kalimat. Referensi resmi tetap di lesson.</p>
+      <p className="panel-footnote">{copy["companion.footnote"]}</p>
     </aside>
   );
 }

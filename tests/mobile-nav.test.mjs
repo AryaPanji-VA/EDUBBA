@@ -13,16 +13,16 @@ test("mobile nav renders a FAB with an expanding vertical menu", () => {
   // Reuses the persisted current-lesson logic.
   assert.match(source, /useCurrentLesson\(\)/);
   assert.match(source, /`\/courses\/\$\{current\.courseSlug\}\/\$\{current\.lessonSlug\}`/);
-  // Four destinations with icon + short label.
-  for (const label of ["Dashboard", "Courses", "Lesson", "Practice"]) {
-    assert.match(source, new RegExp(`label: "${label}"`));
+  // Destinations with icon + short label; labels come from the shared UI dictionary.
+  for (const key of ["nav.dashboard", "nav.courses", "nav.lesson", "nav.practice"]) {
+    assert.match(source, new RegExp(`label: copy\\["${key.replace(".", "\\.")}"\\]`));
   }
   // Vertical stack (flex column) comes from CSS; items close the menu on select.
   assert.match(source, /onClick=\{\(\) => setOpen\(false\)\}/);
   // Accessible button/menu behavior.
   assert.match(source, /aria-expanded=\{open\}/);
   assert.match(source, /aria-controls="mobile-nav-menu"/);
-  assert.match(source, /aria-label=\{open \? "Tutup menu navigasi" : "Buka menu navigasi"\}/);
+  assert.match(source, /aria-label=\{open \? copy\["nav\.closeMenu"\] : copy\["nav\.openMenu"\]\}/);
   assert.match(source, /hidden=\{!open\}/);
   assert.match(source, /aria-current=\{active === item\.key \? "page" : undefined\}/);
   // Close on Escape (with focus return) and outside tap.
@@ -45,8 +45,10 @@ test("FAB shows and the old bottom nav hides at ≤430px only", () => {
   // Base: hidden everywhere.
   assert.match(css, /\.mobile-nav \{ display: none; \}/);
   // The phone media query is 430px — not 760px, so tablets keep their nav.
-  const phoneBlock = css.match(/@media \(max-width: 430px\) \{[\s\S]*?\n\}/)?.[0] ?? "";
-  assert.ok(phoneBlock.length > 0, "a max-width: 430px block must exist");
+  // (The stylesheet has several 430px blocks; the shell rules live in one of them.)
+  const phoneBlocks = css.match(/@media \(max-width: 430px\) \{[\s\S]*?\n\}/g) ?? [];
+  const phoneBlock = phoneBlocks.join("\n");
+  assert.ok(phoneBlocks.length > 0, "max-width: 430px blocks must exist");
   assert.match(phoneBlock, /\.side \{ display: none; \}/);
   assert.match(phoneBlock, /\.mobile-nav \{ display: block; \}/);
 });

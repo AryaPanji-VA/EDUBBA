@@ -5,7 +5,7 @@ import { LessonActivityRenderer } from "@/components/lesson-activity-renderer";
 import { TopBar } from "@/components/top-bar";
 import { getDataTypesActivities, dataTypesCopy, localizeDataTypesContent, type LessonLanguage } from "@/content/lessons/programming/data-types-localization";
 import { dataTypesMasteryConceptLabels } from "@/content/lessons/programming/data-types-lesson-config";
-import { lessonLanguageStorageKey } from "@/content/lessons/variables-localization";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { RobinCheck } from "@/components/robin-check";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
@@ -30,7 +30,7 @@ export function DataTypesLesson() {
   const [submittedChecks, setSubmittedChecks] = useState<Record<number, boolean>>({});
   const [showLogOffer, setShowLogOffer] = useState(false);
 
-  const [language, setLanguage] = useState<LessonLanguage>("id");
+  const { language } = useLanguage();
   const copy = dataTypesCopy[language];
   const content = lesson ? localizeDataTypesContent(lesson.content, language) : null;
   const activities = useMemo(() => getDataTypesActivities(language), [language]);
@@ -41,18 +41,6 @@ export function DataTypesLesson() {
     setCheckComplete(progress.robinCheckComplete);
     setShowLogOffer(progress.complete && progress.learningLogStatus === "pending");
   }, [progress.complete, progress.isLoaded, progress.learningLogStatus, progress.robinCheckComplete]);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(lessonLanguageStorageKey);
-      if (saved === "id" || saved === "en") setLanguage(saved);
-    } catch { /* Storage can be unavailable; Indonesian remains the default. */ }
-  }, []);
-
-  function changeLanguage(next: LessonLanguage) {
-    setLanguage(next);
-    try { localStorage.setItem(lessonLanguageStorageKey, next); } catch { /* Session still works. */ }
-  }
 
   async function loadLesson() {
     setIsLoading(true);
@@ -119,7 +107,6 @@ export function DataTypesLesson() {
       <TopBar
         breadcrumb={<><Link href="/courses">{copy.courses}</Link><span className="sep">/</span><Link href="/courses/programming">CS-101</Link><span className="sep">/</span><b>Data Types</b></>}
         contextual={<>
-          <div className="switcher" role="group" aria-label={copy.language}>{(["id", "en"] as const).map((value) => <button key={value} type="button" aria-pressed={language === value} className={language === value ? "on" : ""} onClick={() => changeLanguage(value)}>{value.toUpperCase()}</button>)}</div>
           <div className="switcher" role="group" aria-label={copy.mode}>
             <button type="button" className={!sourceMode ? "on" : ""} aria-pressed={!sourceMode} onClick={() => setSourceMode(false)}>Robin</button>
             <button type="button" className={sourceMode ? "on" : ""} aria-pressed={sourceMode} onClick={() => { setSourceMode(true); setRobinState("idle"); setSignalPulse(false); }}>Source</button>

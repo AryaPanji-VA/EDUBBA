@@ -1,16 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { useUiCopy } from "@/lib/i18n/language-provider";
+import type { UiCopyKey } from "@/lib/i18n/ui-copy";
 
 export type PracticeMode = "guided" | "sandbox" | "thinking";
 
-const practiceModes: { id: PracticeMode; label: string; href: string }[] = [
-  { id: "guided", label: "Guided Practice", href: "/practice/python" },
-  { id: "sandbox", label: "Sandbox", href: "/practice/python/sandbox" },
-  { id: "thinking", label: "Logic & Thinking", href: "/practice/thinking" },
+const practiceModes: { id: PracticeMode; labelKey: UiCopyKey; href: string }[] = [
+  { id: "guided", labelKey: "practice.guided", href: "/practice/python" },
+  { id: "sandbox", labelKey: "practice.sandbox", href: "/practice/python/sandbox" },
+  { id: "thinking", labelKey: "practice.thinking", href: "/practice/thinking" },
 ];
 
 export function PracticeModeNav({ active }: { active: PracticeMode }) {
+  const copy = useUiCopy();
   return (
-    <nav className="practice-mode-nav" aria-label="Practice modes">
+    <nav className="practice-mode-nav" aria-label={copy["practice.modes"]}>
       {practiceModes.map((mode) => {
         const isActive = mode.id === active;
         return (
@@ -20,7 +25,7 @@ export function PracticeModeNav({ active }: { active: PracticeMode }) {
             href={mode.href}
             aria-current={isActive ? "page" : undefined}
           >
-            {mode.label}
+            {copy[mode.labelKey]}
           </Link>
         );
       })}
