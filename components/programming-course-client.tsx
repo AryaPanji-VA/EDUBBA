@@ -193,6 +193,15 @@ export function ProgrammingCourseClient() {
         "scope-basics",
       ],
     },
+    {
+      label: "Module 06 · Collections",
+      group: [
+        "lists",
+        "dictionaries",
+        "tuples",
+        "sets",
+      ],
+    },
     { slug: "variables", label: "Variables", segments: 6 },
     { slug: "data-types", label: "Data Types", segments: 4 },
     { slug: "operators", label: "Operators", segments: 4 },

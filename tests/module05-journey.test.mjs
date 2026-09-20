@@ -96,13 +96,13 @@ test("the legacy functions lesson keeps its persisted identity", () => {
 test("Module 05 order, grouped mastery row, and no-lock availability", () => {
   const courses = loadModule("data/courses.ts");
   const list = Array.from(courses.implementedProgrammingLessonSlugs);
-  const module05 = list.slice(list.indexOf("functions"));
+  const module05 = list.slice(list.indexOf("functions"), list.indexOf("scope-basics") + 1);
   assert.deepEqual(module05, ["functions", "parameters-arguments", "return-values", "scope-basics"]);
 
   const client = read("components/programming-course-client.tsx");
   assert.match(client, /Module 05 · Reusable Code/);
   const groups = [...client.matchAll(/group: \[([\s\S]*?)\]/g)].map((match) => match[1]);
-  assert.equal(groups.length, 5, "five module groups exist");
+  assert.equal(groups.length, 6, "six module groups exist");
   assert.deepEqual(
     groups[4].match(/"[a-z-]+"/g).map((token) => token.slice(1, -1)),
     ["functions", "parameters-arguments", "return-values", "scope-basics"],

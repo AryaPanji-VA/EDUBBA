@@ -31,6 +31,7 @@ test("curriculum keeps the coherent block-lesson order after Values & Data compl
     ["conditionals", 9], ["loops", 10], ["while-loops", 11],
     ["range-loop-patterns", 12], ["functions", 13],
     ["parameters-arguments", 14], ["return-values", 15], ["scope-basics", 16],
+    ["lists", 17], ["dictionaries", 18], ["tuples", 19], ["sets", 20],
   ]);
 });
 

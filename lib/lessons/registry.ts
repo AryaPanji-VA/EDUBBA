@@ -90,6 +90,31 @@ import { scopeBasicsMasteryConfig, scopeBasicsRelevance } from "@/content/lesson
 import { loadScopeBasicsLesson } from "@/lib/lessons/scope-basics";
 import { scopeBasicsCheckInstructions, scopeBasicsFeedbackInstructions } from "@/content/lessons/programming/scope-basics-instructions";
 
+// Phase 20.6: Module 06 — Collections (Lists, Dictionaries, Tuples, Sets).
+import { listsActivities } from "@/content/lessons/programming/lists-activities";
+import { listsLessonContent } from "@/content/lessons/programming/lists";
+import { listsMasteryConfig, listsRelevance } from "@/content/lessons/programming/lists-config";
+import { loadListsLesson } from "@/lib/lessons/lists";
+import { listsCheckInstructions, listsFeedbackInstructions } from "@/content/lessons/programming/lists-instructions";
+
+import { dictionariesActivities } from "@/content/lessons/programming/dictionaries-activities";
+import { dictionariesLessonContent } from "@/content/lessons/programming/dictionaries";
+import { dictionariesMasteryConfig, dictionariesRelevance } from "@/content/lessons/programming/dictionaries-config";
+import { loadDictionariesLesson } from "@/lib/lessons/dictionaries";
+import { dictionariesCheckInstructions, dictionariesFeedbackInstructions } from "@/content/lessons/programming/dictionaries-instructions";
+
+import { tuplesActivities } from "@/content/lessons/programming/tuples-activities";
+import { tuplesLessonContent } from "@/content/lessons/programming/tuples";
+import { tuplesMasteryConfig, tuplesRelevance } from "@/content/lessons/programming/tuples-config";
+import { loadTuplesLesson } from "@/lib/lessons/tuples";
+import { tuplesCheckInstructions, tuplesFeedbackInstructions } from "@/content/lessons/programming/tuples-instructions";
+
+import { setsActivities } from "@/content/lessons/programming/sets-activities";
+import { setsLessonContent } from "@/content/lessons/programming/sets";
+import { setsMasteryConfig, setsRelevance } from "@/content/lessons/programming/sets-config";
+import { loadSetsLesson } from "@/lib/lessons/sets";
+import { setsCheckInstructions, setsFeedbackInstructions } from "@/content/lessons/programming/sets-instructions";
+
 // Phase 20.1A: beginner onboarding — the first lesson of Programming Fundamentals.
 import { whatIsProgrammingActivities } from "@/content/lessons/programming/what-is-programming-activities";
 import { whatIsProgrammingLessonContent } from "@/content/lessons/programming/what-is-programming";
@@ -543,6 +568,59 @@ const scopeBasicsDefinition = standardLesson({
   feedbackMisconceptions: ["local_available_outside", "local_survives_call", "assignment_is_global", "parameter_is_global"],
 });
 
+// Phase 20.6 — Module 06 · Collections: Lists.
+const listsDefinition = standardLesson({
+  slug: "lists", courseSlug: "programming",
+  activities: listsActivities, lessonContent: listsLessonContent, loadLesson: loadListsLesson,
+  mastery: listsMasteryConfig, relevance: listsRelevance,
+  checkRubric: listsCheckInstructions, checkQuestion: 'Jelasin pakai bahasa lu sendiri: apa artinya list punya index mulai dari 0 — dan apa yang terjadi setelah names[1] = "Dina" dijalankan?',
+  contextLabel: "Lists lesson context (data only)",
+  checkConcepts: ["list_literal", "zero_based_index", "list_mutation"],
+  checkMisconceptions: ["one_based_index", "index_out_of_range", "immutable_list_confusion", "separate_variables_confusion"],
+  feedbackRubric: listsFeedbackInstructions,
+  feedbackMisconceptions: ["one_based_index", "index_out_of_range", "immutable_list_confusion", "separate_variables_confusion"],
+});
+
+// Phase 20.6 — Module 06 · Collections: Dictionaries.
+const dictionariesDefinition = standardLesson({
+  slug: "dictionaries", courseSlug: "programming",
+  activities: dictionariesActivities, lessonContent: dictionariesLessonContent, loadLesson: loadDictionariesLesson,
+  mastery: dictionariesMasteryConfig, relevance: dictionariesRelevance,
+  checkRubric: dictionariesCheckInstructions, checkQuestion: 'Jelasin pakai bahasa lu sendiri: apa beda cara list dan dictionary menyimpan value — dan bagaimana cara mengambil value dari student["name"]?',
+  contextLabel: "Dictionaries lesson context (data only)",
+  checkConcepts: ["key_value_model", "key_retrieval", "dict_update"],
+  checkMisconceptions: ["position_on_dict_confusion", "unquoted_key_confusion", "missing_key_confusion", "separate_variables_confusion"],
+  feedbackRubric: dictionariesFeedbackInstructions,
+  feedbackMisconceptions: ["position_on_dict_confusion", "unquoted_key_confusion", "missing_key_confusion", "separate_variables_confusion"],
+});
+
+// Phase 20.6 — Module 06 · Collections: Tuples.
+const tuplesDefinition = standardLesson({
+  slug: "tuples", courseSlug: "programming",
+  activities: tuplesActivities, lessonContent: tuplesLessonContent, loadLesson: loadTuplesLesson,
+  mastery: tuplesMasteryConfig, relevance: tuplesRelevance,
+  checkRubric: tuplesCheckInstructions, checkQuestion: "Jelasin pakai bahasa lu sendiri: apa beda tuple dan list — dan kenapa point[0] = 99 ditolak Python?",
+  contextLabel: "Tuples lesson context (data only)",
+  checkConcepts: ["tuple_literal", "tuple_indexing", "tuple_immutable"],
+  checkMisconceptions: ["tuple_item_assignment", "tuple_unordered_confusion", "tuple_list_syntax_confusion", "tuple_growable_confusion"],
+  feedbackRubric: tuplesFeedbackInstructions,
+  feedbackMisconceptions: ["tuple_item_assignment", "tuple_unordered_confusion", "tuple_list_syntax_confusion", "tuple_growable_confusion"],
+});
+
+// Phase 20.6 — Module 06 · Collections: Sets. Distinct from the discrete-math
+// lesson sets-intro; slugs are globally unique in the flat registry.
+const setsDefinition = standardLesson({
+  slug: "sets", courseSlug: "programming",
+  activities: setsActivities, lessonContent: setsLessonContent, loadLesson: loadSetsLesson,
+  mastery: setsMasteryConfig, relevance: setsRelevance,
+  checkRubric: setsCheckInstructions, checkQuestion: 'Jelasin pakai bahasa lu sendiri: kenapa set dengan isi {"python", "coding", "python"} cuma punya dua value — dan kenapa tags[0] nggak valid?',
+  contextLabel: "Sets lesson context (data only)",
+  checkConcepts: ["set_uniqueness", "set_membership", "set_unordered"],
+  checkMisconceptions: ["set_indexing_confusion", "duplicates_counted_confusion", "order_relied_on", "empty_braces_confusion"],
+  feedbackRubric: setsFeedbackInstructions,
+  feedbackMisconceptions: ["set_indexing_confusion", "duplicates_counted_confusion", "order_relied_on", "empty_braces_confusion"],
+});
+
 const propositionsDefinition: LessonDefinition = {
   slug: "propositions",
   courseSlug: "discrete-math",
@@ -951,6 +1029,10 @@ const registry: Map<string, LessonDefinition> = new Map([
   ["parameters-arguments", parametersArgumentsDefinition],
   ["return-values", returnValuesDefinition],
   ["scope-basics", scopeBasicsDefinition],
+  ["lists", listsDefinition],
+  ["dictionaries", dictionariesDefinition],
+  ["tuples", tuplesDefinition],
+  ["sets", setsDefinition],
   ["propositions", propositionsDefinition],
   ["implication", implicationDefinition],
   ["sets-intro", setsIntroDefinition],

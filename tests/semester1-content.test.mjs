@@ -29,7 +29,7 @@ test("all seven courses have implemented lessons and overview routes", () => {
   const courseData = read("data/courses.ts");
   const implementedMap = loadModule("data/courses.ts");
   const expected = {
-    programming: 22, "discrete-math": 3, "design-thinking": 3, hci: 3, algorithms: 3, parallel: 2, networking: 3,
+    programming: 26, "discrete-math": 3, "design-thinking": 3, hci: 3, algorithms: 3, parallel: 2, networking: 3,
   };
   for (const [slug, count] of Object.entries(expected)) {
     const list = implementedMap.implementedLessonSlugsByCourse[slug];

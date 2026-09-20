@@ -1,9 +1,9 @@
 -- Seed only the first fully structured ROBIN course.
 -- Every insert finds the existing course by slug, so no UUID is hardcoded.
 
--- This course now contains twenty-six lessons across three modules.
+-- This course now contains thirty lessons across three modules.
 update public.courses
-set total_lessons = 26
+set total_lessons = 30
 where slug = 'programming';
 
 insert into public.modules (course_id, slug, title, description, position)
@@ -63,7 +63,11 @@ join (
     ('programming-building-blocks', 'functions', 'Functions', 'Bungkus langkah jadi satu nama — definisikan sekali, panggil berkali-kali.', 14, 13),
     ('programming-building-blocks', 'parameters-arguments', 'Parameters & Arguments', 'Function menerima data: parameter di definition, argument di call.', 12, 14),
     ('programming-building-blocks', 'return-values', 'Return Values', 'print menampilkan, return mengembalikan value ke program.', 12, 15),
-    ('programming-building-blocks', 'scope-basics', 'Scope Basics', 'Variable di dalam function hidup di area kerja lokalnya sendiri.', 12, 16)
+    ('programming-building-blocks', 'scope-basics', 'Scope Basics', 'Variable di dalam function hidup di area kerja lokalnya sendiri.', 12, 16),
+    ('programming-building-blocks', 'lists', 'Lists', 'Satu variable, banyak value berurutan — index mulai dari 0.', 12, 17),
+    ('programming-building-blocks', 'dictionaries', 'Dictionaries', 'Simpan value dengan key bermakna, bukan posisi angka.', 12, 18),
+    ('programming-building-blocks', 'tuples', 'Tuples', 'Kumpulan berurutan yang itemnya tidak berubah — fixed items.', 12, 19),
+    ('programming-building-blocks', 'sets', 'Sets', 'Kumpulan value unik — duplikat collapse, tanpa posisi.', 12, 20)
 ) as lesson(module_slug, slug, title, summary, estimated_minutes, position)
   on lesson.module_slug = m.slug
 where c.slug = 'programming'

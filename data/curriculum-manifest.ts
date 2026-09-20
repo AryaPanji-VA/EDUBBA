@@ -113,7 +113,7 @@ export const currentCurriculumManifest: CurriculumManifest = {
           slug: "programming",
           title: "Foundations of Programming Language",
           description: "Build the mental model behind code, from values and variables to functions.",
-          totalLessons: 26,
+          totalLessons: 30,
           provenance: officialSemester1Courses,
           modules: [
             {
@@ -167,6 +167,10 @@ export const currentCurriculumManifest: CurriculumManifest = {
                 { slug: "parameters-arguments", title: "Parameters & Arguments", summary: "Function menerima data: parameter di definition, argument di call.", estimatedMinutes: 12, position: 14, provenance: robinLearningStructure },
                 { slug: "return-values", title: "Return Values", summary: "print menampilkan, return mengembalikan value ke program.", estimatedMinutes: 12, position: 15, provenance: robinLearningStructure },
                 { slug: "scope-basics", title: "Scope Basics", summary: "Variable di dalam function hidup di area kerja lokalnya sendiri.", estimatedMinutes: 12, position: 16, provenance: robinLearningStructure },
+                { slug: "lists", title: "Lists", summary: "Satu variable, banyak value berurutan — index mulai dari 0.", estimatedMinutes: 12, position: 17, provenance: robinLearningStructure },
+                { slug: "dictionaries", title: "Dictionaries", summary: "Simpan value dengan key bermakna, bukan posisi angka.", estimatedMinutes: 12, position: 18, provenance: robinLearningStructure },
+                { slug: "tuples", title: "Tuples", summary: "Kumpulan berurutan yang itemnya tidak berubah — fixed items.", estimatedMinutes: 12, position: 19, provenance: robinLearningStructure },
+                { slug: "sets", title: "Sets", summary: "Kumpulan value unik — duplikat collapse, tanpa posisi.", estimatedMinutes: 12, position: 20, provenance: robinLearningStructure },
               ],
             },
           ],
