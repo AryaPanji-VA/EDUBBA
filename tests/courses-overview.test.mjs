@@ -22,9 +22,10 @@ function loadExport(path, exportName, deps = {}) {
 // Load the real presentation fallbacks so grouping uses actual data.
 const coursePresentationBySlug = loadExport("data/courses.ts", "coursePresentationBySlug");
 
-// Load the API route with its imports stubbed (type imports are erased by the stripper).
-function loadRoute() {
-  const raw = stripTypeScriptTypes(read("app/api/courses/route.ts"), { mode: "transform" });
+// Load the pure grouping module (moved out of the API route so the route only
+// exports valid Next route handlers).
+function loadGrouping() {
+  const raw = stripTypeScriptTypes(read("lib/courses/grouping.ts"), { mode: "transform" });
   const names = [...raw.matchAll(/export (?:async )?(?:function|const|class) (\w+)/g)].map((match) => match[1]);
   const code = raw
     .replace(/import \{[^}]+\} from "[^"]+";/g, "")
@@ -33,7 +34,6 @@ function loadRoute() {
   vm.runInNewContext(code, {
     exports,
     coursePresentationBySlug,
-    createServerSupabaseClient: () => ({}),
   });
   return exports;
 }
@@ -57,7 +57,7 @@ function courseRows() {
 
 // === 1. Grouping orders semesters 1-8 and places Semester 1 courses ===
 test("grouping returns semesters ordered 1-8 with semester 1 carrying the seeded courses", () => {
-  const { groupCoursesBySemester } = loadRoute();
+  const { groupCoursesBySemester } = loadGrouping();
   const { semesters, unassignedCourses } = groupCoursesBySemester(semesterRows(), courseRows());
   assert.equal(semesters.length, 8);
   assert.deepEqual(Array.from(semesters, (semester) => semester.number), [1, 2, 3, 4, 5, 6, 7, 8]);
@@ -70,7 +70,7 @@ test("grouping returns semesters ordered 1-8 with semester 1 carrying the seeded
 
 // === 2. Course counts are derived from actual rows ===
 test("course counts come from the actual database rows", () => {
-  const { groupCoursesBySemester } = loadRoute();
+  const { groupCoursesBySemester } = loadGrouping();
   const partial = courseRows().slice(0, 3);
   const { semesters } = groupCoursesBySemester(semesterRows(), partial);
   assert.equal(semesters[0].courses.length, 3);
@@ -82,7 +82,7 @@ test("course counts come from the actual database rows", () => {
 
 // === 3. Null semester relationships are reported, never silently assigned ===
 test("a null semester_id course is reported as unassigned and does not crash", () => {
-  const { groupCoursesBySemester } = loadRoute();
+  const { groupCoursesBySemester } = loadGrouping();
   const rows = [...courseRows(), { slug: "legacy-course", title: "Legacy", description: "Old row.", total_lessons: 5, semester_id: null }];
   const { semesters, unassignedCourses } = groupCoursesBySemester(semesterRows(), rows);
   assert.equal(unassignedCourses.length, 1);
@@ -95,7 +95,7 @@ test("a null semester_id course is reported as unassigned and does not crash", (
 
 // === 4. An unknown semester_id also lands in unassigned (safe fallback) ===
 test("an unknown semester_id is reported as unassigned instead of crashing or guessing", () => {
-  const { groupCoursesBySemester } = loadRoute();
+  const { groupCoursesBySemester } = loadGrouping();
   const rows = [{ slug: "orphan-course", title: "Orphan", description: "d", total_lessons: 5, semester_id: "sem-99" }];
   const { semesters, unassignedCourses } = groupCoursesBySemester(semesterRows(), rows);
   assert.equal(unassignedCourses.length, 1);
@@ -104,7 +104,7 @@ test("an unknown semester_id is reported as unassigned instead of crashing or gu
 
 // === 5. Presentation fallbacks are applied to grouped courses ===
 test("grouped courses use neutral presentation fallbacks with honest zero progress", () => {
-  const { groupCoursesBySemester } = loadRoute();
+  const { groupCoursesBySemester } = loadGrouping();
   const { semesters } = groupCoursesBySemester(semesterRows(), courseRows());
   const programming = semesters[0].courses.find((course) => course.slug === "programming");
   assert.equal(programming.code, "CS-101");

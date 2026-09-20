@@ -12,35 +12,35 @@ importers:
         specifier: ^2.115.0
         version: 2.115.0
       next:
-        specifier: latest
+        specifier: 16.3.4
         version: 16.3.4(@types/node@26.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       openai:
         specifier: ^7.10.0
         version: 7.10.0
       react:
-        specifier: latest
+        specifier: 19.2.8
         version: 19.2.8
       react-dom:
-        specifier: latest
+        specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
     devDependencies:
       '@tailwindcss/postcss':
-        specifier: latest
+        specifier: 4.3.3
         version: 4.3.3
       '@types/node':
-        specifier: latest
+        specifier: 26.4.1
         version: 26.4.1
       '@types/react':
-        specifier: latest
+        specifier: 19.2.18
         version: 19.2.18
       '@types/react-dom':
-        specifier: latest
+        specifier: 19.2.7
         version: 19.2.7(@types/react@19.2.18)
       tailwindcss:
-        specifier: latest
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: latest
+        specifier: 7.0.2
         version: 7.0.2
 
 packages:

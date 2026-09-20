@@ -72,10 +72,12 @@ test("no presentation-fallback progress values remain in course data", () => {
   }
   // All static courses now carry an honest neutral baseline.
   assert.match(courseData, /progress: 0, lessons: 11, status: "Not started"/);
-  // The API derives real progress from persisted completion.
+  // The API derives real progress from persisted completion; the status rule
+  // lives in the shared pure grouping module.
   const api = read("app/api/courses/route.ts");
   assert.match(api, /loadCompletedLessonCountsByCourse/);
-  assert.match(api, /completedCount > 0 \? "In progress" : "Not started"/);
+  assert.match(api, /from "@\/lib\/courses\/grouping"/);
+  assert.match(read("lib/courses/grouping.ts"), /completedCount > 0 \? "In progress" : "Not started"/);
 });
 
 // === 4. Generic routes validate trusted course ownership ===
