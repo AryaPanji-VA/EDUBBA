@@ -146,6 +146,11 @@ test("local-user migration keeps RLS and uses a per-user PostgREST conflict cons
   assert.match(server, /\.eq\("local_user_id", localUserId\)/);
 });
 
+test("progress API removes localhost-only restriction, accepts any origin with valid local-user cookie", () => {
+  const server = readFileSync(new URL("../lib/progress/server.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(server, /localhost.*127\.0\.0\.1/);
+  assert.match(server, /requireLocalUserId\(request\)/);
+});
 test("Dashboard, navigation, and Robin resolve persisted current lesson instead of a fixed lesson route", () => {
   const dashboard = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
   const shell = readFileSync(new URL("../components/app-shell.tsx", import.meta.url), "utf8");

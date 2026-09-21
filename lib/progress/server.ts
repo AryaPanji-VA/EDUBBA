@@ -12,15 +12,6 @@ export class ProgressError extends Error {
 }
 
 export function requireLocalProgress(request: Request) {
-  const url = new URL(request.url);
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (process.env.NODE_ENV !== "development" ||
-      !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
-      (host && host !== url.host) || (origin && origin !== url.origin) ||
-      ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) {
-    throw new ProgressError("Lesson progress hanya tersedia di development lokal. Belum ada authentication.", 403);
-  }
   try { return requireLocalUserId(request); }
   catch { throw new ProgressError("Pilih local user dulu.", 401); }
 }
