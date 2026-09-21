@@ -13,15 +13,6 @@ export class PracticeError extends Error {
 }
 
 export function requireLocalPractice(request: Request) {
-  const url = new URL(request.url);
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (process.env.NODE_ENV !== "development" ||
-      !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
-      (host && host !== url.host) || (origin && origin !== url.origin) ||
-      ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) {
-    throw new PracticeError("Practice progress hanya tersedia di development lokal. Belum ada authentication.", 403);
-  }
   try { return requireLocalUserId(request); }
   catch { throw new PracticeError("Pilih local user dulu.", 401); }
 }

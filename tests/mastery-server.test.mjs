@@ -42,6 +42,12 @@ test("mastery read and write errors are safely logged; a failed read never overw
   }
 });
 
+test("mastery persistence accepts hosted production requests with valid local-user cookie", () => {
+  const server = readFileSync(new URL("../lib/mastery/server.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(server, /localhost.*127\.0\.0\.1/);
+  assert.match(server, /requireLocalUserId\(request\)/);
+});
+
 test("mastery GET returns the summary without caching and safely rejects unsupported lessons", async () => {
   const exports = {};
   vm.runInNewContext(source("../app/api/learning/mastery/route.ts", ["GET"]), {

@@ -8,15 +8,6 @@ import { requireLocalUserId } from "@/lib/local-user/server";
 const columns = "local_user_id,lesson_slug,concept_key,state,evidence_count,success_count,struggle_count,last_evidence_type,last_evidence_at,last_attempt_id";
 
 export function requireLocalMastery(request: Request) {
-  const url = new URL(request.url);
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (process.env.NODE_ENV !== "development" ||
-      !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
-      (host && host !== url.host) || (origin && origin !== url.origin) ||
-      ["cross-site", "same-site"].includes(request.headers.get("sec-fetch-site") ?? "")) {
-    throw new Error("forbidden");
-  }
   return requireLocalUserId(request);
 }
 

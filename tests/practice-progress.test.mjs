@@ -171,6 +171,12 @@ test("server merge never regresses completed exercises, attempts, or log decisio
   assert.equal(result.newlyCompleted, false);
 });
 
+test("practice persistence accepts hosted production requests with valid local-user cookie", () => {
+  const server = readFileSync(new URL("../lib/practice/server.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(server, /localhost.*127\.0\.0\.1/);
+  assert.match(server, /requireLocalUserId\(request\)/);
+});
+
 test("local-user migration is RLS-on, server-only, and single-row per user and track", () => {
   const sql = readFileSync(new URL("../database/phase17-1-local-user-isolation.sql", import.meta.url), "utf8");
   const server = readFileSync(new URL("../lib/practice/server.ts", import.meta.url), "utf8");

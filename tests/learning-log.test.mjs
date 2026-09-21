@@ -138,7 +138,14 @@ test("dashboard no longer renders RecentLearning; the component and its data con
   assert.match(server, /learning_logs/, "learning log API contract unchanged");
 });
 
-// === 12. Current lesson resolution ===
+// === 12. Hosted Learning Log acceptance ===
+test("Learning Log accepts hosted production requests with valid local-user cookie", () => {
+  const server = readFileSync(new URL("../lib/learning-log/server.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(server, /localhost.*127\.0\.0\.1/);
+  assert.match(server, /requireLocalUserId\(request\)/);
+});
+
+// === 13. Current lesson resolution ===
 test("dashboard mini-chat resolves current lesson from persisted progress with a map-derived fallback", () => {
   const dashSource = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
   const hookSource = readFileSync(new URL("../lib/progress/use-current-lesson.ts", import.meta.url), "utf8");
